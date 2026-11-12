@@ -4,14 +4,32 @@
    MORE_TREE lists the kinds (palettes PAL.<kind>, collision radii RAD.<kind>, generation-setup.js). The low-poly builders of plant-models.js draw from the global rand, so each
    runs inside withRng(seed): building these moves nothing in the world. Willow is the one custom shape (drooping strands); the others are makeBroadleaf / makeConifer with their own proportions.
    Look at them: node tools/zoneprops-preview.js is for props; for trees run a scratch page with buildGeometries or just walk the forest (docs/areas/render.md). Test: client-smoke. */
-const MORE_TREE={poplar:1,beech:1,willow:1,umbrella:1,cedar:1,ginkgo:1,larch:1,acacia:1,gloomoak:1,rowan:1,fir:1,kuromatsu:1,krummholz:1};
+const MORE_TREE={poplar:1,beech:1,willow:1,umbrella:1,cedar:1,ginkgo:1,larch:1,acacia:1,gloomoak:1,rowan:1,fir:1,kuromatsu:1,krummholz:1,hawthorn:1,camphor:1,dragontree:1,yew:1};
 const MORE_CONIFER={cedar:1,larch:1,fir:1,kuromatsu:1,krummholz:1};
 // the three new conifers (rowan is a broadleaf): a 17 m fir, the vale's black pine (an S-bent trunk, five flat pads), the dwarf mountain pine of the Greyspine's treeline and the Reach
 const CONI_NEW={fir:{trunkH:7, layers:10, r0:2.4, lh:2.4, spacing:1.5, start:5, taper:0.6, sag:0.3, lift:0.15},
   kuromatsu:Object.assign({},CONI.pine,{pads:5, bend:0.9, H:6.5, r0:1.7, tk:0.8}),
   krummholz:Object.assign({},CONI.pine,{pads:5, bend:0.5, H:2.4, r0:0.9, tk:0.45})};
+const HAWTHORN_O={trunkH:1.9, tr:0.2, crownY:3.3, rMain:1.6, blobs:6, spread:1.7, sy:0.6, branches:4, bark:0x5c5248};   // 4.5 m, forked and wide (home, low ground)
+const CAMPHOR_O={trunkH:4.5, tr:0.7, crownY:8.5, rMain:3.6, blobs:7, spread:3.0, sy:0.8, branches:5, bark:0x6a5a48};   // the vale's 12 m giant: a broad dome on a thick trunk
+const YEW_O={trunkH:1.6, tr:0.45, crownY:3.2, rMain:2.2, blobs:6, spread:1.8, sy:0.75, branches:4, bark:0x4a2e2a};   // the Gloamhorn's squat, dark yew
+/* The dragon tree (the Sunscar): a short trunk forking into upswept limbs, each tipped with a rosette of sword leaves that together make one flat umbrella. lo: fewer blades. */
+function makeDragonTree(seed,lo){
+  const {r:rg,R:rr}=mrng(seed), parts=[], leaves=[], nb=lo?7:14, trunk=new THREE.Color(0x8a7a66);
+  parts.push(paint(cyl(0.2,0.36,2.2,7).translate(0,1.1,0),(x,y,z,nx,ny,nz,c)=>c.copy(trunk).multiplyScalar(0.7+0.3*h3(Math.floor(y*3),Math.floor(Math.atan2(z,x)*2),3))));
+  const nL=lo?4:6;
+  for(let i=0;i<nL;i++){
+    const a=i/nL*TAU+rr(-0.3,0.3), tilt=rr(0.7,1.0), len=rr(1.8,2.4), tx=Math.cos(a)*Math.sin(tilt)*len, ty=2.1+Math.cos(tilt)*len, tz=Math.sin(a)*Math.sin(tilt)*len;
+    const g=cyl(0.07,0.16,len,5); g.translate(0,len/2,0); g.rotateZ(-tilt); g.rotateY(-a); g.translate(0,2.1,0); parts.push(paint(g,(x,y,z,nx,ny,nz,c)=>c.copy(trunk).multiplyScalar(0.62+0.3*h3(x*4,y*4,z*4))));
+    for(let k=0;k<nb;k++){   // the rosette: sword blades spread in a fan, the lower ones drooping a little
+      const b=k/nb*TAU+rr(-0.2,0.2), up=rr(0.25,0.95), L=rr(1.0,1.5), g2=new THREE.IcosahedronGeometry(1,0); g2.scale(L*0.5,0.035,0.09); g2.translate(L*0.5,0,0); g2.rotateZ(up); g2.rotateY(b); g2.translate(tx,ty,tz);
+      leaves.push(paint(g2,(x,y,z,nx,ny,nz,c)=>{ const v=0.7+0.4*clamp((Math.hypot(x-tx,z-tz))/1.4); c.setRGB(v,v,v); }));
+    }
+  }
+  return {trunk:merge(parts), leaves:merge(leaves)};
+}
 const ROWAN_O={trunkH:2.6, tr:0.14, crownY:4.2, rMain:1.5, blobs:5, spread:1.2, sy:0.8, branches:3, bark:0x6a6258};
-const MORE_WIDE={beech:1,willow:1,umbrella:1,acacia:1,gloomoak:1,fir:1};   // crowns that want the wide spacing of oaks
+const MORE_WIDE={beech:1,willow:1,umbrella:1,acacia:1,gloomoak:1,fir:1,camphor:1,yew:1};   // crowns that want the wide spacing of oaks
 function withRng(seed,fn){ const keep=rand; rand=mulberry32(seed); try{ return fn(); } finally{ rand=keep; } }
 function treeLean(t,k){   // a trunk and crown that bend over with height
   const f=g=>{ const p=g.attributes.position; for(let i=0;i<p.count;i++){ const y=p.getY(i); p.setX(i,p.getX(i)+y*y*k); } return g; };
@@ -71,12 +89,20 @@ function buildMoreTrees(){
   T.acacia=withRng(8308,()=>treeLean(makeBroadleaf({trunkH:3.8, tr:0.2, crownY:5.2, rMain:2.8, blobs:6, spread:2.7, sy:0.2, branches:3, bark:0x6a5a40}),0.03));
   T.gloomoak=withRng(8309,()=>treeLean(makeBroadleaf({trunkH:3.4, tr:0.4, crownY:5.0, rMain:2.2, blobs:5, spread:2.4, sy:0.5, branches:5, bark:0x2c2630}),0.05));
   T.rowan=withRng(8310,()=>makeBroadleaf(ROWAN_O));
+  T.hawthorn=withRng(8314,()=>makeBroadleaf(HAWTHORN_O));
+  T.camphor=withRng(8315,()=>makeBroadleaf(CAMPHOR_O));
+  T.dragontree=withRng(8316,()=>makeDragonTree(8316,true));
+  T.yew=withRng(8317,()=>makeBroadleaf(YEW_O));
   T.fir=withRng(8311,()=>makeConifer(CONI_NEW.fir));
   T.kuromatsu=withRng(8312,()=>treeLean(makeConifer(CONI_NEW.kuromatsu),0.06));
   T.krummholz=withRng(8313,()=>makeConifer(CONI_NEW.krummholz));
   if(!G.treesHi) return;
   const H=G.treesHi;
   H.rowan=makeBroadleafHi(ROWAN_O,23);
+  H.hawthorn=makeBroadleafHi(HAWTHORN_O,25);
+  H.camphor=makeBroadleafHi(CAMPHOR_O,26);
+  H.dragontree=makeDragonTree(27,false);
+  H.yew=makeBroadleafHi(YEW_O,28);
   H.fir=makeConiferHi(CONI_NEW.fir,21);
   H.kuromatsu=treeLean(makeConiferHi(CONI_NEW.kuromatsu,22),0.06);
   H.krummholz=makeConiferHi(CONI_NEW.krummholz,24);
@@ -99,6 +125,7 @@ function treeVariety(type,x,z,h,land){
     if((type==='pine'||type==='spruce')&&k<0.7&&inGrey(x,z)&&h>greyTreeline(x,z)-14) return 'krummholz';
     if((type==='pine'||type==='spruce')&&inGrey(x,z)&&h>greyTreeline(x,z)-36) return 'frostspruce';   // the Greyspine's snowy slopes: snow-laden spruce   // the Greyspine's treeline: dwarf mountain pines
     if(type==='birch'&&k>=0.3&&k<0.42) return 'rowan';
+    if(type==='oakB'&&k>=0.4&&k<0.54&&h<12) return 'hawthorn';   // low ground: a forked, wide hawthorn
     if(type==='spruce'&&k>=0.28&&k<0.42&&h>12) return 'fir';   // the forest's giants on the higher ground
     if(h<7&&k<0.6&&(type==='oakA'||type==='oakB'||type==='birch')&&treeLakeD(x,z)<26) return 'willow';
     if(type==='oakB'&&k<0.4||type==='oakA'&&k<0.18) return 'beech';
@@ -108,14 +135,17 @@ function treeVariety(type,x,z,h,land){
   } else if(land==='vale'){
     if(type==='pine'&&k<0.4) return 'cedar';
     if(type==='pine'&&k>=0.4&&k<0.62&&h<12) return 'kuromatsu';
+    if(type==='sakura'&&k>=0.93&&h<16) return 'camphor';   // the vale's giant
     if(type==='sakura'&&k<0.1||type==='maple'&&k<0.3) return 'ginkgo';
     if(h<7&&type==='sakura'&&k<0.35&&treeLakeD(x,z)<26) return 'willow';
   } else if(land==='hoar'){
     if(type==='dwarfbirch'&&k<0.25) return 'krummholz';
   } else if(land==='gloam'){
     if(type==='spruce'&&k<0.45) return 'gloomoak';
+    if(type==='snag'&&k<0.25) return 'yew';
   } else if(land==='sun'){
     if(type==='thorn'&&k<0.45) return 'acacia';
+    if(type==='cactus'&&k<0.22) return 'dragontree';
   }
   return type;
 }

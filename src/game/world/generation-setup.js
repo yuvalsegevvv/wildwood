@@ -21,6 +21,7 @@ const PAL={
   poplar:[0x9ec23c,0xb2d04a,0x88b035], beech:[0x7a8a2e,0x8e9a36,0xa07a2e,0x6a7c2c], willow:[0xa6c25a,0xb8d068,0x94b44e], umbrella:[0x2f5a33,0x3a6a38,0x284e2e],
   cedar:[0x1f4a3a,0x25563f,0x1c4235], ginkgo:[0xe8c23a,0xf0d04a,0xd8b030,0xc8d04a], larch:[0x9aae44,0xb8b84a,0xa8b850,0x86a23c],
   rowan:[0x4a7a32,0x55863a,0x3f6e2e,0xc2893a], fir:[0x1c3a2c,0x21442f,0x183428], kuromatsu:[0x24452e,0x2b5034,0x1f3d2a], krummholz:[0x2a4a30,0x30553a],
+  hawthorn:[0x4f8234,0x5a8e3a,0x46762f], camphor:[0x5c9a3a,0x6aa844,0x4f8a34], dragontree:[0x5a7a4a,0x66864f,0x4e6e44], yew:[0x1f3a2a,0x24422e,0x1a3226],
   acacia:[0x8a9a3a,0x9aa844,0x7a8a34], gloomoak:[0x5a3f78,0x6a4a8a,0x4a3468,0x3e3a5c],
   // Amber Reach: the flat-topped acacia (olive, a little sun-bleached) and the baobab's thin crown (plant-models-savanna.js)
   savacacia:[0x7f9a3c,0x92a846,0x6f8a34,0xa0a64a], baobab:[0x6f9a3a,0x84a844,0x5f8a34],
@@ -28,7 +29,7 @@ const PAL={
   ceiba:[0x4a9a3e,0x58a846,0x3e8a38], jtree:[0x2f7a34,0x3d8a3a,0x286a30,0x4a9a40,0x56a844], tpalm:[0x6fa83a,0x80b844,0x62983a,0x74b040], banana:[0x78b83a,0x8ac846,0x6aa832], treefern:[0x4a9a4a,0x5aaa52,0x3e8a40]
 };
 const ISLE_LEAF=[0x2f7a34,0x3d8a3a,0x286a30,0x4a9a40];   // emberwake: the jungle's broadleaf crowns, deeper and wetter than the home forest's
-const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7,frostspruce:0.32,dwarfbirch:0.2,palm:0.35,cactus:0.4,thorn:0.25,poplar:0.2,beech:0.55,willow:0.4,umbrella:0.3,cedar:0.3,ginkgo:0.3,larch:0.28,rowan:0.18,fir:0.5,kuromatsu:0.3,krummholz:0.25,acacia:0.25,gloomoak:0.45,savacacia:0.3,baobab:2.5,ceiba:1.7,jtree:0.45,jtree2:0.45,tpalm:0.3,tpalm2:0.3,banana:0.25,treefern:0.25};
+const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7,frostspruce:0.32,dwarfbirch:0.2,palm:0.35,cactus:0.4,thorn:0.25,poplar:0.2,beech:0.55,willow:0.4,umbrella:0.3,cedar:0.3,ginkgo:0.3,larch:0.28,rowan:0.18,fir:0.5,kuromatsu:0.3,krummholz:0.25,hawthorn:0.22,camphor:0.75,dragontree:0.35,yew:0.45,acacia:0.25,gloomoak:0.45,savacacia:0.3,baobab:2.5,ceiba:1.7,jtree:0.45,jtree2:0.45,tpalm:0.3,tpalm2:0.3,banana:0.25,treefern:0.25};
 const moss=new THREE.Color(0x56702f);
 
 function buildGeometries(){

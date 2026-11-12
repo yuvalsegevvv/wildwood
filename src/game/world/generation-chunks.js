@@ -126,7 +126,7 @@ function* genChunk(ci){
       addCol(x,z,RAD[type]*s);
       const m=mtx(x,h-0.15,z,rand()*TAU,s,s*R(0.92,1.1),s,R(-0.04,0.04),R(-0.04,0.04));
       type=treeVariety(type,x,z,h,'sun');   // (after the matrix: nothing above draws on the type)
-      items[type].push({x,z,m,c:tint(type==='thorn'?pick(PAL.thorn):type==='acacia'?pick(PAL.acacia):pick(PAL.palm))}); trees.push({x,z,s}); placed++; continue;
+      items[type].push({x,z,m,c:tint(type==='thorn'?pick(PAL.thorn):type==='acacia'?pick(PAL.acacia):type==='dragontree'?pick(PAL.dragontree):pick(PAL.palm))}); trees.push({x,z,s}); placed++; continue;
     }
     if(inGloam(x,z)){   // the Gloamhorn: a few gnarled snags and wind-bent dark spruce on the heath, none by the cliffs or at the keep-outs (bareGround is true all over the west)
       if(h<1.5||g>0.6||gloamIn(x,z)<14||gloamKeepOut(x,z,3)||vDist(x,z)<VR+8||storyClear(x,z)||dgEntClear(x,z)) continue;
@@ -136,7 +136,7 @@ function* genChunk(ci){
       addCol(x,z,RAD[type]*s);
       const m=mtx(x,h-0.15,z,rand()*TAU,s*R(0.92,1.08),s*R(0.9,1.15),s*R(0.92,1.08),R(-0.1,0.1),R(-0.1,0.1));
       type=treeVariety(type,x,z,h,'gloam');
-      items[type].push({x,z,m,c:tint(pick(type==='spruce'?PAL.spruce:type==='gloomoak'?PAL.gloomoak:PAL.pine))}); trees.push({x,z,s}); placed++; continue;
+      items[type].push({x,z,m,c:tint(pick(type==='spruce'?PAL.spruce:type==='gloomoak'?PAL.gloomoak:type==='yew'?PAL.yew:PAL.pine))}); trees.push({x,z,s}); placed++; continue;
     }
     if(h<0.8 || bareGround(x,z) || storyClear(x,z) || dgEntClear(x,z)) continue;   // dungeons: no trees at a door or signpost
     if(g>0.95) continue;
