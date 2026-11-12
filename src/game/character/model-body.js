@@ -1,4 +1,4 @@
-//@ The hiker's body: chest, neck, shoulders and hips as one surface; arms and legs whose joints continue each other; hands with fingers; shaped feet
+//@ The hiker's body: chest, neck, shoulders and hips as one surface; arms and legs whose joints continue each other; hands with fingers on a twisting forearm; shaped feet, bare ones with toes
 /* ---------- body (design units: metres at height 1; torso heights are "design y" and are scaled by TK, the torso-length factor) ----------
    Why it does not look like building blocks: (1) the neck, the trapezius, the deltoid over the arm's joint and the pelvis round the hip joints are part of the torso's own surface;
    (2) every joint is a ball (see `limb` in model-parts.js) and the limb on the other side of it starts with the SAME cross-section (ELBOW / KNEE below), so
@@ -238,10 +238,10 @@ function buildFingers(X,D,sd){
   const fp=gp?(x,y,z,c)=>gp.finger(c,x,y,z,sd):skinPaint, mitt=gp&&gp.fingers==='mitt';
   if(mitt) out.push(pc(csph(1,sg(10),sg(8)).scale(0.0145*hh,0.05*hh,0.0275*hh).translate(-sd*0.006*hh,-0.33,-0.001),fp,-0.28));
   // the fingers start at the knuckle line (the palm's far end, in a shallow arc: the middle knuckle lowest) and are as long as the palm, so the hand reads as a hand and not a ball with claws
-  else for(const [z0,k,ky] of f){ const L=0.07*hh*k, y0=-0.306+ky;
-    out.push(pc(sweepTube([[-sd*0.001*hh,y0,z0*hh],[-sd*0.004*hh,y0-L*0.4,z0*1.02*hh],[-sd*0.01*hh,y0-L*0.76,z0*1.03*hh],[-sd*0.017*hh,y0-L*0.99,z0*1.02*hh]],[0.0079*hh*fat,0.0073*hh*fat,0.0065*hh*fat,0.0054*hh*fat],sg(7),{cap:'round',rings:sg(10)}),fp,-0.28)); }
-  // the thumb leaves the palm's front edge near the wrist and lies ahead of the index finger
-  out.push(pc(sweepTube([[-sd*0.006*hh,-0.258,-0.015*hh],[-sd*0.012*hh,-0.279,-0.029*hh],[-sd*0.017*hh,-0.299,-0.036*hh],[-sd*0.021*hh,-0.317,-0.037*hh]],[0.0112*hh*fat,0.0096*hh*fat,0.008*hh*fat,0.0064*hh*fat],sg(7),{cap:'round',rings:sg(10)}),fp,-0.28));
+  else for(const [z0,k,ky] of f){ const L=0.072*hh*k, y0=-0.301+ky, cu=z0>0.01?1:z0>0?0.5:0;   // (cu: the relaxed hand curls a little more toward the little finger)
+    out.push(pc(sweepTube([[-sd*0.001*hh,y0,z0*hh],[-sd*0.005*hh,y0-L*0.4,z0*1.02*hh],[-sd*(0.011+0.002*cu)*hh,y0-L*0.75,z0*1.03*hh],[-sd*(0.018+0.004*cu)*hh,y0-L*0.97,z0*1.02*hh]],[0.0079*hh*fat,0.0073*hh*fat,0.0065*hh*fat,0.0054*hh*fat],sg(7),{cap:'round',rings:sg(10)}),fp,-0.28)); }
+  // the thumb leaves the palm's front edge near the wrist, out of the ball of the thumb (handShape), and lies ahead of the index finger
+  out.push(pc(sweepTube([[-sd*0.002*hh,-0.236,-0.002*hh],[-sd*0.006*hh,-0.258,-0.01*hh],[-sd*0.012*hh,-0.279,-0.026*hh],[-sd*0.017*hh,-0.299,-0.036*hh],[-sd*0.022*hh,-0.317,-0.036*hh]],[0.008*hh*fat,0.0108*hh*fat,0.0096*hh*fat,0.008*hh*fat,0.0064*hh*fat],sg(7),{cap:'round',rings:sg(10)}),fp,-0.28));
   return out;
 }
 // the deltoid's own bulge on the arm (it rotates with it): the outer half of the upper arm swells by ARM_DELT x the arm's size just below the joint and fades out a third
@@ -268,29 +268,76 @@ function buildArm(X,D,sd){
   // forearm and hand in one surface: thick below the elbow, slim at the wrist (t = 0.82), then the palm flattens out of it
   const wr=D.wrist/fore, ww=0.02*aw, pw=0.027*hh;
   const gp=X.glove, gcut=gp?[gp.start/fore]:[];   // gp: the gloves' plan (model-gloves.js): the forearm below gp.start is painted as glove
-  const wk=1/mk.a**(mk.p>0?1:0), fa=pc(limb([[0,ER,ER*1.04],[0.1,0.037*aw*(1-0.03*mk.p),0.038*aw*(1-0.03*mk.p)],[0.34,0.0305*aw*(1-0.08*mk.p),0.03*aw*(1-0.08*mk.p)],[wr-0.12,0.0235*aw*wk,0.0235*aw*wk],[wr,ww*0.9*wk,ww*1.06*wk],[wr+0.07,0.0128*hh,pw*0.9],[0.94,0.0124*hh,pw],[1,0.0104*hh,pw*0.95]],fore,sg(20),sg(26),{cuts:(!kit&&longSleeve?[0.2/fore,0.225/fore]:[]).concat((kit&&kit.cuts&&kit.cuts.foreArm)||[],gcut)}),gloveWrap(gp,sd,kit?(x,y,z,c)=>ofPaint(X,'top','foreArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve && y>-0.225){ topPaint(c,x+sd*0.3,y-upper); if(y<-0.2) c.multiplyScalar(0.8); } else skinPaint(c); }),-upper);
-  const hand=q>=0.5?[fa].concat(buildFingers(X,D,sd)):[fa];
-  const m2=new THREE.Mesh(hand.length>1?merge(hand):fa,matChar); m2.castShadow=true; el.add(m2);
+  const wk=1/mk.a**(mk.p>0?1:0), nr=sg(26), faG=limb([[0,ER,ER*1.04],[0.1,0.037*aw*(1-0.03*mk.p),0.038*aw*(1-0.03*mk.p)],[0.34,0.0305*aw*(1-0.08*mk.p),0.03*aw*(1-0.08*mk.p)],[wr-0.12,0.0235*aw*wk,0.0235*aw*wk],[wr,ww*0.9*wk,ww*1.06*wk],[wr+0.07,0.0128*hh,pw*0.9],[0.94,0.0124*hh,pw],[1,0.0104*hh,pw*0.95]],fore,sg(20),nr,{cuts:(!kit&&longSleeve?[0.2/fore,0.225/fore]:[]).concat((kit&&kit.cuts&&kit.cuts.foreArm)||[],gcut)});
+  if(q>=0.5) handShape(faG,sd,D,hh,pw);   // the palm's arch, its hollow and the ball of the thumb (the phones' plain paddle keeps its cost)
+  const fa=pc(faG,gloveWrap(gp,sd,kit?(x,y,z,c)=>ofPaint(X,'top','foreArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve && y>-0.225){ topPaint(c,x+sd*0.3,y-upper); if(y<-0.2) c.multiplyScalar(0.8); } else skinPaint(c); }),-upper);
+  // the forearm's twist (pronation, poseRig's twL / twR rotation.y): the forearm is cut on the ring nearest its round station (wr - 0.12), and the lower part with the wrist, the hand
+  // and whatever the hand holds turns about the forearm's own axis. A round section turned about its centre is itself, so the cut never opens and nothing is wrung (no candy wrapper)
+  const tc=Math.round((wr-0.12)*nr)/nr, [faU,faL]=armSplit(fa,-tc*fore);
+  const m2=new THREE.Mesh(faU,matChar); m2.castShadow=true; el.add(m2);
+  const tw=new THREE.Group(); tw.name=sd<0?'twL':'twR'; tw.userData.cut=-tc*fore; el.add(tw);
+  const hand=q>=0.5?[faL].concat(buildFingers(X,D,sd)):[faL];
+  const m3=new THREE.Mesh(hand.length>1?merge(hand):faL,matChar); m3.castShadow=true; tw.add(m3);
   if(X.kit){ const ex=ofRun(X,'forearm',sd); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; el.add(m); } }   // cuffs, bracers, in the elbow's frame (y down the forearm)
   { const ex=gmCuff(X,D,sd); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; el.add(m); } }   // base cuffs (model-garments.js)
-  if(gp){ const ex=gp.kit?ofRun(X,'glove',sd):glBaseGeos(X,D,sd,gp); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; el.add(m); } }   // cuffs, plates, wraps (model-gloves.js)
-  return [sh,el];
+  if(gp){ const ex=gp.kit?ofRun(X,'glove',sd):glBaseGeos(X,D,sd,gp); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; tw.add(m); } }   // cuffs, plates, wraps (model-gloves.js): they turn with the hand
+  return [sh,el,tw];
+}
+/* The hand on the forearm's loft (the elbow's frame: y down the forearm; the palm faces -sd x, the thumb's side is the front, -z): the back of the hand arches across its width and the
+   knuckles make a soft ridge; on the palm the ball of the thumb (thenar) swells low on the thumb's side, where the thumb leaves it, the heel of the hand swells on the little finger's
+   side, and between them the palm hollows a little. Only the hand's normals are recomputed (limb's own stay at the elbow) */
+function handShape(g,sd,D,hh,pw){
+  const p=g.attributes.position, n0=g.attributes.normal.array.slice(), y0=-D.wrist, y1=-D.fore, G=faceG, th=0.0128*hh;
+  for(let i=0;i<p.count;i++){ const y=p.getY(i); if(y>y0+0.004) continue;
+    const u=(y0-y)/(y0-y1), x=p.getX(i), z=p.getZ(i), zz=clamp(z/pw,-1.2,1.2), s=clamp(x/th,-1,1), back=Math.max(0,sd*s), palm=Math.max(0,-sd*s), on=faceSm(-0.15,0.25,u)*(1-faceSm(1.05,1.3,u));
+    let dx=sd*back*hh*(0.0024*(1-zz*zz)+0.0012*G(u,0.95,0.12)*(1-0.4*zz*zz))
+      -sd*palm*hh*(0.0075*G(zz,-0.75,0.45)*G(u,0.3,0.34)+0.0032*G(zz,0.72,0.32)*G(u,0.42,0.36)-0.0016*G(zz,0.05,0.4)*G(u,0.6,0.25));
+    const dz=-0.0022*hh*palm*G(zz,-0.85,0.35)*G(u,0.3,0.3);
+    p.setXYZ(i,x+dx*on,y<y1?y1+(y-y1)*0.4+0.0025*hh*Math.min(1,zz*zz)*clamp((y1-y)/0.004):y,z+dz*on); }   // (the loft's round end is pressed to 0.4 of its depth and arched across, the middle knuckle lowest: the fingers' roots cover it, not a mitten's dome round them)
+  smoothN(g); const n=g.attributes.normal;
+  for(let i=0;i<p.count;i++) if(p.getY(i)>y0+0.012) n.setXYZ(i,n0[i*3],n0[i*3+1],n0[i*3+2]);
+}
+// a painted (non-indexed) mesh cut in two at height yc of its frame: the triangles above it and those below it (by their centre)
+function armSplit(g,yc){
+  const P=g.attributes.position.array, N=g.attributes.normal.array, C=g.attributes.color.array, nt=P.length/9, up=[], lo=[];
+  for(let t=0;t<nt;t++) ((P[t*9+1]+P[t*9+4]+P[t*9+7])/3<yc?lo:up).push(t);
+  const mk=list=>{ const pos=new Float32Array(list.length*9), nor=new Float32Array(list.length*9), col=new Float32Array(list.length*9);
+    list.forEach((t,i)=>{ pos.set(P.subarray(t*9,t*9+9),i*9); nor.set(N.subarray(t*9,t*9+9),i*9); col.set(C.subarray(t*9,t*9+9),i*9); });
+    const o=new THREE.BufferGeometry(); o.setAttribute('position',new THREE.BufferAttribute(pos,3)); o.setAttribute('normal',new THREE.BufferAttribute(nor,3)); o.setAttribute('color',new THREE.BufferAttribute(col,3)); return o; };
+  return [mk(up),mk(lo)];
 }
 
 const FOOT_LEN=1.07, FOOT_BALL=0.12;   // the foot's length (x the stations) and the extra width across the ball of the foot and the toes
+/* A bare foot (no shoe, sandals or geta; no outfit's shoes) at q >= 0.5: the loft stops in a blunt end at the toe line, which slants back toward the little toe, the sole lifts into an
+   arch on the inner side, and five toes lie on the ground in front of it, the big toe fullest and set a little apart. FOOT_TOES: [across (x the foot's width, + toward the little toe),
+   root, tip (stations, like st below), radius]. A shoe keeps the old round toe box (the shoes and the outfits' boots are painted on it) */
+const FOOT_TOES=[[-0.0225,-0.118,-0.163,0.0125],[-0.002,-0.122,-0.158,0.0082],[0.0122,-0.12,-0.151,0.0076],[0.0245,-0.116,-0.143,0.0071],[0.0355,-0.108,-0.133,0.0066]];
 // the shoe: a loft from the heel to the toe, whose ankle opening is where the shin comes down into it
 function buildFoot(X,D,sd,boot){
-  const {L,S,sg,skinPaint}=X, kit=X.kit&&X.kit.sl.shoes, sf=S.feet, wf=0.55+0.45*sf, hf=0.8+0.2*sf, A=D.ankleH;
-  const st=[[0.056,0.004,0.004,0.02],[0.05,0.017,0.022,0.027],[0.04,0.025,0.033,0.035],[0.022,0.03,0.042,0.042],[0.0,0.031,0.05,0.05],[-0.03,0.033,0.04,0.042],[-0.075,0.038,0.027,0.029],[-0.112,0.036,0.021,0.022],[-0.138,0.031,0.016,0.017],[-0.151,0.022,0.011,0.012],[-0.157,0.008,0.005,0.007]];   // heel (a round ball), ankle, instep, the ball of the foot (widest), then a round toe box: the old one ran to a point like an elf's shoe
-  if(sg(100)<50) st.splice(9,1), st.splice(7,1), st.splice(2,1);   // phones: three stations fewer (the triangle budget)
+  const {L,S,sg,skinPaint}=X, kit=X.kit&&X.kit.sl.shoes, sf=S.feet, wf=0.55+0.45*sf, hf=0.8+0.2*sf, A=D.ankleH, toes=!kit&&X.q>=0.5&&(L.shoes==='none'||L.shoes==='sandals'||L.shoes==='geta');
+  const st=[[0.0595,0.0001,0.0001,0.027],[0.0588,0.0075,0.0098,0.0275],[0.0565,0.0128,0.0166,0.028],[0.051,0.019,0.025,0.031],[0.04,0.025,0.033,0.035],[0.022,0.03,0.042,0.042],[0.0,0.031,0.05,0.05],[-0.03,0.033,0.04,0.042],[-0.075,0.038,0.027,0.029]].concat(toes?
+    [[-0.1,0.0375,0.024,0.026],[-0.122,0.036,0.019,0.021],[-0.134,0.031,0.014,0.016],[-0.14,0.02,0.009,0.011],[-0.143,0.006,0.004,0.006]]:   // bare: the blunt end at the toe line
+    [[-0.112,0.036,0.021,0.022],[-0.138,0.031,0.016,0.017],[-0.151,0.022,0.011,0.012],[-0.157,0.008,0.005,0.007]]);   // heel (a round ball: its stations follow a sphere to a single point, so it never ends in a nub), ankle, instep, the ball of the foot (widest), then a round toe box: the old one ran to a point like an elf's shoe
+  if(sg(100)<50) st.splice(11,1), st.splice(9,1), st.splice(4,1), st.splice(2,1);   // phones: three stations fewer (the triangle budget)
   const rings=[]; for(const s of st){ rings.push({y:s[0]*sf*FOOT_LEN,rx:s[1]*wf*(1+FOOT_BALL*faceG(s[0],-0.075,0.05)),rz:s[2]*hf,zc:-(s[3]*hf-A)}); }   // (FOOT_LEN, FOOT_BALL: from the front the old foot read as a stub)
-  const dense=[]; for(let i=0;i<rings.length-1;i++){ const k=Math.max(1,Math.round(sg(3))); for(let j=0;j<k;j++){ const f=j/k, a=rings[i], b=rings[i+1]; dense.push({y:lerp(a.y,b.y,f),rx:lerp(a.rx,b.rx,f),rz:lerp(a.rz,b.rz,f),zc:lerp(a.zc,b.zc,f)}); } } dense.push(rings[rings.length-1]);
-  const g=loftRings(dense,sg(18)); g.rotateX(Math.PI/2); g.rotateY(-sd*0.1);
-  const p=g.attributes.position; for(let i=0;i<p.count;i++) if(p.getY(i)<-A) p.setY(i,-A);   // a flat sole
-  smoothN(g);
+  const n=rings.length, cr=(i,f,key)=>{ const p0=rings[Math.max(0,i-1)][key], p1=rings[i][key], p2=rings[i+1][key], p3=rings[Math.min(n-1,i+2)][key], v=0.5*(2*p1+(p2-p0)*f+(2*p0-5*p1+4*p2-p3)*f*f+(3*p1-p0-3*p2+p3)*f*f*f); return Math.min(Math.max(v,Math.min(p1,p2)),Math.max(p1,p2)); };   // a smooth curve through the stations (kept between each pair's values: no overshoot), not straight pieces whose kinks shaded as rings round the heel
+  const dense=[]; for(let i=0;i<n-1;i++){ const k=Math.max(1,Math.round(sg(3))); for(let j=0;j<k;j++){ const f=j/k; dense.push({y:cr(i,f,'y'),rx:cr(i,f,'rx'),rz:cr(i,f,'rz'),zc:cr(i,f,'zc')}); } } dense.push(rings[n-1]);
+  const g=loftRings(dense,sg(18)); g.rotateX(Math.PI/2);
+  const p=g.attributes.position, fl=sf*FOOT_LEN; for(let i=0;i<p.count;i++) if(p.getY(i)<-A) p.setY(i,-A);   // a flat sole
+  if(toes){ const G=faceG; for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), med=clamp(-sd*x/(0.03*wf)), lat=clamp(sd*x/(0.035*wf));
+      const arch=0.0095*hf*faceG(z,-0.035*fl,0.032*fl)*med*med*clamp(1-(y+A)/(0.016*hf));   // the arch: the inner sole lifts off the ground between the heel and the ball
+      const ank=0.0045*hf*G(y,0.001,0.012)*G(z,0.007*fl,0.014*fl)*Math.pow(lat,3)+0.004*hf*G(y,0.013,0.012)*G(z,0.0,0.014*fl)*Math.pow(med,3);   // the ankle bones: the outer one lower and further back, the inner one higher
+      p.setXYZ(i,x+sd*ank*(lat>0?1:-1),y+arch,z+0.016*fl*lat*faceSm(-0.085*fl,-0.125*fl,z)); }   // the toe line slants back toward the little toe
+    smoothN(g); }
+  g.rotateY(-sd*0.1); smoothN(g);
   const white=L.shoes!=='boots'&&L.shoes!=='tallboots'&&L.shoes!=='furboots'&&L.shoes!=='sabatons';
   if(kit) return pc(g,(x,y,z,c)=>ofPaint(X,'shoes','foot',c,x,y,z,sd),-D.thigh-D.shin);
-  if(L.shoes==='none'||L.shoes==='sandals'||L.shoes==='geta') return pc(g,skinPaint,-D.thigh-D.shin);   // barefoot (the editor's None tile)
+  if(L.shoes==='none'||L.shoes==='sandals'||L.shoes==='geta'){   // barefoot (the editor's None tile)
+    if(!toes) return pc(g,skinPaint,-D.thigh-D.shin);
+    const parts=[g];
+    for(const [tx,t0,t1,tr] of FOOT_TOES){ const r=tr*(0.75+0.25*wf), x=sd*tx*wf, z0=t0*fl, z1=t1*fl, lean=sd*0.004*wf*(tx>0?tx/0.031:0);   // (the small toes turn a little out)
+      parts.push(sweepTube([[x-lean*0.5,-A+r*0.8+0.004*hf,z0+0.018*fl],[x-lean*0.3,-A+r+0.006*hf,z0],[x,-A+r+0.003*hf,lerp(z0,z1,0.5)],[x+lean*0.6,-A+r*0.92,lerp(z0,z1,0.82)],[x+lean,-A+r*0.8,z1]],[r*0.7,r*0.95,r,r*0.97,r*0.85],sg(6),{cap:'round',rings:sg(5)}).rotateY(-sd*0.1)); }
+    return merge(parts.map(q=>pc(q,skinPaint,-D.thigh-D.shin))); }
   return pc(g,(x,y,z,c)=>{ c.set(L.shoeColor); if(y<-A+0.011) c.set(white?0xf2efe8:0x221a14); else if(white&&z<-0.1) c.multiplyScalar(1.12); },-D.thigh-D.shin);
 }
 function buildLeg(X,D,sd){

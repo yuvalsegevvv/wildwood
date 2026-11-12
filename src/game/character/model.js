@@ -76,7 +76,7 @@ function charDetail(kind){ const lite=typeof LITE!=='undefined'&&LITE, low=typeo
   return kind==='hero'?(lite?0.4:low?0.62:1.1):kind==='remote'?(lite?0.3:low?0.45:0.65):(lite?0.3:low?0.38:0.5); }
 
 const anchorAt=(parent,name,x,y,z)=>{ const a=new THREE.Object3D(); a.name='a:'+name; a.position.set(x,y,z); parent.add(a); return a; };
-/* buildCharacter(L, {q}): the rig {root, hips, spine, head, shL, elL, shR, elR, hipL, kneeL, hipR, kneeR, hipY} that poseRig animates, plus, for outfits:
+/* buildCharacter(L, {q}): the rig {root, hips, spine, head, shL, elL, shR, elR, twL, twR (the forearms' twist: the hands), hipL, kneeL, hipR, kneeR, hipY} that poseRig animates, plus, for outfits:
    rig.dims (the measurements: shoulder / hip joint offsets, limb lengths, head scale...), rig.sliders (the clamped slider values) and rig.anchors (named empty
    nodes on the bones: head top, face, neck, chest, back, waist, hips, shoulders, wrists, ankles). q is the detail factor (see charDetail). */
 function buildCharacter(L,opt){
@@ -105,16 +105,16 @@ function buildCharacter(L,opt){
   let hairMesh=null; if(hairDyn.length){ hairMesh=new THREE.Mesh(merge(hairDyn),matChar); hairMesh.castShadow=true; head.add(hairMesh); }
   head.scale.setScalar(D.hs);
   /* arms and legs */
-  const [shL,elL]=buildArm(X,D,-1), [shR,elR]=buildArm(X,D,1); spine.add(shL,shR);
+  const [shL,elL,twL]=buildArm(X,D,-1), [shR,elR,twR]=buildArm(X,D,1); spine.add(shL,shR);
   if(L.top==='plate'){ const pm=new THREE.Mesh(merge([-1,1].map(sd=>pc(csph(0.078*D.lr,sg(16),sg(10)).scale(1.25,0.66,1.1).translate(sd*(D.shX+0.008),D.shY+0.03*D.TK,0),(x,y,z,c)=>c.set(L.topColor).multiplyScalar(0.9+clamp(y-D.shY)*4)))),matChar); pm.castShadow=true; spine.add(pm); }
   const [hipL,kneeL]=buildLeg(X,D,-1), [hipR,kneeR]=buildLeg(X,D,1); hips.add(hipL,hipR);
-  const acl=aclBuild(X,D,{torso,hips,elL,elR,hipL,hipR,kneeL,kneeR}); shL.rotation.z=-(acl.lean+acl.rest[0].z); shR.rotation.z=acl.lean+acl.rest[1].z; shL.rotation.x=acl.rest[0].a; shR.rotation.x=acl.rest[1].a; elL.rotation.x=Math.max(elL.rotation.x,acl.rest[0].e); elR.rotation.x=Math.max(elR.rotation.x,acl.rest[1].e);   // arm clearance (arm-clear.js): measured on the bare build, before the extras; the standing pose a still portrait shows
+  const acl=aclBuild(X,D,{torso,hips,elL,elR,twL,twR,hipL,hipR,kneeL,kneeR}); shL.rotation.z=-(acl.lean+acl.rest[0].z); shR.rotation.z=acl.lean+acl.rest[1].z; shL.rotation.x=acl.rest[0].a; shR.rotation.x=acl.rest[1].a; elL.rotation.x=Math.max(elL.rotation.x,acl.rest[0].e); elR.rotation.x=Math.max(elR.rotation.x,acl.rest[1].e); elL.rotation.z=-aclCarry(acl,elL.rotation.x); elR.rotation.z=aclCarry(acl,elR.rotation.x);   // arm clearance (arm-clear.js): measured on the bare build, before the extras; the standing pose a still portrait shows
 
   const A={}, a=(name,parent,x,y,z)=>{ A[name]=anchorAt(parent,name,x,y,z); };
   a('headTop',head,0,0.11*face.fs[1],0); a('face',head,0,0,-0.1); a('neck',spine,0,0.6*D.TK,0); a('chest',spine,0,0.3*D.TK,-0.1*D.B); a('back',spine,0,0.3*D.TK,0.1*D.B); a('waist',hips,0,0.02,0);
   a('hipL',hips,-D.hx,0,0); a('hipR',hips,D.hx,0,0); a('shoulderL',spine,-D.shX,D.shY,0); a('shoulderR',spine,D.shX,D.shY,0);
   a('wristL',elL,0,-D.wrist,0); a('wristR',elR,0,-D.wrist,0); a('ankleL',kneeL,0,-D.shin,0); a('ankleR',kneeR,0,-D.shin,0);
-  const rig={root,hips,spine,head,hipY:D.hipY,shL,elL,shR,elR,hipL,kneeL,hipR,kneeR,dims:Object.assign({},D,{faceScale:face.fs}),sliders:S,anchors:A,acl,kit:X.kit,dress:X.kit?ofDress(X):null,anims:null};
+  const rig={root,hips,spine,head,hipY:D.hipY,shL,elL,shR,elR,twL,twR,hipL,kneeL,hipR,kneeR,dims:Object.assign({},D,{faceScale:face.fs}),sliders:S,anchors:A,acl,kit:X.kit,dress:X.kit?ofDress(X):null,anims:null};
   if(X.kit){ rig.anims=[];   // loose parts and motion that the merged meshes cannot carry (a ring that turns, a charm that swings): a kit builds them once per slot it owns, `has(slot)` is true for that slot only, and the meshes it added are tinted with that slot's colour
     for(const k of X.kit.kits) if(k.extras) for(const slot of ['top','bottom','shoes','hat','hair','glove']){ if(X.kit.sl[slot]!==k) continue;
       const f=X.kit.tr[slot], before=new Set(); if(f) rig.root.traverse(o=>before.add(o));
@@ -124,6 +124,7 @@ function buildCharacter(L,opt){
   if(X.kit&&!X.L.aura) for(const k of X.kit.kits) if(k.aura&&X.kit.sl.top===k) cosBuildAura(rig,X,k.aura);   // a set's own aura (kit.aura, same fields as COS_AURAS), unless the wearer chose one
   for(const m of sway) clSway(rig,m,gmdIs(L.top));
   cjSway(rig,torso,cjWeights(torso.geometry,X,D),S.chestJiggle,fem?Math.min(1,0.3+0.25*chestEff(S.chest)):(S.chest>1.4?0.3*Math.min(1,0.3+0.25*chestEff(S.chest)):0));   // the bust lags the stride, a stop and a turn (character/chest-jiggle.js)
+  srBuild(rig,torso,D);   // a raised arm draws the shoulder's ball in (character/shoulder-raise.js: rig.srTick, run by poseRig after the jiggle; both move the torso's vertices)
   if(hairMesh) hwSway(rig,hairMesh,hwReach(hairDyn),S.hairSwing);   // the hanging hair swings with the head and the walk (character/hair-sway.js)   // skirts, flares and hems follow the legs (character/cloth.js)
   kinDress(rig,X);   // kin: the fur markings, then the ears, muzzle and tail of look.kinEars / kinMuzzle / kinTail (character/model-kin.js)
   rig.left=!!L.left; rig.sillyS=sillyId(L,'strong'); rig.sillyW=sillyId(L,'weak');   // handedness (Settings > Left-handed: the weapon and shield swap hands, pose.js mirrors the arms) and the silly hand items that replace the weapon / the shield (model-silly.js)

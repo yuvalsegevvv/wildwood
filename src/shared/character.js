@@ -44,7 +44,8 @@ const BODY_SLIDERS=[
   {k:'eyeSize',  g:'Eyes',     label:'Eye size',      min:0.8,  max:1.4,  def:1, ends:['Small','Large']},
   {k:'eyeGap',   g:'Eyes',     label:'Eye spacing',   min:0.85, max:1.2,  def:1, ends:['Close','Apart']},
   {k:'eyeHeight',g:'Eyes',     label:'Eye height',    min:-1,   max:1,    def:0, ends:['Lower','Higher']},
-  {k:'eyeTilt',  g:'Eyes',     label:'Eye tilt',      min:-1,   max:1,    def:0, ends:['Droopy','Upturned']},
+  {k:'eyeOpen',  g:'Eyes',     label:'Eye openness',  min:0.7,  max:1.15, def:1, ends:['Narrow','Wide']},
+  {k:'eyeTilt',  g:'Eyes',    label:'Eye tilt',      min:-1,   max:1,    def:0, ends:['Droopy','Upturned']},
   {k:'brow',     g:'Eyes',     label:'Brows',         min:-1,   max:1,    def:0, ends:['Gentle','Stern']},
   // Features
   {k:'noseSize', g:'Features', label:'Nose',          min:0.6,  max:1.4,  def:1, ends:['Tiny','Larger']},
@@ -100,7 +101,7 @@ const SETUP_BASE=[
 const CHAR_MODELS={
   base:{id:'base', name:'Wayfarer', note:'The hiker every player starts as: anime proportions, about 6.3 heads tall.',
     ranges:{height:[0.92,1.08],build:[0.88,1.18],belly:[-1,1.2],muscle:[-1,1.2],chest:[0.6,1.9],shoulders:[0.88,1.18],waist:[0.82,1.15],hips:[0.85,1.2],torso:[0.94,1.08],legs:[0.92,1.14],thighs:[0.85,1.25],arms:[0.82,1.25],neck:[0.85,1.2],hands:[0.85,1.2],feet:[0.85,1.2],
-      head:[0.9,1.12],jaw:[0.85,1.15],chin:[0.8,1.25],cheeks:[0.8,1.25],eyeSize:[0.9,1.3],eyeGap:[0.92,1.12],eyeHeight:[-0.6,0.6],eyeTilt:[-0.7,0.7],brow:[-0.7,0.7],
+      head:[0.9,1.12],jaw:[0.85,1.15],chin:[0.8,1.25],cheeks:[0.8,1.25],eyeSize:[0.9,1.3],eyeOpen:[0.7,1.15],eyeGap:[0.92,1.12],eyeHeight:[-0.6,0.6],eyeTilt:[-0.7,0.7],brow:[-0.7,0.7],
       noseSize:[0.7,1.25],mouthSize:[0.8,1.25],lips:[0.7,1.4],smile:[-0.6,0.9],earSize:[0.8,1.3],earPoint:[0,1],hairLength:[0.7,1.35],hairVolume:[0.9,1.25],bangs:[0.3,1.4]},
     setups:SETUP_BASE}
 };

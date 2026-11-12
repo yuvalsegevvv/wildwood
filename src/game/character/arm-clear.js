@@ -8,10 +8,15 @@
      standing / walking / running (the gait couples the swing to the thigh on that side and the shoulders' twist: poseRig's gait at full walking and full running speed). Capped at ACL_MAX;
      past it the elbow bends a little more (TE). Seated, the meshes on the hips count only above the waist (their shell below it hangs where the sway moves it, not round the thighs).
    - rest[side]: the standing pose {z, a, e}: when the rest needs more than ACL_REST_MAX (very wide hips, a ballgown) the arm carries a little forward and bends instead of sticking out.
-   - aclSit(acl,mode,sd) (lazy, cached): a seated pose (shoulder swing, inward turn rotation.y, elbow) that lays the hand on top of the thigh, never in it.
+   - aclSit(acl,mode,sd) (lazy, cached): a seated pose (shoulder swing, inward turn rotation.y, elbow, the forearm's twist w) that lays the hand palm down on top of the thigh, never in it.
    aclLook(acl,sd,a,e,m,out) -> out=[extra abduction, extra elbow bend] (m: 0 standing .. 1 walking .. 2 running) is poseRig's per-frame lookup (bilinear, cheap: every villager calls it). Sides: index 0 = left (shL, sd -1), 1 = right.
    owns: acl*, ACL_*.   used by: model.js (aclBuild), pose.js (aclLook, aclSit).   test: tools/hands-clip-smoke.js */
 const ACL_PD=12, ACL_PS=0.025, ACL_BIN=0.015, ACL_NA=24, ACL_CLR=0.009, ACL_MAX=0.42, ACL_REST_MAX=0.2, ACL_BIAS=0.6;   // the forearm's sample directions and slab, the envelopes' slab height and directions, wanted clearance (m), the most extra abduction (rad), the most extra at rest before the arm bends instead
+/* The arm at rest is not a straight post: the elbow keeps ACL_REST_E of bend (pose.js's standing eL / eR) and the forearm angles out from the upper arm by the carrying angle (elbow
+   rotation.z, aclCarry: A.carry, more for a woman), which fades as the elbow bends (the forearm folds onto the upper arm). The forearm's lower part twists (twL / twR rotation.y, the
+   pronation: + turns the palm from the thigh to the back): the sample points below A.cut turn with it (aclArmPt's w). */
+const ACL_REST_E=0.2, ACL_SIT_TW=1.5, ACL_CARRY_M=0.075, ACL_CARRY_F=0.11, ACL_CARRY_FADE=1.3;
+const aclCarry=(A,e)=>A.carry*clamp(1-e/ACL_CARRY_FADE);
 const ACL_A=[-1.0,-0.8,-0.6,-0.4,-0.2,0,0.2,0.4,0.6,0.8,1.0,1.4,2.0], ACL_E=[0.1,0.35,0.6,0.9,1.2,1.5,1.8];   // the table's shoulder swings (rotation.x, + forward) and elbow bends (closest where poseRig's walk, run, talk and holds are; not evenly spaced: aclLook searches)
 // a cheap stand-in for atan2 (monotonic round the circle, 0..ACL_NA): the envelopes are asked thousands of times per character
 function aclAng(dx,dz){ const a=Math.abs(dx)+Math.abs(dz); if(a<1e-9) return 0; const q=dz>=0?(dx>=0?dz/a:2-dz/a):(dx<0?2-dz/a:4+dz/a); return q*(ACL_NA/4); }
@@ -48,8 +53,11 @@ function aclPoints(geos,sd){
   const out=[], seen=new Set(); for(const s of slabs.values()) for(const q of s) if(q[0]>-1e8){ const key=q[1]+','+q[2]+','+q[3]; if(seen.has(key)) continue; seen.add(key); out.push(q[1],q[2],q[3]); }
   return new Float32Array(out);
 }
-// where a point of the elbow's frame lands: shoulder (a swing, b inward turn, z abduction; Euler XYZ = Rx * Ry * Rz), elbow e. Out: spine frame
-function aclArmPt(o,px,py,pz,sx,sy,up,a,b,z,e){
+// where a point of the elbow's frame lands: shoulder (a swing, b inward turn, z abduction; Euler XYZ = Rx * Ry * Rz), elbow e with its carrying angle c (rotation.z, signed),
+// and below the forearm's cut yc its twist tw (rotation.y, signed). Out: spine frame
+function aclArmPt(o,px,py,pz,sx,sy,up,a,b,z,e,c,tw,yc){
+  if(tw&&py<yc){ const ct=Math.cos(tw), st=Math.sin(tw), qx=px*ct+pz*st; pz=-px*st+pz*ct; px=qx; }
+  if(c){ const cc=Math.cos(c), sc=Math.sin(c), qx=px*cc-py*sc; py=px*sc+py*cc; px=qx; }
   const ce=Math.cos(e), se=Math.sin(e); let x=px, y=py*ce-pz*se-up, w=py*se+pz*ce;   // the elbow's bend, then down the upper arm
   const cz=Math.cos(z), sz=Math.sin(z); let x1=x*cz-y*sz, y1=x*sz+y*cz;   // Rz
   const cb=Math.cos(b), sb=Math.sin(b); let x2=x1*cb+w*sb, z2=-x1*sb+w*cb;   // Ry
@@ -60,9 +68,9 @@ function aclToHips(o,s,lean,tw){ const ct=Math.cos(tw), st=Math.sin(tw), x=s[0]*
 function aclToLeg(o,h,hx,t){ const x=h[0]-hx, y=h[1], z=h[2], c=Math.cos(t), s=Math.sin(t); o[0]=x; o[1]=y*c+z*s; o[2]=-y*s+z*c; }
 // the deepest any sample point of side sd sits inside an obstacle, for an arm pose and a body pose {lean, tw, t (that side's thigh), k (its knee)}; also that point's lever (its distance from the shoulder, across)
 const _as=[0,0,0], _ah=[0,0,0], _al=[0,0,0];
-function aclDeep(A,sd,a,b,z,e,bp,withShin,hipsY,thighOnly){
-  const P=A.pts[sd<0?0:1], sx=sd*A.shX, sy=A.shY, th=A.thigh[sd<0?0:1], sh=A.shin[sd<0?0:1], hx=sd*A.hx; let best=-1, lev=0.3;
-  for(let i=0;i<P.length;i+=3){ aclArmPt(_as,P[i],P[i+1],P[i+2],sx,sy,A.up,a,b,z,e); let d=thighOnly?-1:aclDepth(A.torso,_as[0],_as[1],_as[2]);
+function aclDeep(A,sd,a,b,z,e,bp,withShin,hipsY,thighOnly,tw){
+  const P=A.pts[sd<0?0:1], sx=sd*A.shX, sy=A.shY, th=A.thigh[sd<0?0:1], sh=A.shin[sd<0?0:1], hx=sd*A.hx, c=sd*aclCarry(A,e), w=sd*(tw||0); let best=-1, lev=0.3;
+  for(let i=0;i<P.length;i+=3){ aclArmPt(_as,P[i],P[i+1],P[i+2],sx,sy,A.up,a,b,z,e,c,w,A.cut); let d=thighOnly?-1:aclDepth(A.torso,_as[0],_as[1],_as[2]);
     aclToHips(_ah,_as,bp.lean,bp.tw); if(!(hipsY>_ah[1])) for(const E of A.hips){ const v=aclDepth(E,_ah[0],_ah[1],_ah[2]); if(v>d) d=v; }
     aclToLeg(_al,_ah,hx,bp.t); const v=aclDepth(th,_al[0],_al[1],_al[2]); if(v>d) d=v;
     if(withShin){ const kx=_al[0], ky=_al[1]+A.thighL, kz=_al[2], c=Math.cos(bp.k), s=Math.sin(bp.k), w=aclDepth(sh,kx,ky*c+kz*s,-ky*s+kz*c); if(w>d) d=w; }
@@ -87,20 +95,20 @@ function aclWalk(sd,a){ const sw=clamp(a/0.495,-1,1); return {lean:-0.04,tw:sd*s
 function aclRun(sd,a){ const sw=clamp(a/0.783,-1,1); return {lean:-0.21,tw:sd*sw*0.068,t:-sw*0.887,k:-0.5}; }
 const ACL_STAND={lean:0,tw:0,t:0,k:0};
 function aclBuild(X,D,parts){
-  const {torso,hips,elL,elR,hipL,hipR,kneeL,kneeR}=parts;
-  const A={shX:D.shX,shY:D.shY,up:D.upper,hx:D.hx,thighL:D.thigh,lean:armLean(D),
+  const {torso,hips,elL,elR,twL,twR,hipL,hipR,kneeL,kneeR}=parts;
+  const A={shX:D.shX,shY:D.shY,up:D.upper,hx:D.hx,thighL:D.thigh,lean:armLean(D),carry:D.fem?ACL_CARRY_F:ACL_CARRY_M,cut:twR?twR.userData.cut:-9,
     torso:aclEnv([torso.geometry],-0.4,D.shY-0.07),   // below the armpit: above it the arm's own top sits in the shoulder
     hips:hips.children.filter(c=>c.isMesh&&c!==torso).map(m=>aclEnv([m.geometry],-1.2,0.5)).filter(Boolean),
     thigh:[aclEnv(aclGeos(hipL),-2,2),aclEnv(aclGeos(hipR),-2,2)], shin:[aclEnv(aclGeos(kneeL),-2,2),aclEnv(aclGeos(kneeR),-2,2)],
-    pts:[aclPoints(aclGeos(elL),-1),aclPoints(aclGeos(elR),1)], T:[], TE:[], rest:[], sit:{}};
+    pts:[aclPoints(aclGeos(elL).concat(twL?aclGeos(twL):[]),-1),aclPoints(aclGeos(elR).concat(twR?aclGeos(twR):[]),1)], T:[], TE:[], rest:[], sit:{}};
   const nA=ACL_A.length, nE=ACL_E.length, lean=A.lean;
   for(const sd of [-1,1]){ const T=new Float32Array(3*nA*nE), TE=new Float32Array(3*nA*nE);
     for(let m=0;m<3;m++) for(let i=0;i<nA;i++) for(let j=0;j<nE;j++){ const a=ACL_A[i], o=(m*nA+i)*nE+j;
       if(m===2&&ACL_E[j]<0.6){ T[o]=T[(nA+i)*nE+j]; TE[o]=TE[(nA+i)*nE+j]; continue; }   // (a runner's elbows are bent past 0.95: the walk's answer stands in below)
       const c=aclCell(A,sd,a,ACL_E[j],m===2?aclRun(sd,a):m?aclWalk(sd,a):ACL_STAND); T[o]=c[0]; TE[o]=c[1]; }
     A.T.push(T); A.TE.push(TE);
-    // the standing pose (pose.js's rest: swing 0, elbow 0.12): within ACL_REST_MAX, or carried forward and bent a little
-    let [z,ok]=aclSolve(A,sd,0,0.12,ACL_STAND,lean,lean+ACL_MAX), rest={z:z-lean,a:0,e:0.12};
+    // the standing pose (pose.js's rest: swing 0, elbow ACL_REST_E): within ACL_REST_MAX, or carried forward and bent a little
+    let [z,ok]=aclSolve(A,sd,0,ACL_REST_E,ACL_STAND,lean,lean+ACL_MAX), rest={z:z-lean,a:0,e:ACL_REST_E};
     if(!ok||rest.z>ACL_REST_MAX){ let best=null;
       for(const ea of [[0.06,0.3],[0.1,0.42],[0.14,0.55],[0.18,0.7],[0.22,0.85],[0.26,1.0],[0.3,1.15],[0.34,1.3]]){ const [z2,ok2]=aclSolve(A,sd,ea[0],ea[1],ACL_STAND,lean,lean+ACL_REST_MAX);
         if(ok2){ best={z:z2-lean,a:ea[0],e:ea[1]}; break; } }
@@ -126,14 +134,22 @@ function aclSit(A,mode,sd){
   // the target: the top of the thigh at 45% of its length, in the hips' frame (the thigh's local up when it swings forward by t is its front, -z)
   const ty=-0.45*A.thighL, top=th?Math.max(0.03,aclTop(th,ty)):0.08, c=Math.cos(bp.t), s=Math.sin(bp.t);
   const ly=ty, lz=-(top+0.022), tgt=[hx,ly*c-lz*s,ly*s+lz*c];   // (the leg frame back to the hips': Rx(t))
-  const cand=[], o=[0,0,0], h=[0,0,0];
-  for(let a=-0.7;a<=1.21;a+=0.1) for(let b=-0.8;b<=0.31;b+=0.1) for(let e=0.2;e<=2.01;e+=0.1){ aclArmPt(o,0,-0.285,0,sd*A.shX,A.shY,A.up,a,sd*b,z,e); aclToHips(h,o,bp.lean,0);
-    const d=Math.hypot(h[0]-tgt[0],h[1]-tgt[1],h[2]-tgt[2]); if(d<0.15) cand.push([d,a,b,e]); }
-  cand.sort((p,q)=>p[0]-q[0]);
-  // the nearest few hundred, fully checked: clear of everything by ACL_CLR, and lying on the thigh (its nearest point little more than that above it) beats being nearest the target
-  let pick={a:-0.3,b:0,e:0.9}, best=1e9;
-  for(let i=0;i<cand.length&&i<500;i++){ const [d,a,b,e]=cand[i]; if(d>best) break; const [dp]=aclDeep(A,sd,a,sd*b,z,e,bp,true,-0.03); if(dp+ACL_CLR>0) continue;
-    const [dt]=aclDeep(A,sd,a,sd*b,z,e,bp,false,9,true), sc=d+2*Math.max(0,-dt-ACL_CLR-0.004); if(sc<best){ best=sc; pick={a,b,e}; } }
+  const o=[0,0,0], h=[0,0,0], o2=[0,0,0], h2=[0,0,0];
+  // the palm's facing in the hips' frame for an arm pose and a twist: how far it points down (-1 = straight down)
+  const palmY=(a,b,e,w)=>{ const c=sd*aclCarry(A,e); aclArmPt(o,0,-0.285,0,sd*A.shX,A.shY,A.up,a,sd*b,z,e,c,sd*w,A.cut); aclArmPt(o2,-sd*0.01,-0.285,0,sd*A.shX,A.shY,A.up,a,sd*b,z,e,c,sd*w,A.cut); aclToHips(h,o,bp.lean,0); aclToHips(h2,o2,bp.lean,0); return (h2[1]-h[1])/0.01; };
+  // the twist that turns the palm down onto the thigh (pronation, at most ACL_SIT_TW): the least within 0.05 of the best
+  const palmDown=(a,b,e)=>{ let lo=9, ws=[]; for(let w=0;w<=ACL_SIT_TW+1e-6;w+=0.1){ const y=palmY(a,b,e,w); ws.push([w,y]); if(y<lo) lo=y; } for(const [w,y] of ws) if(y<=lo+0.05) return w; return 0; };
+  const search=w=>{ const cand=[];
+    for(let a=-0.7;a<=1.21;a+=0.1) for(let b=-0.8;b<=0.31;b+=0.1) for(let e=0.2;e<=2.01;e+=0.1){ aclArmPt(o,0,-0.285,0,sd*A.shX,A.shY,A.up,a,sd*b,z,e,sd*aclCarry(A,e)); aclToHips(h,o,bp.lean,0);
+      const d=Math.hypot(h[0]-tgt[0],h[1]-tgt[1],h[2]-tgt[2]); if(d<0.15) cand.push([d,a,b,e]); }
+    cand.sort((p,q)=>p[0]-q[0]);
+    // the nearest few hundred, fully checked: clear of everything by ACL_CLR, and lying on the thigh (its nearest point little more than that above it) beats being nearest the target
+    let pick={a:-0.3,b:0,e:0.9,w}, best=1e9;
+    for(let i=0;i<cand.length&&i<500;i++){ const [d,a,b,e]=cand[i]; if(d>best) break; const [dp]=aclDeep(A,sd,a,sd*b,z,e,bp,true,-0.03,false,w); if(dp+ACL_CLR>0) continue;
+      const [dt]=aclDeep(A,sd,a,sd*b,z,e,bp,false,9,true,w), sc=d+2*Math.max(0,-dt-ACL_CLR-0.004); if(sc<best){ best=sc; pick={a,b,e,w}; } }
+    return pick; };
+  // twice: the arm's pose with the hand on its edge, the twist that lays that palm flat, then the pose again with the turned hand (thinner from above: it comes down onto the thigh)
+  let pick=search(0); const w=palmDown(pick.a,pick.b,pick.e); if(w>0){ pick=search(w); pick.w=palmDown(pick.a,pick.b,pick.e); if(pick.w>w) pick.w=w; }
   return (A.sit[key]=pick);
 }
 // the envelope's largest radius toward the thigh's front (-z) at local height y: how far above the thigh's axis its top is when seated

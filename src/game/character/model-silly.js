@@ -87,7 +87,7 @@ function sillyDress(rig,X){
   for(const kind of ['strong','weak']){
     const id=sillyId(L,kind), D=sillyDef(kind,id); if(!D) continue;
     const col=fc(L[kind+'Color']), trim=fc(L[kind+'Trim']), parts=D.build(col===null?D.col:col,trim===null?D.trim:trim,X.sg);
-    const strongEl=left?rig.elL:rig.elR, weakEl=left?rig.elR:rig.elL;
+    const strongEl=(left?rig.twL:rig.twR)||(left?rig.elL:rig.elR), weakEl=left?rig.elR:rig.elL;   // (the strong item is in the hand's twist group: it turns with the hand; the weak one is strapped to the forearm)
     if(kind==='strong'){ const m=new THREE.Mesh(merge(parts),matChar); m.castShadow=true; m.position.set(0,-0.3,0); m.rotation.x=0.35; strongEl.add(m); }
     else { const sd=left?1:-1, g=merge(parts).rotateY(left?Math.PI/2:-Math.PI/2).translate(sd*0.036,-0.17,0), m=new THREE.Mesh(g,matChar); m.castShadow=true; weakEl.add(m);
       // a grip: the hand closes on a short bar between the forearm and the item, so the item is held, not floating beside the arm

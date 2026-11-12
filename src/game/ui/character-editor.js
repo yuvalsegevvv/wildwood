@@ -49,7 +49,7 @@ const EDIT=[
     ].concat(['hairLength','hairVolume','bangs','hairSwing'].map(k=>({slider:k}))).concat([
       {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]}])},
     {name:'Face', rows:[{k:'face',type:'grid',kind:'face',ids:()=>[['round'],['oval'],['angular']]}].concat(['head','jaw','chin','cheeks'].map(k=>({slider:k})))},
-    {name:'Eyes', rows:[{k:'eyes',num:1,hint:'Eyes',type:'color',opts:EYEC.concat(EYEC_MORE),base:'face'},{k:'eyes2',num:2,hint:'Second eye',type:'dcolor',opts:EYEC.concat(EYEC_MORE),none:'Same'},{k:'pupil',type:'grid',kind:'pupil',ids:()=>FACE_PUPILS.map(p=>p.slice())}].concat(['eyeSize','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
+    {name:'Eyes', rows:[{k:'eyes',num:1,hint:'Eyes',type:'color',opts:EYEC.concat(EYEC_MORE),base:'face'},{k:'eyes2',num:2,hint:'Second eye',type:'dcolor',opts:EYEC.concat(EYEC_MORE),none:'Same'},{k:'pupil',type:'grid',kind:'pupil',ids:()=>FACE_PUPILS.map(p=>p.slice())}].concat(['eyeSize','eyeOpen','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
     {name:'Nose & mouth', rows:['noseSize','mouthSize','mouthHeight','lips','blush','smile','earSize','earPoint'].map(k=>({slider:k})).concat([{k:'lipColor',num:1,hint:'Lips',type:'color',opts:[0xb04a52,0xd26a78,0x8a3040,0xc98a7a,0x5a2a4a,0x2a2a36,0xe8b0b8,0xa83a2a],base:'face'}])},
     {name:'Beard & marks', rows:[
       {k:'facial',type:'grid',kind:'facial',ids:()=>[['none'],['stubble'],['mustache'],['beard']],base:'face'},

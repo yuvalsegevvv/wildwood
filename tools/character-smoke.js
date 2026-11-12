@@ -86,6 +86,20 @@ const headsTall=r=>{ const d=r.dims, skullTop=d.hipY+d.headY+0.105*d.faceScale[1
   ok('a bald, hatless body is left-right symmetric',near(bb.min.x+bb.max.x,0,0.012),(bb.min.x+bb.max.x).toFixed(4));
 }
 
+/* ---- the extremities: the forearm twists (the hand turns, the cut stays closed), a bare foot has toes, a raised arm draws the shoulder in and gives it back ---- */
+{ const r=C.buildCharacter(bare(look('male')),{q:1}), D=r.dims, arr=m=>Array.from(m.geometry.attributes.position.array);
+  ok('each forearm has a twist group (the hand and what it holds) hung on the elbow',r.twL&&r.twR&&r.twL.parent===r.elL&&r.twR.parent===r.elR&&r.twR.children.some(m=>m.isMesh));
+  // the cut ring: the lowest vertices of the forearm's upper part and the highest of the lower part are the same ring, round: turned by any angle it still meets the other part
+  const up=r.elR.children[0].geometry.attributes.position, lo=r.twR.children[0].geometry.attributes.position; let yc=1e9; for(let i=0;i<up.count;i++) yc=Math.min(yc,up.getY(i));
+  const rad=(pa,y)=>{ let a=1e9,b=0; for(let i=0;i<pa.count;i++) if(Math.abs(pa.getY(i)-y)<1e-5){ const d=Math.hypot(pa.getX(i),pa.getZ(i)); a=Math.min(a,d); b=Math.max(b,d); } return [a,b]; };
+  const ru=rad(up,yc), rl=rad(lo,yc); ok('the forearm is cut on a round ring the hand\'s part shares (twisting never opens it)',ru[1]>0.01&&rl[1]>0.01&&ru[1]-ru[0]<0.0006&&Math.abs(ru[1]-rl[1])<1e-4,JSON.stringify([ru,rl].map(a=>a.map(v=>+v.toFixed(4)))));
+  const feet=L=>C.stats(C.buildCharacter(bare(look('male',L)),{q:1})).tris; ok('a bare foot has toes (more triangles than a shod one)',feet({shoes:'none'})>feet({shoes:'boots'})+600,feet({shoes:'none'})+' / '+feet({shoes:'boots'}));
+  const tor=r.spine.children[0], arm=r.shR.children[0], t0=arr(tor), a0=arr(arm), run=()=>{ for(const f of r.anims||[]) f(1,0.016,0); if(r.srTick) r.srTick(); };
+  r.shR.rotation.set(2.7,0,0.1); run(); const t1=arr(tor), a1=arr(arm), moved=t1.some((v,i)=>Math.abs(v-t0[i])>1e-4)&&a1.some((v,i)=>Math.abs(v-a0[i])>1e-4), fin=t1.every(Number.isFinite)&&a1.every(Number.isFinite);
+  r.shR.rotation.set(0,0,0.1); run(); const back=arr(tor).every((v,i)=>Math.abs(v-t0[i])<1e-6)&&arr(arm).every((v,i)=>Math.abs(v-a0[i])<1e-6);
+  ok('a raised arm draws its ball and the deltoid in toward the joint (finite), and lowered the shoulder is exactly as built',moved&&fin&&back,[moved,fin,back].join('/'));
+}
+
 /* ---- detail budget (more polygons for the hiker, the old cost for villagers and other players) ---- */
 { const t=q=>C.stats(C.buildCharacter(look('male'),{q})).tris, hi=t(1.1), mid=t(0.65), npc=t(0.5), low=t(0.38), lite=t(0.3);
   ok('the hiker at full detail has more than twice the triangles the old model had (about 15,500)',hi>31000,hi);

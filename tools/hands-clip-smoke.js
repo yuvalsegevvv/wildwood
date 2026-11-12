@@ -4,11 +4,11 @@
 // (Seated, a skirt's shell below the waist does not count: it is drawn where the sway pushes it, not round the thighs.)
 // Also: the rest abduction stays below a gorilla's, and sitting hands lie on the thighs (near, not floating). node tools/hands-clip-smoke.js [--v] (every look's worst pose)
 const fs=require('fs'), path=require('path');
-const C=require('./char-load')(code=>code.replace(';return {',';return {aclDepth,aclLook,aclSit,armLean,clamp,'));
+const C=require('./char-load')(code=>code.replace(';return {',';return {aclDepth,aclLook,aclSit,aclCarry,ACL_REST_E,armLean,clamp,'));
 const {strip}=require('./load');
 const poseSrc=strip(fs.readFileSync(path.join(__dirname,'../src/game/character/pose.js'),'utf8')).split('function animateHiker')[0];
-const clock={t:0}, poseRig=new Function('clamp','aclLook','aclSit','clock','return function(r,dt,o){ const t=clock.t; return ('+poseSrc.replace(/^\s*function poseRig/,'function')+')(r,dt,o); }');
-const pose=poseRig(C.clamp,C.aclLook,C.aclSit,clock);
+const clock={t:0}, poseRig=new Function('clamp','aclLook','aclSit','aclCarry','ACL_REST_E','clock','return function(r,dt,o){ const t=clock.t; return ('+poseSrc.replace(/^\s*function poseRig/,'function')+')(r,dt,o); }');
+const pose=poseRig(C.clamp,C.aclLook,C.aclSit,C.aclCarry,C.ACL_REST_E,clock);
 const LIMIT=0.005, GAP=0.03, verbose=process.argv.includes('--v');
 const B=C.CHAR_MODELS.base, looks=[];
 for(const sex of ['male','female']) for(const s of C.setupsOf(B,sex)) looks.push(['setup '+sex+' '+(s.name||s.id||''),C.applySetup(Object.assign({},sex==='female'?C.LOOK_F:C.LOOK_M),s)]);
@@ -24,7 +24,8 @@ function local(env,frame,wp,yMin){ inv.copy(frame.matrixWorld).invert(); v.copy(
 function deepest(rig,sd,sit){
   const el=sd<0?rig.elL:rig.elR, A=rig.acl, i=sd<0?0:1, obs=[[A.torso,rig.spine,'torso']].concat(A.hips.map(E=>[E,rig.hips,'hips mesh',sit?-0.03:undefined]),[[A.thigh[i],sd<0?rig.hipL:rig.hipR,'thigh'],[A.shin[i],sd<0?rig.kneeL:rig.kneeR,'shin']]);
   let best=[-1,'',0]; const w=new THREE.Vector3();
-  for(const m of el.children){ if(!m.isMesh) continue; const p=m.geometry.attributes.position;
+  const ms=[]; el.traverse(m=>{ if(m.isMesh) ms.push(m); });   // (the forearm's lower part and the hand are in the twist group, a child of the elbow)
+  for(const m of ms){ const p=m.geometry.attributes.position;
     for(let j=0;j<p.count;j+=2){ w.fromBufferAttribute(p,j).applyMatrix4(m.matrixWorld); if(p.getY(j)>-0.04) continue;
       for(const [E,f,n,ym] of obs){ const d=local(E,f,w,ym); if(d>best[0]) best=[d,n,p.getY(j)]; } } }
   return best;
@@ -44,7 +45,7 @@ for(const [name,L] of looks){
       if(d>lw[0]) lw=[d,pn+(sd<0?' L':' R')+' '+what];
       if(d>LIMIT){ console.log('FAIL',name,pn,sd<0?'left':'right','hand/forearm',(d*1000).toFixed(1),'mm inside the',what,'(at '+(-y).toFixed(2)+' m down the forearm)'); fails++; } }
     if(o.sit) for(const sd of [-1,1]){ const el=sd<0?rig.elL:rig.elR, th=sd<0?rig.hipL:rig.hipR, E=rig.acl.thigh[sd<0?0:1], w=new THREE.Vector3(); let near=-1;   // the hand lies ON the thigh: its closest vertex within GAP of it
-      for(const m of el.children){ if(!m.isMesh) continue; const p=m.geometry.attributes.position; for(let j=0;j<p.count;j+=2){ w.fromBufferAttribute(p,j).applyMatrix4(m.matrixWorld); const d=local(E,th,w); if(d>near) near=d; } }
+      const ms=[]; el.traverse(m=>{ if(m.isMesh) ms.push(m); }); for(const m of ms){ const p=m.geometry.attributes.position; for(let j=0;j<p.count;j+=2){ w.fromBufferAttribute(p,j).applyMatrix4(m.matrixWorld); const d=local(E,th,w); if(d>near) near=d; } }
       sitGap.push(-near); if(-near>GAP){ console.log('FAIL',name,pn,sd<0?'left':'right','hand floats',(-near*100).toFixed(1),'cm over the thigh'); fails++; } }
   }
   if(verbose) console.log(name.padEnd(28),'rest',rz.toFixed(3),'worst',(lw[0]*1000).toFixed(1),'mm',lw[1]);

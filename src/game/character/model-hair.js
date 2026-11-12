@@ -11,7 +11,13 @@ function buildHair(X,F){
     c.copy(hairCol).multiplyScalar(0.8+0.3*G(y,0.075,0.03)*(z<0.04?1:0.45)+(y<0?0.05*y*10:0)).multiplyScalar(0.9+0.16*streak);
     if(y<-0.03) c.multiplyScalar(0.9+0.4*y);
     c.lerp(_tint.set(0xffffff),0.17*sheen*(0.6+0.4*streak)); };
-  const add=(g,fn)=>{ const q=pc(g,fn||hp); if(g.hairHang) q.hairHang=g.hairHang; parts.push(q); };   // (hairHang: a hanging lock that swings, see hair-sway.js; pc makes a new geometry, so the mark is carried over)
+  // version 3.4: every lock gets its own tone and a root-to-tip band (dark root, bright mid, warm light tip) and a dark seam along its edges, so overlapping locks read as separate clumps, not one shell
+  let lockN=0;
+  const lockHp=g=>{ const p=g.attributes.position; let t0=1e9, t1=-1e9; for(let i=0;i<p.count;i++){ const y=p.getY(i); if(y<t0) t0=y; if(y>t1) t1=y; } const E=Math.max(0.02,t1-t0), tone=0.8+0.4*h3(lockN++*7,13,5), tc=new THREE.Color();
+    return (x,y,z,c)=>{ hp(x,y,z,c); const u=clamp((t1-y)/E,0,1), band=0.82+0.3*Math.sin(Math.min(1,u*1.15)*Math.PI*0.8)+0.1*u*u;   // u: 0 at the root, 1 at the tip
+      const cl=0.5+0.5*Math.sin(Math.atan2(x,z)*13+Math.sin(y*30)*0.6), gr=0.84+0.26*cl*cl;   // clumps: broad strand bands running with the flow
+      c.multiplyScalar(tone*band*gr); c.lerp(tc.set(0xffe2b0),0.1*u*u*u); }; };
+  const add=(g,fn)=>{ const q=pc(g,fn||lockHp(g)); if(g.hairHang) q.hairHang=g.hairHang; parts.push(q); };   // (hairHang: a hanging lock that swings, see hair-sway.js; pc makes a new geometry, so the mark is carried over)
   const sp=(th,ph,r)=>[r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph),-r*Math.sin(ph)*Math.cos(th)];   // a point on a sphere: azimuth th (0 = front, + toward +x), polar angle ph
   // lay hair flat on the scalp: shrink every vertex's distance from the head's centre toward R (a ribbon, not a rope)
   const flat=(g,k)=>{ const p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), l=Math.hypot(x,y,z)||1, nl=l>R*0.7?R+(l-R)*k:l; p.setXYZ(i,x*nl/l,y*nl/l,z*nl/l); } return smoothN(g); };

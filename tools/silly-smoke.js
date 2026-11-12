@@ -20,8 +20,8 @@ for(const k of ['strong','weak']){
   const r2=C.buildCharacter(look({}),{q:0.5}); ok('without one the weapon is drawn in the right hand',C.weaponsOn(r2,'warrior',1).objs.length===1&&r2.elR.children.length>r2.elL.children.length-1); }
 { const mk=(left,shield)=>{ const r=C.buildCharacter(look({left,shield}),{q:0.5}), w=C.weaponsOn(r,'warrior',1); return {r,w}; };
   const a=mk(false,'heater'), b=mk(true,'heater'), a0=mk(false,''), b0=mk(true,'');
-  ok('right-handed: the sword is in the right hand, the shield on the left forearm',a.w.objs[0].parent===a.r.elR&&a.r.elL.children.length===a0.r.elL.children.length+1&&a.r.elR.children.length===a0.r.elR.children.length);
-  ok('left-handed: the sword and the shield swap hands',b.w.objs[0].parent===b.r.elL&&b.r.elR.children.length===b0.r.elR.children.length+1&&b.r.elL.children.length===b0.r.elL.children.length&&b.r.left===true);
+  ok('right-handed: the sword is in the right hand, the shield on the left forearm',a.w.objs[0].parent===(a.r.twR||a.r.elR)&&a.r.elL.children.length===a0.r.elL.children.length+1&&a.r.elR.children.length===a0.r.elR.children.length);
+  ok('left-handed: the sword and the shield swap hands',b.w.objs[0].parent===(b.r.twL||b.r.elL)&&b.r.elR.children.length===b0.r.elR.children.length+1&&b.r.elL.children.length===b0.r.elL.children.length&&b.r.left===true);
   const lookB=C.buildCharacter(look({left:true,weakItem:'duck'}),{q:0.5}), lookB0=C.buildCharacter(look({left:true}),{q:0.5}); ok('a weak item goes on the weak (right) forearm when left-handed',lookB.elR.children.length===lookB0.elR.children.length+2&&lookB.elL.children.length===lookB0.elL.children.length);   // (the item and its grip)
   const sh=m=>{ let mx=0; m.children.forEach(c=>{ if(c.geometry){ c.geometry.computeBoundingBox(); mx=c.geometry.boundingBox.max.x+c.geometry.boundingBox.min.x; } }); return mx; };
   ok('the shield sits on the outside of whichever arm',Math.sign(sh(a.r.elL))!==Math.sign(sh(b.r.elR))&&sh(a.r.elL)!==0, sh(a.r.elL).toFixed(3)+' vs '+sh(b.r.elR).toFixed(3)); }
