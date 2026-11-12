@@ -60,9 +60,9 @@ function buildMoreTrees(){
   T.beech=withRng(8302,()=>makeBroadleaf({trunkH:3.8, tr:0.46, crownY:6.4, rMain:2.9, blobs:6, spread:2.1, sy:0.9, branches:4, bark:0x8a8478}));
   T.willow=makeWillow();
   T.umbrella=withRng(8304,()=>treeLean(makeBroadleaf({trunkH:6.6, tr:0.28, crownY:7.4, rMain:2.7, blobs:5, spread:2.4, sy:0.3, branches:4, bark:0x6a4a34}),0.012));
-  T.cedar=withRng(8305,()=>makeConifer({trunkH:3.2, layers:11, r0:1.45, lh:2.1, spacing:1.0, start:1.5}));
+  T.cedar=withRng(8305,()=>makeConifer(CONI.cedar));
   T.ginkgo=withRng(8306,()=>makeBroadleaf({trunkH:3.4, tr:0.28, crownY:6.2, rMain:1.8, blobs:5, spread:1.0, sy:1.35, branches:2, bark:0x6a5a48}));
-  T.larch=withRng(8307,()=>makeConifer({trunkH:4, layers:9, r0:1.35, lh:1.5, spacing:1.05, start:1.6}));
+  T.larch=withRng(8307,()=>makeConifer(CONI.larch));
   T.acacia=withRng(8308,()=>treeLean(makeBroadleaf({trunkH:3.8, tr:0.2, crownY:5.2, rMain:2.8, blobs:6, spread:2.7, sy:0.2, branches:3, bark:0x6a5a40}),0.03));
   T.gloomoak=withRng(8309,()=>treeLean(makeBroadleaf({trunkH:3.4, tr:0.4, crownY:5.0, rMain:2.2, blobs:5, spread:2.4, sy:0.5, branches:5, bark:0x2c2630}),0.05));
   if(!G.treesHi) return;
@@ -71,9 +71,9 @@ function buildMoreTrees(){
   H.beech=makeBroadleafHi({trunkH:3.8, tr:0.46, crownY:6.4, rMain:2.9, blobs:6, spread:2.1, sy:0.9, branches:4, bark:0x8a8478},13);
   H.willow=makeWillowHi();
   H.umbrella=treeLean(makeBroadleafHi({trunkH:6.6, tr:0.28, crownY:7.4, rMain:2.7, blobs:5, spread:2.4, sy:0.3, branches:4, bark:0x6a4a34},15),0.012);
-  H.cedar=makeConiferHi({trunkH:3.2, layers:11, r0:1.45, lh:2.1, spacing:1.0, start:1.5},16);
+  H.cedar=makeConiferHi(CONI.cedar,16);
   H.ginkgo=makeBroadleafHi({trunkH:3.4, tr:0.28, crownY:6.2, rMain:1.8, blobs:5, spread:1.0, sy:1.35, branches:2, bark:0x6a5a48},17);
-  H.larch=makeConiferHi({trunkH:4, layers:9, r0:1.35, lh:1.5, spacing:1.05, start:1.6},18);
+  H.larch=makeConiferHi(CONI.larch,18);
   H.acacia=treeLean(makeBroadleafHi({trunkH:3.8, tr:0.2, crownY:5.2, rMain:2.8, blobs:6, spread:2.7, sy:0.2, branches:3, bark:0x6a5a40},19),0.03);
   H.gloomoak=treeLean(makeBroadleafHi({trunkH:3.4, tr:0.4, crownY:5.0, rMain:2.2, blobs:5, spread:2.4, sy:0.5, branches:5, bark:0x2c2630},20),0.05);
 }

@@ -111,16 +111,41 @@ function deadTwigs(parts,n,pts,y0,y1,r0,len,el0,el1,rg,rr){
    reaches out past the others. Colour: dark and cool at the trunk, light and warm (new growth) at the tips. The tiers are packed 1.8x closer than the
    low-poly cones and follow the same radius curve, so both levels of detail have the same outline. The trunk has a flared, rooted foot and dead twigs
    below the first tier. */
+/* The pine: a bare, slightly bent, orange-barked trunk, limbs that sweep out and up, and flat needle pads (a squashed dome wearing short needle tufts) in an open, lopsided crown.
+   The pads' places come from conPinePads (plant-models.js), shared with the low-poly makePineLo. */
+function makePineHi(o,seed){
+  const {r:rg,R:rr}=mrng(seed), H=o.H||9.6, pads=conPinePads(o,seed), A=meshAcc(), F=flatAcc(), parts=[], bendK=o.bend||0.3;
+  const pts=[]; for(let s=0;s<=8;s++){ const t=s/8, y=-0.25+t*(H*0.98+0.25); pts.push([bendK*Math.pow(Math.max(y,0)/H,2)+Math.sin(t*2.6+seed)*0.05*t,y,Math.cos(t*2.1+seed)*0.05*t]); }
+  const fr=furrow(seed,0.08), ph=rg()*TAU, bark=barkHi(0x6a4a32,seed), orange=new THREE.Color(0xa8623c);
+  const col=(x,y,z,c)=>{ bark(x,y,z,c); c.lerp(orange,clamp((y-0.4*H)/(0.2*H))*0.6); };
+  parts.push(tube(pts,(t,a)=>{ const y=-0.25+t*(H*0.98+0.25); return lerp(0.26,0.06,clamp(y/H))*rootFlare(y,a,0.85,4,ph)*fr(t,a,H); },8,col));
+  rootsHi(parts,3,0.26,4,ph,rg,rr,col,[0,0,0]);
+  for(const p of pads){   // a limb from the trunk up to its pad, then the pad
+    const by=Math.max(p.y-1.3,0.4*H), bx=bendK*Math.pow(by/H,2), L=[[bx,by,0],[(bx+p.x)*0.5,by+(p.y-by)*0.35,p.z*0.5],[p.x,p.y-0.1,p.z]];
+    parts.push(tube(L,(t)=>lerp(0.085,0.03,t),5,col,true));
+    const sy=0.95, rim=8, ring=(rad,dy,v)=>{ const row=[]; for(let k=0;k<rim;k++){ const a=k/rim*TAU+p.x; row.push(A.v(p.x+Math.cos(a)*rad,p.y+dy,p.z+Math.sin(a)*rad,v*0.9,v,v*1.06)); } return row; };
+    const R0=ring(p.r,0,0.72), R1=ring(p.r*0.72,p.r*sy*0.6,0.8), top=A.v(p.x,p.y+p.r*sy,p.z,0.6,0.6,0.62), bot=A.v(p.x,p.y-p.r*0.3,p.z,0.5,0.5,0.5);
+    for(let k=0;k<rim;k++){ const k1=(k+1)%rim; A.quad(R0[k],R0[k1],R1[k1],R1[k],0,1,0); A.tri(R1[k],R1[k1],top,0,1,0); A.tri(R0[k],R0[k1],bot,0,-1,0); }
+    for(let q=0;q<64;q++){   // needle tufts standing up and out from the pad's surface (a V of two triangles)
+      const a=rg()*TAU, d=Math.sqrt(rg())*p.r*0.95, bx0=p.x+Math.cos(a)*d, bz0=p.z+Math.sin(a)*d, by0=p.y+p.r*sy*(1-d/p.r)*0.8-0.02, L2=rr(0.42,0.68), ox=Math.cos(a)*1.1, oz=Math.sin(a)*1.1, w=0.075;
+      const tip=[bx0+ox*L2*0.8,by0+L2*0.55,bz0+oz*L2*0.8], b1=[bx0-oz*w,by0,bz0+ox*w], b2=[bx0+oz*w,by0,bz0-ox*w], v=rr(0.9,1.2), cr=[0.7,0.74,0.7], ct=[v*1.1,v*1.14,v*0.95], nn=nrm3(ox,1,oz);
+      F.tri(b1,b2,tip,nn,nn,nn,cr,cr,ct);
+      const tip2=[bx0-ox*L2*0.5-oz*0.1,by0+L2*0.5,bz0-oz*L2*0.5+ox*0.1]; F.tri(b2,b1,tip2,nn,nn,nn,cr,cr,ct);
+    }
+  }
+  return {trunk:merge(parts), leaves:merge([A.done(),F.done()])};
+}
 function makeConiferHi(o,seed){
-  const {r:rg,R:rr}=mrng(seed), seg=12, nb=16, n=Math.round(o.layers*1.8), A=meshAcc(), F=flatAcc();
+  if(o.habit==='pine') return makePineHi(o,seed);
+  const {r:rg,R:rr}=mrng(seed), seg=12, nb=16, n=Math.round(o.layers*1.8), A=meshAcc(), F=flatAcc(), az0=rg()*TAU;   // az0: the side of the tree whose boughs are shorter (a lopsided crown)
   const step=n>1?(o.layers-1)*o.spacing/(n-1):0;
   let top=0;
   for(let i=0;i<n;i++){
-    const t=i/n, r=(o.r0*(1-t*0.85)+0.15)*(i<n-1?rr(0.86,1.12):0.85), lh=o.lh*(1-t*0.25)*1.08, y0=o.start+i*step+(i&&i<n-1?rr(-0.3,0.3)*step:0)+lh*0.5;
+    const t=i/n, r=(o.r0*(o.taper?Math.pow(1-t*0.9,o.taper):1-t*0.85)+0.15)*(i<n-1?rr(0.72,1.2):0.85), lh=o.lh*(1-t*0.25)*1.08, y0=o.start+i*step+(i&&i<n-1?rr(-0.45,0.45)*step:0)+lh*0.5;
     const rot=rg()*TAU, lit=0.55+0.55*(i+0.5)/n, droop=lerp(1.3,0.8,t)*rr(0.85,1.15);
     // the shoulder
     const ring=(rad,dy,ao)=>{ const row=[]; for(let k=0;k<seg;k++){ const a=rot+k/seg*TAU, v=lit*ao*(0.9+rg()*0.2); row.push(A.v(Math.cos(a)*rad,y0+dy,Math.sin(a)*rad,v*0.9,v,v*1.06)); } return row; };
-    const R1=ring(0.34*r,lh*0.2,0.55), R2=ring(0.66*r,-lh*0.14,0.7), cv=lit*0.28, apex=A.v(0,y0+lh*0.5,0,lit*0.7,lit*0.7,lit*0.7), ctr=A.v(0,y0-lh*0.3,0,cv,cv,cv);
+    const R1=ring(0.34*r,lh*0.2,0.55), R2=ring((o.core||0.5)*r,-lh*0.14,0.7), cv=lit*0.28, apex=A.v(0,y0+lh*0.5,0,lit*0.7,lit*0.7,lit*0.7), ctr=A.v(0,y0-lh*0.3,0,cv,cv,cv);
     top=y0+lh*0.5;
     for(let k=0;k<seg;k++){
       const k1=(k+1)%seg, am=rot+(k+0.5)/seg*TAU, ux=Math.cos(am), uz=Math.sin(am);
@@ -128,13 +153,13 @@ function makeConiferHi(o,seed){
     }
     // the boughs: two layers of curved fronds (root, two pairs of shoulders, tip), each leaning out and bending down
     for(let L=0;L<2;L++) for(let k=0;k<nb;k++){
-      if(i<n-2&&rg()<0.1) continue;   // a gap in the tier
+      if(i<n-2&&rg()<(o.thin?0.4:0.22)) continue;   // a gap in the tier
       const a=rot+(k+(L?0.5:0)+rr(-0.3,0.3))/nb*TAU, ca=Math.cos(a), sa=Math.sin(a), px=-sa, pz=ca;
-      const long=((k&1)?0.78:1)*(rg()<0.12?1.28:1), len=r*rr(0.86,1.12)*long*(L?0.86:1), r0=0.34*r, y1=y0-lh*(L?0.02:-0.06)-lh*0.1*L;
-      const drop=lh*rr(0.38,0.6)*droop*(L?1.1:1), hw=0.3*(len-r0)*0.6+0.06*r, ridge=0.06*r, f=0.45, mx=ca*(r0+(len-r0)*f), mz=sa*(r0+(len-r0)*f), my=y1-drop*0.22;
-      const B=[ca*r0,y1,sa*r0], ML=[mx-px*hw,my-ridge*0.8,mz-pz*hw], MR=[mx+px*hw,my-ridge*0.8,mz+pz*hw], MC=[mx,my+ridge,mz], T=[ca*(len+0.04*r),y1-drop,sa*(len+0.04*r)];
-      const v=lit*(L?0.6:1)*rr(0.85,1.15), sk=rg()<0.5?1:-1, nl=nrm3(ca*0.3-px*0.5*sk,1,sa*0.3-pz*0.5*sk), nr=nrm3(ca*0.3+px*0.5*sk,1,sa*0.3+pz*0.5*sk), no=nrm3(ca*0.6,0.75,sa*0.6);
-      const cb=[v*0.5*0.9,v*0.5,v*0.5*1.1], cm=[v*0.95,v*0.97,v*0.97], ct=[v*(L?1.05:1.34)*1.05,v*(L?1.05:1.34)*1.06,v*(L?1.05:1.34)*0.8];
+      const long=rr(0.7,1.05)*(rg()<0.12?1.28:1)*(Math.cos(a-az0)<-0.3?0.8:1), len=r*rr(0.86,1.12)*long*(L?0.86:1), r0=0.34*r, y1=y0-lh*(L?0.02:-0.06)-lh*0.1*L;
+      const drop=lh*rr(0.38,0.6)*droop*(L?1.1:1), hw=(o.frondW||0.3)*(len-r0)*0.6+0.06*r, ridge=0.06*r, f=0.45, mx=ca*(r0+(len-r0)*f), mz=sa*(r0+(len-r0)*f), my=y1-drop*(0.22+0.3*(o.sag||0));
+      const B=[ca*r0,y1,sa*r0], ML=[mx-px*hw,my-ridge*0.8,mz-pz*hw], MR=[mx+px*hw,my-ridge*0.8,mz+pz*hw], MC=[mx,my+ridge,mz], T=[ca*(len+0.04*r),y1-drop+(o.lift||0)*lh,sa*(len+0.04*r)];
+      const v=lit*(L?0.6:1)*rr(0.85,1.15)*(0.7+0.3*clamp(len/(o.r0*0.9))), sk=rg()<0.5?1:-1, nl=nrm3(ca*0.3-px*0.5*sk,1,sa*0.3-pz*0.5*sk), nr=nrm3(ca*0.3+px*0.5*sk,1,sa*0.3+pz*0.5*sk), no=nrm3(ca*0.6,0.75,sa*0.6);
+      const cb=[v*0.66*0.9,v*0.66,v*0.66*1.1], tk=L?0.95:1.12, sn=o.snow&&!L?1.5:1, cm=[v*0.95*(sn>1?1.25:1),v*0.97*(sn>1?1.25:1),v*0.97*(sn>1?1.25:1)], ct=[v*tk*1.05*sn,v*tk*1.06*sn,v*tk*(sn>1?1.0:0.8)*sn];   // (snow: the upper boughs' ridge and tips go near white once the palette tints them)
       F.tri(B,ML,MC,nl,nl,nl,cb,cm,cm); F.tri(B,MC,MR,nr,nr,nr,cb,cm,cm); F.tri(ML,T,MC,no,no,nl,cm,ct,cm); F.tri(MC,T,MR,nr,no,no,cm,ct,cm);
     }
   }

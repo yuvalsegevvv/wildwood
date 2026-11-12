@@ -17,7 +17,7 @@ ${read('game/world','plant-models-hi.js')}
 ${read('game/world','plant-models-more.js')}
 ${palSrc}
 const G={trees:{},treesHi:{}};
-G.trees.pine=makeConifer({trunkH:4, layers:5, r0:2.3, lh:2.8, spacing:1.45, start:1.6}); G.treesHi.pine=makeConiferHi({trunkH:4, layers:5, r0:2.3, lh:2.8, spacing:1.45, start:1.6},1);
+G.trees.pine=makeConifer(CONI.pine); G.treesHi.pine=makeConiferHi(CONI.pine,1);
 G.trees.oakA=makeBroadleaf({trunkH:4.2, tr:0.42, crownY:6.2, rMain:2.4, blobs:5, spread:1.9, sy:0.85, branches:3, bark:0x4f3c2a}); G.treesHi.oakA=makeBroadleafHi({trunkH:4.2, tr:0.42, crownY:6.2, rMain:2.4, blobs:5, spread:1.9, sy:0.85, branches:3, bark:0x4f3c2a},3);
 G.trees.birch=makeBroadleaf({trunkH:7.5, tr:0.16, crownY:7.6, rMain:1.2, blobs:4, spread:0.85, sy:1.6, branches:0, birch:true}); G.treesHi.birch=makeBroadleafHi({trunkH:7.5, tr:0.16, crownY:7.6, rMain:1.2, blobs:4, spread:0.85, sy:1.6, branches:0, birch:true},5);
 buildMoreTrees();

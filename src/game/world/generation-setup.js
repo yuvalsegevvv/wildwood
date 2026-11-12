@@ -19,7 +19,7 @@ const PAL={
   palm:[0x6f9a3a,0x84a844,0x5f8a34], thorn:[0x8a8a3a,0x9a9648,0x7a7a34],
   // more species (plant-models-more.js): poplar, copper beech, willow, stone pine, cedar, ginkgo, larch, acacia, the gloom oak
   poplar:[0x9ec23c,0xb2d04a,0x88b035], beech:[0x7a8a2e,0x8e9a36,0xa07a2e,0x6a7c2c], willow:[0xa6c25a,0xb8d068,0x94b44e], umbrella:[0x2f5a33,0x3a6a38,0x284e2e],
-  cedar:[0x1f4a3a,0x25563f,0x1c4235], ginkgo:[0xe8c23a,0xf0d04a,0xd8b030,0xc8d04a], larch:[0x9aae44,0xb8b84a,0xc9a83a,0x86a23c],
+  cedar:[0x1f4a3a,0x25563f,0x1c4235], ginkgo:[0xe8c23a,0xf0d04a,0xd8b030,0xc8d04a], larch:[0x9aae44,0xb8b84a,0xa8b850,0x86a23c],
   acacia:[0x8a9a3a,0x9aa844,0x7a8a34], gloomoak:[0x5a3f78,0x6a4a8a,0x4a3468,0x3e3a5c],
   // Amber Reach: the flat-topped acacia (olive, a little sun-bleached) and the baobab's thin crown (plant-models-savanna.js)
   savacacia:[0x7f9a3c,0x92a846,0x6f8a34,0xa0a64a], baobab:[0x6f9a3a,0x84a844,0x5f8a34],
@@ -32,8 +32,8 @@ const moss=new THREE.Color(0x56702f);
 
 function buildGeometries(){
   G.trees={
-    pine:makeConifer({trunkH:4, layers:5, r0:2.3, lh:2.8, spacing:1.45, start:1.6}),
-    spruce:makeConifer({trunkH:3, layers:8, r0:1.8, lh:2.2, spacing:1.05, start:1.2}),
+    pine:makeConifer(CONI.pine),
+    spruce:makeConifer(CONI.spruce),
     oakA:makeBroadleaf({trunkH:4.2, tr:0.42, crownY:6.2, rMain:2.4, blobs:5, spread:1.9, sy:0.85, branches:3, bark:0x4f3c2a}),
     oakB:makeBroadleaf({trunkH:3.4, tr:0.36, crownY:5.0, rMain:2.0, blobs:6, spread:2.2, sy:0.75, branches:4, bark:0x5a4632}),
     birch:makeBroadleaf({trunkH:7.5, tr:0.16, crownY:7.6, rMain:1.2, blobs:4, spread:0.85, sy:1.6, branches:0, birch:true}),
@@ -41,7 +41,7 @@ function buildGeometries(){
     sakura:makeSakura(),
     maple:makeBroadleaf({trunkH:2.6, tr:0.22, crownY:4.0, rMain:1.6, blobs:6, spread:1.5, sy:0.65, branches:3, bark:0x3e302a}),
     bamboo:makeBamboo(),
-    frostspruce:makeConifer({trunkH:2.6, layers:9, r0:1.7, lh:2.3, spacing:0.95, start:1.1}),
+    frostspruce:makeConifer(CONI.frostspruce),
     dwarfbirch:makeBroadleaf({trunkH:2.4, tr:0.1, crownY:2.8, rMain:0.85, blobs:3, spread:0.6, sy:1.25, branches:0, birch:true}),
     palm:makePalm(),
     cactus:makeCactus(),
@@ -66,15 +66,15 @@ function buildGeometries(){
   G.grassHi=VD>0?buildGrassTufts():null;
   if(VD>=2){
     G.treesHi={
-      pine:makeConiferHi({trunkH:4, layers:5, r0:2.3, lh:2.8, spacing:1.45, start:1.6},1),
-      spruce:makeConiferHi({trunkH:3, layers:8, r0:1.8, lh:2.2, spacing:1.05, start:1.2},2),
+      pine:makeConiferHi(CONI.pine,1),
+      spruce:makeConiferHi(CONI.spruce,2),
       oakA:makeBroadleafHi({trunkH:4.2, tr:0.42, crownY:6.2, rMain:2.4, blobs:5, spread:1.9, sy:0.85, branches:3, bark:0x4f3c2a},3),
       oakB:makeBroadleafHi({trunkH:3.4, tr:0.36, crownY:5.0, rMain:2.0, blobs:6, spread:2.2, sy:0.75, branches:4, bark:0x5a4632},4),
       birch:makeBroadleafHi({trunkH:7.5, tr:0.16, crownY:7.6, rMain:1.2, blobs:4, spread:0.85, sy:1.6, branches:0, birch:true},5),
       snag:makeSnagHi(),
       sakura:makeSakuraHi(),
       maple:makeBroadleafHi({trunkH:2.6, tr:0.22, crownY:4.0, rMain:1.6, blobs:6, spread:1.5, sy:0.65, branches:3, bark:0x3e302a},8),
-      frostspruce:makeConiferHi({trunkH:2.6, layers:9, r0:1.7, lh:2.3, spacing:0.95, start:1.1},10),
+      frostspruce:makeConiferHi(CONI.frostspruce,10),
       dwarfbirch:makeBroadleafHi({trunkH:2.4, tr:0.1, crownY:2.8, rMain:0.85, blobs:3, spread:0.6, sy:1.25, branches:0, birch:true},11)
     };   // (no bamboo: its groves are dense and the low-poly culms are already 1,000 triangles)
     G.bushHi=[makeBushHi(4,0.6,21), makeBushHi(3,0.45,22)];

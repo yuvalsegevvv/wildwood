@@ -8,6 +8,7 @@
 const fs=require('fs'), path=require('path'), {SRC,strip}=require('./load');
 const arg=(n,d)=>{ const i=process.argv.indexOf(n); return i>0?process.argv[i+1]:d; };
 const out=process.argv[2]&&!process.argv[2].startsWith('--')?process.argv[2]:'grass';
+const ONLY=arg('--kinds',''), ROW=(ONLY?ONLY.split(','):null);   // --kinds a,b,c: only those trees, in one row 7 m apart (view 'row')
 const SG=process.argv.includes('--sg');   // --sg: the terrain's shader lawn on (the game has it off by default)
 const [W,H]=arg('--size','1280x720').split('x').map(Number), VIEWS=arg('--views','top,hiker,close'), TIME=+arg('--time','3'), NT=+arg('--n','26000');
 let chromium; for(const base of [process.cwd(),path.join(__dirname,'..'),'/opt/node-tools','/usr/local/lib']){ try{ chromium=require(require.resolve('playwright',{paths:[base,path.join(base,'node_modules')]})).chromium; break; }catch(e){} }
@@ -36,20 +37,20 @@ scene.add(sun); scene.add(sun.target);
 // the 50 m x 50 m patch, x and z from -25 to 25, gently rolling
 const HT=(x,z)=>noise2(x*0.02,z*0.02)*1.2+noise2(x*0.07+3,z*0.07)*0.25;
 // trees: one of every species in a 5 x 4 grid, the detailed model (as on the desktop), names kept for the labels
-const GT={pine:makeConiferHi({trunkH:4, layers:5, r0:2.3, lh:2.8, spacing:1.45, start:1.6},1),
-  spruce:makeConiferHi({trunkH:3, layers:8, r0:1.8, lh:2.2, spacing:1.05, start:1.2},2),
+const GT={pine:makeConiferHi(CONI.pine,1),
+  spruce:makeConiferHi(CONI.spruce,2),
   oakA:makeBroadleafHi({trunkH:4.2, tr:0.42, crownY:6.2, rMain:2.4, blobs:5, spread:1.9, sy:0.85, branches:3, bark:0x4f3c2a},3),
   oakB:makeBroadleafHi({trunkH:3.4, tr:0.36, crownY:5.0, rMain:2.0, blobs:6, spread:2.2, sy:0.75, branches:4, bark:0x5a4632},4),
   birch:makeBroadleafHi({trunkH:7.5, tr:0.16, crownY:7.6, rMain:1.2, blobs:4, spread:0.85, sy:1.6, branches:0, birch:true},5),
   snag:makeSnagHi(), sakura:makeSakuraHi(),
   maple:makeBroadleafHi({trunkH:2.6, tr:0.22, crownY:4.0, rMain:1.6, blobs:6, spread:1.5, sy:0.65, branches:3, bark:0x3e302a},8),
-  frostspruce:makeConiferHi({trunkH:2.6, layers:9, r0:1.7, lh:2.3, spacing:0.95, start:1.1},10),
+  frostspruce:makeConiferHi(CONI.frostspruce,10),
   dwarfbirch:makeBroadleafHi({trunkH:2.4, tr:0.1, crownY:2.8, rMain:0.85, blobs:3, spread:0.6, sy:1.25, branches:0, birch:true},11)};
 const G={trees:{},treesHi:GT}; buildMoreTrees();   // G.treesHi is GT: the nine more species join it
 const PALK={pine:PAL.pine,spruce:PAL.spruce||PAL.pine,oakA:PAL.oak,oakB:PAL.oak,birch:PAL.birch,snag:PAL.oak,sakura:PAL.sakura||PAL.oak,maple:PAL.maple||PAL.oak,frostspruce:PAL.frostspruce||PAL.pine,dwarfbirch:PAL.dwarfbirch||PAL.birch};
 for(const k in MORE_TREE) PALK[k]=PAL[k]||PAL.oak;
-const KINDS=Object.keys(GT), CONIF={pine:1,spruce:1,frostspruce:1,cedar:1,larch:1};
-const TREES=KINDS.map((k,i)=>{ const col=i%5, row=Math.floor(i/5); return [-20+col*10+((i*7)%3-1)*1.2, -21+row*9.5+((i*5)%3-1)*0.8, k]; });
+const ROWK=${JSON.stringify(ROW)}; const CONIF=Object.assign({pine:1,spruce:1,frostspruce:1},MORE_CONIFER), KINDS=ROWK||Object.keys(GT);
+const TREES=ROWK?KINDS.map((k,i)=>[(i-(KINDS.length-1)/2)*7,0,k]):KINDS.map((k,i)=>{ const col=i%5, row=Math.floor(i/5); return [-20+col*10+((i*7)%3-1)*1.2, -21+row*9.5+((i*5)%3-1)*0.8, k]; });
 const fdAt=(x,z)=>{ let f=0; for(const t of TREES){ const d=Math.hypot(x-t[0],z-t[1]); f=Math.max(f,1-d/4.5); } return clamp(f); };
 const COL={lush:new THREE.Color(0x4c7a2b),dry:new THREE.Color(0x8a8f42),floor:new THREE.Color(0x5b4a30),dirt:new THREE.Color(0x6e5738)};
 function groundCol(x,z,out){ const n1=noise2(x*0.02,z*0.02)*0.5+0.5, n2=noise2(x*0.11+5,z*0.11)*0.5+0.5;
@@ -77,7 +78,7 @@ spread(5,RK[0],matRock,(x,z,h)=>({m:_m(x,h-0.1,z,rg()*TAU,0.6+rg()*0.8),c:W1}),t
 spread(1,LG,matBark,(x,z,h)=>({m:_m(x,h+0.1,z,rg()*TAU,1),c:W1}),true);
 spread(3,RD,matReed,(x,z,h)=>({m:_m(x,h,z,rg()*TAU,1),c:new THREE.Color(0x7c8a45)}));
 // grass: random tufts like genChunk's loop (fewer under the trees), levels of detail by distance to the eye, as addInstanced does it
-const VIEW={top:{p:[0,62,26],t:[0,0,0]},hiker:{p:[0,2.6,35],t:[0,1.6,10]},low:{p:[-18,1.7,22],t:[-8,0.6,5]},close:{p:[1.5,0.95,3],t:[0,0.25,-0.5]},sun:{p:[0,2.4,32],t:[0,1.6,6]}};
+const VIEW={top:{p:[0,62,26],t:[0,0,0]},hiker:{p:[0,2.6,35],t:[0,1.6,10]},low:{p:[-18,1.7,22],t:[-8,0.6,5]},close:{p:[1.5,0.95,3],t:[0,0.25,-0.5]},row:{p:[0,3,18],t:[0,4,0]},sun:{p:[0,2.4,32],t:[0,1.6,6]}};
 const TUFTS=buildGrassTufts(), items=[];
 for(let a=0;a<${NT}*3&&items.length<${NT};a++){
   const x=(rg()-0.5)*50, z=(rg()-0.5)*50, fd=fdAt(x,z);
@@ -89,7 +90,7 @@ for(let a=0;a<${NT}*3&&items.length<${NT};a++){
 }
 let ITEMS=typeof grassClump==='function'?grassClump(items):items; if(typeof grassSort==='function') grassSort(ITEMS);
 const LEV=[[0,1],[30,0.85],[62,0.6]], MAXD=100;
-window.__order=TREES.map(t=>t[2]);
+window.__order=TREES.map(t=>t[2]); window.__tris=Object.fromEntries(KINDS.map(k=>[k,[GT[k]&&GT[k].trunk.attributes.position.count/3+GT[k].leaves.attributes.position.count/3]]));
 window.__render=(vn)=>{
   for(const o of scene.children.filter(o=>o.userData.grass)) scene.remove(o);
   const V=VIEW[vn], cam=new THREE.PerspectiveCamera(vn==='close'?55:(vn==='top'?45:68),${W}/${H},0.1,1200); cam.position.set(...V.p); cam.lookAt(...V.t);
@@ -97,7 +98,7 @@ window.__render=(vn)=>{
   const per=LEV.map(()=>[]); const n=ITEMS.length; let gt=0;
   ITEMS.forEach((it,i)=>{ const d=Math.hypot(it.x-V.p[0],it.z-V.p[2]); if(d>=MAXD) return; let j=0; while(j<LEV.length-1&&d>=LEV[j+1][0]) j++; if(i>=Math.ceil(n*LEV[j][1])) return; per[j].push(it); });
   per.forEach((list,j)=>{ if(!list.length) return; const geo=TUFTS[Math.min(j,TUFTS.length-1)], m=inst(geo,matGrass,list,false); m.userData.grass=1; gt+=geo.attributes.position.count/3*list.length; });
-  renderer.render(scene,cam); return {grassTris:gt, tufts:TUFTS.map(g=>g.attributes.position.count/3), shown:per.map(l=>l.length), order:window.__order.join(',')};
+  renderer.render(scene,cam); return {grassTris:gt, tufts:TUFTS.map(g=>g.attributes.position.count/3), shown:per.map(l=>l.length), tris:window.__tris};
 };
 window.__ready=true;
 </script>`;

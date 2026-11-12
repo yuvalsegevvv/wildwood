@@ -61,11 +61,36 @@ function shadeTree(bot,top,reach){ return (x,y,z,nx,ny,nz,c)=>{
   c.setRGB(v*(0.93+0.12*h),v*(0.98+0.05*h),v*(1.08-0.24*h)); }; }
 const barkLo=hex=>(x,y,z,nx,ny,nz,c)=>{ c.set(hex).multiplyScalar((0.7+0.42*h3(Math.floor(Math.atan2(nz,nx)*2.2),Math.floor(y*0.8),5))*(y<0.3?0.72:1)); if(y<0.3) c.lerp(moss,0.3); };
 
+/* The conifer species (one source for the low-poly, the detailed and the preview tools). habit 'pine' is a bare trunk with needle pads (makePineHi / makePineLo,
+   the pads' places from conPinePads, so both levels share the outline); taper < 1 makes the tiers' radius fall slower (a spire with a skirt: spruce) or faster;
+   sag / lift / frondW / core / snow shape the boughs (makeConiferHi). */
+const CONI={
+  pine:{trunkH:4, layers:5, r0:2.3, lh:2.8, spacing:1.45, start:1.6, habit:'pine', pads:7, H:9.6},
+  spruce:{trunkH:3, layers:8, r0:1.8, lh:2.2, spacing:1.05, start:0.7, taper:0.75, sag:0.55, lift:0.3, frondW:0.2, core:0.45},
+  frostspruce:{trunkH:2.6, layers:9, r0:1.25, lh:2.3, spacing:0.95, start:0.8, taper:0.55, sag:0.95, lift:0.05, frondW:0.24, core:0.45, snow:1},
+  cedar:{trunkH:3.2, layers:6, r0:2.1, lh:0.9, spacing:1.55, start:1.5, taper:0.6, sag:0.05, lift:0.12, frondW:0.42, core:0.25},
+  larch:{trunkH:4, layers:9, r0:1.7, lh:1.5, spacing:1.05, start:1.6, taper:0.9, sag:0.2, lift:0.1, frondW:0.16, core:0.2, thin:1}
+};
+function conPinePads(o,seed){   // the pine's crown pads: [{x,y,z,r}], lopsided, widest at 80 % of the height, on a trunk that bends a little
+  const {r:rg,R:rr}=mrng(seed+700), H=o.H||9.6, n=o.pads||7, k=(o.r0||2.3)/2.3, a0=rg()*TAU, pads=[];
+  for(let i=0;i<n;i++){
+    const t=i/(n-1), y=H*(0.5+0.46*t), a=a0+i*2.399+rr(-0.3,0.3), d=k*(1.0+1.1*Math.sin(Math.min(1,t*1.15+0.1)*Math.PI*0.9))*(o.bend?1.2:1);
+    pads.push({x:Math.cos(a)*d+(o.bend||0.3)*Math.pow(y/H,2),y:y+rr(-0.2,0.2),z:Math.sin(a)*d,r:rr(0.7,1.1)*k*(1.15-0.35*t)});
+  }
+  return pads;
+}
+function makePineLo(o){
+  const H=o.H||9.6, pads=conPinePads(o,1), trunk=paint(cyl(0.1,0.27,H,6).translate(0,H/2,0),barkLo(0x6a4a32)), parts=[];
+  for(let i=0;i<o.layers;i++) rand();   // (the old pine drew one global random number a layer: keep the stream, so nothing built after it moves)
+  pads.forEach((p,i)=>{ const g=new THREE.ConeGeometry(p.r*1.3,0.9,7,1); g.scale(1,0.8,1); g.rotateY(i*2.1); g.translate(p.x,p.y+0.4,p.z); parts.push(g); });
+  return {trunk, leaves:merge(parts.map(g=>paint(g,shadeTree(H*0.5,H,0))))};
+}
 function makeConifer(o){
+  if(o.habit==='pine') return makePineLo(o);
   const trunk = paint(cyl(0.1,0.27,o.trunkH,6).translate(0,o.trunkH/2,0), barkLo(0x4a3524));
   const parts=[]; let top=0;
   for(let i=0;i<o.layers;i++){
-    const t=i/o.layers, r=o.r0*(1-t*0.85)+0.15, lh=o.lh*(1-t*0.25);
+    const t=i/o.layers, r=o.r0*(o.taper?Math.pow(1-t*0.9,o.taper):1-t*0.85)+0.15, lh=o.lh*(1-t*0.25);
     const g=new THREE.ConeGeometry(r, lh, 9, 1);
     const p=g.attributes.position;
     for(let k=0;k<p.count;k++){
