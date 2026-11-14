@@ -57,7 +57,7 @@ OUTFITS.ottoline=(function(){
       const hl=T.hl, hv=T.hv, out=[];
       for(const sd of [-1,1]){ const P=[[sd*0.09,0.0,0.03]]; const Lh=0.3*hl, N=sg(26), turns=3.5;
         for(let i=1;i<=N;i++){ const f=i/N, ph=f*turns*TAU, r=0.022*(1-0.35*f); P.push([sd*(0.112+0.012*f)+sd*r*Math.cos(ph)*0.9,-0.02-Lh*f,0.03+0.03*Math.sin(f*2)+r*Math.sin(ph)]); }
-        T.add(sweepTube(P,[0.011*hv,0.014*hv,0.015*hv,0.014*hv,0.01*hv,0.0035],sg(7),{cap:'point',rings:sg(60)}),(x,y,z,c)=>{ T.hp(x,y,z,c); c.multiplyScalar(0.95+0.1*Math.sin(y*120)); });
+        T.add(sweepTube(P,[0.011*hv,0.014*hv,0.015*hv,0.014*hv,0.01*hv,0.0035],sg(7),{cap:'point',rings:sg(60)}),(x,y,z,c)=>{ T.hp(x,Math.max(y,-0.02),z,c); c.multiplyScalar(1.12*(0.94+0.1*Math.sin(y*150+x*40))); });
         out.push(solid(ofRingAt([sd*0.1,-0.012,0.03],[0,1,0],0.021,0.0042,sg(5)),ROSE)); }
       return out; };
     const mark=F=>{ const out=[]; for(const sd of [-1,1]){ out.push(pc(F.place(csph(1,sg(8),sg(6)).scale(0.018,0.0115,0.0008),sd*0.056,-0.036,0.0006),(x,y,z,c)=>c.set(ROSE_L)));

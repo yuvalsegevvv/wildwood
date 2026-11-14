@@ -36,7 +36,7 @@ OUTFITS.brynja=(function(){
     /* ---- the hair: two long white braids over the shoulders, tied with ice-blue ribbons ---- */
     const braids=(F,T)=>{ T.crown(0.113,0.55,0.3); T.fringe(7,0.9,0.1); T.sideLocks(0.03); T.backLocks(sg(10),0,17); const out=[];
       for(const sd of [-1,1]){ const P=[], len=0.36*T.hl; for(let i=0;i<=10;i++){ const t=i/10; P.push([sd*(0.085-0.02*t),-0.04-len*t,0.045+0.045*Math.sin(t*2.2)]); }
-        T.add(sweepTube(P,[0.02,0.024,0.024,0.021,0.016,0.003],sg(8),{cap:'point',rings:sg(30)}),(x,y,z,c)=>{ T.hp(x,y,z,c); c.multiplyScalar(0.92+0.1*Math.sin(y*150)); });
+        T.add(sweepTube(P,[0.02,0.024,0.024,0.021,0.016,0.003],sg(8),{cap:'point',rings:sg(30)}),(x,y,z,c)=>{ T.hp(x,Math.max(y,-0.02),z,c); c.multiplyScalar(1.12*(0.94+0.1*Math.sin(y*150+x*40))); });
         for(const t of [0.1,0.9]){ const p=P[Math.round(t*10)], q=P[Math.min(10,Math.round(t*10)+1)]; out.push(solid(ofRingAt(p,[q[0]-p[0],q[1]-p[1],q[2]-p[2]],0.0235*(1-0.3*t),0.0045,sg(6)),ICE)); } }
       return out; };
 

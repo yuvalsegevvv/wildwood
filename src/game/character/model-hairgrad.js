@@ -20,7 +20,10 @@ function hgApply(X,parts,n0,n1){
   for(let k=n0;k<n1;k++){ const g=parts[k], p=g.attributes.position, col=g.attributes.color; if(!col) continue;
     // each lock also runs root to tip by its OWN height (55%), so a fringe's ends and a short cut's nape take the tip colour like dyed hair; by the whole hair's height alone a short style
     // was just striped level across the skull. A small part (a bun's ball, a bead) has no root and tip: the whole hair's height only
-    let pt=-1e9, pb=1e9; for(let i=0;i<p.count;i++){ const y=p.getY(i); if(y>pt) pt=y; if(y<pb) pb=y; } const ps=pt-pb, own=ps>0.035?0.55:0;
+    // A tail or a plait (g.hgSpan = [tie y, tip y], set by model-hair.js) runs by that span for 80%: all its locks and segments share it, so the gradient goes from the root
+    // colour at the tie to the tip colours down the whole tail, the place it shows best
+    let pt=-1e9, pb=1e9; for(let i=0;i<p.count;i++){ const y=p.getY(i); if(y>pt) pt=y; if(y<pb) pb=y; } const hs=g.hgSpan; if(hs){ pt=hs[0]; pb=hs[1]; }
+    const ps=Math.max(pt-pb,0.01), own=hs?0.8:ps>0.035?0.55:0;
     for(let i=0;i<p.count;i++){
       const r=col.getX(i), gg=col.getY(i), b=col.getZ(i), m=Math.max(r,gg,b,0.01);
       if(Math.abs(r/m-c1.r/mx)+Math.abs(gg/m-c1.g/mx)+Math.abs(b/m-c1.b/mx)>0.55) continue;   // not hair-coloured: a tie, a ribbon

@@ -39,7 +39,7 @@ OUTFITS.morrow=(function(){
     /* ---- the hair: a part in the middle, a long loose fall with a plait over one shoulder tied with an ember cord ---- */
     const plait=(F,T)=>{ T.crown(0.112,0.45,0.22); T.fringe(7,0.7,0.1); T.sideLocks(0.05*T.hl); T.backLocks(sg(14),0,13);
       const P=[]; for(let i=0;i<=8;i++){ const t=i/8; P.push([0.07,-0.04-0.3*T.hl*t,-0.07-0.02*Math.sin(t*3)]); }
-      const out=[]; T.add(sweepTube(P,[0.024,0.026,0.024,0.021,0.016,0.011,0.003],sg(8),{cap:'point',rings:sg(22)}),(x,y,z,c)=>{ T.hp(x,y,z,c); });
+      const out=[]; T.add(sweepTube(P,[0.024,0.026,0.024,0.021,0.016,0.011,0.003],sg(8),{cap:'point',rings:sg(22)}),(x,y,z,c)=>{ T.hp(x,Math.max(y,-0.02),z,c); c.multiplyScalar(1.12*(0.94+0.1*Math.sin(y*150+x*40))); });
       out.push(solid(ofRingAt(P[6],[0,-1,0],0.02,0.005,sg(6)),EMBER));
       return out; };
 

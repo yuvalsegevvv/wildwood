@@ -17,7 +17,8 @@ function buildHair(X,F){
     return (x,y,z,c)=>{ hp(x,y,z,c); const u=clamp((t1-y)/E,0,1), band=0.82+0.3*Math.sin(Math.min(1,u*1.15)*Math.PI*0.8)+0.1*u*u;   // u: 0 at the root, 1 at the tip
       const cl=0.5+0.5*Math.sin(Math.atan2(x,z)*13+Math.sin(y*30)*0.6), gr=0.84+0.26*cl*cl;   // clumps: broad strand bands running with the flow
       c.multiplyScalar(tone*band*gr); c.lerp(tc.set(0xffe2b0),0.1*u*u*u); }; };
-  const add=(g,fn)=>{ const q=pc(g,fn||lockHp(g)); if(g.hairHang) q.hairHang=g.hairHang; parts.push(q); };   // (hairHang: a hanging lock that swings, see hair-sway.js; pc makes a new geometry, so the mark is carried over)
+  let hangPaint=null;   // set while a tail's wisps are added (asStrands): they take the tail's paint, not the scalp's
+  const add=(g,fn)=>{ const q=pc(g,fn||(hangPaint?hangPaint(g):lockHp(g))); if(g.hairHang) q.hairHang=g.hairHang; if(g.hgSpan) q.hgSpan=g.hgSpan; parts.push(q); };   // (hgSpan: a tail's tie-to-tip height, read by hgApply)   // (hairHang: a hanging lock that swings, see hair-sway.js; pc makes a new geometry, so the mark is carried over)
   const sp=(th,ph,r)=>[r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph),-r*Math.sin(ph)*Math.cos(th)];   // a point on a sphere: azimuth th (0 = front, + toward +x), polar angle ph
   // lay hair flat on the scalp: shrink every vertex's distance from the head's centre toward R (a ribbon, not a rope)
   const flat=(g,k)=>{ const p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), l=Math.hypot(x,y,z)||1, nl=l>R*0.7?R+(l-R)*k:l; p.setXYZ(i,x*nl/l,y*nl/l,z*nl/l); } return smoothN(g); };
@@ -77,14 +78,36 @@ function buildHair(X,F){
       add(swing(sweepTube(R0.map((q,i)=>{ const f=(i+1)/R0.length; return [q[0]+ox*spread*f*f,q[1]-0.01*f,q[2]+oz*spread*f*f]; }),[w*0.33,w*0.3,w*0.22,0.0012],5,{cap:'point',rings:10}))); } };
   const tie=(x,y,z,r)=>add(csph(r,sg(10),sg(8)).scale(1,0.8,1).translate(x,y,z),(xx,yy,zz,c)=>c.set(0xc83a4a));
   // tied tails: `offs` are [sideways shift, thickness, shorter-by-one-point 0/1] per lock; a shift grows toward the tip so the tail fans out and frays (z for twintails: `zs`)
-  const tail=(P,rad,offs,zs)=>{ for(const [dx,w,cut] of offs){ const Q=P.slice(0,P.length-(cut?1:0)).map((q,i)=>{ const f=i/(P.length-1), d=dx*f*(0.4+f); return zs?[q[0],q[1],q[2]+d]:[q[0]+d,q[1],q[2]]; });
-    add(swing(sweepTube(Q,rad.map(r=>r*(w>0.9?1:w)),sg(10),{cap:'point',rings:sg(18)}))); } };
+  // (v3.5) a tail or a plait is painted by its OWN length, not by the head's height: hp darkens everything below the jaw (the nape's underlayer, down to x0.45 at
+  // y=-0.3), which made every hanging tail a near-black rope, and hp's streaks run by the angle round the head, which is constant down a tail (bands across it).
+  // Here the base is the cap's colour at the jaw line, the strands run down the piece (by the position across it), a sheen band sits just below the tie and the tip
+  // warms; o.lobe (a plait's segment) darkens both ends of the segment, so the crossings read; o.lx/lz/al/ay: the segment's sideways axis and its slant
+  const strandHp=(g,o)=>{ o=o||{}; const p=g.attributes.position; let t0=1e9, t1=-1e9; for(let i=0;i<p.count;i++){ const y=p.getY(i); if(y<t0) t0=y; if(y>t1) t1=y; }
+    const E=Math.max(0.01,t1-t0), tone=0.92+0.16*h3(lockN++*7,13,5), tc=new THREE.Color(), lx=o.lx===undefined?1:o.lx, lz=o.lz===undefined?0.7:o.lz, al=o.al||0, ay=o.ay===undefined?1:o.ay;
+    return (x,y,z,c)=>{ hp(x,Math.max(y,0.012),z,c); const u=clamp((t1-y)/E,0,1), q=(x*lx+z*lz)*ay-y*al;
+      const s=0.5+0.5*Math.sin(q*340+2.2*Math.sin(y*37)+3*h3(Math.round(q*90),3,lockN)), band=o.lobe?0.7+0.44*Math.sin(u*Math.PI):0.9+0.14*Math.sin(Math.min(1,u*1.6)*Math.PI)+0.05*u;
+      c.multiplyScalar(tone*band*(0.84+0.28*s)); c.lerp(tc.set(0xffffff),o.lobe?0.07*Math.sin(u*Math.PI)*s:0.1*G(u,0.2,0.08)*s); c.lerp(tc.set(0xffe2b0),0.12*u*u*u); }; };
+  const asStrands=f=>{ hangPaint=strandHp; f(); hangPaint=null; };
+  // strand grooves: every ring of a sweepTube pulled in at k places round it (the tube's vertices are rings of seg+1), so a tail is a bundle of locks, not a pipe
+  const groove=(g,seg,k,amp)=>{ const p=g.attributes.position, W=seg+1, n=p.count/W;
+    for(let i=0;i<n;i++){ let cx=0, cy=0, cz=0; for(let j=0;j<seg;j++){ cx+=p.getX(i*W+j); cy+=p.getY(i*W+j); cz+=p.getZ(i*W+j); } cx/=seg; cy/=seg; cz/=seg;
+      for(let j=0;j<=seg;j++){ const id=i*W+j, f=1-amp*(0.5-0.5*Math.cos(k*j/seg*TAU)); p.setXYZ(id,cx+(p.getX(id)-cx)*f,cy+(p.getY(id)-cy)*f,cz+(p.getZ(id)-cz)*f); } }
+    return smoothN(g); };
+  const tail=(P,rad,offs,zs)=>{ const span=[Math.max(...P.map(q=>q[1])),Math.min(...P.map(q=>q[1]))-0.01], seg=sg(14), k=Math.max(3,Math.floor(seg/2));
+    for(const [dx,w,cut] of offs){ const Q=P.slice(0,P.length-(cut?1:0)).map((q,i)=>{ const f=i/(P.length-1), d=dx*f*(0.4+f); return zs?[q[0],q[1],q[2]+d]:[q[0]+d,q[1],q[2]]; });
+      const g=groove(sweepTube(Q,rad.map(r=>r*(w>0.9?1:w)),w>0.9?seg:sg(10),{cap:'point',rings:sg(18)}),w>0.9?seg:sg(10),w>0.9?k:3,w>0.9?0.26:0.18); g.hgSpan=span; add(swing(g),strandHp(g)); } };
   // hair gathered toward a tie: a pair of locks lying on the scalp that sweep from the temple up toward th (the tie), so the tail does not sprout from nowhere
   const gather=(th,ph1,sw)=>{ if(hat) return; for(const k of [0,1]) add(scalpLock(th+(th===0?(k?1:-1)*0.9:-Math.sign(th)*0.2*k),0.52*Math.PI-0.03*Math.PI*k,ph1*Math.PI,[0.006,0.012,0.012,0.008,0.0015],{sw:th===0?(k?-1:1)*sw:Math.sign(th)*sw,lift:0.006+0.003*k,k:0.5})); };
-  // a plait: a chain of overlapping flattened lobes leaning alternately left and right along the path fn(t), ending in a tuft
-  const plait=(fn,len,_a,_b,_c,side)=>{ const n=sg(100)>=50?12:8; for(let i=0;i<n;i++){ const t=(i+0.5)/n, p=fn(t), s=i%2?1:-1, r=0.022*(1-0.45*t);
-      add(swing(csph(r,sg(8),sg(6)).scale(1,(n>8?1.9:2.5),0.8).rotateZ(s*0.8).translate(p[0]+s*0.01*(1-0.4*t),p[1],p[2]))); }
-    const e=fn(1); for(let k=-1;k<=1;k++) add(swing(sweepTube([[e[0]+k*0.004,e[1],e[2]],[e[0]+k*0.012,e[1]-0.02,e[2]],[e[0]+k*0.02,e[1]-0.045,e[2]-0.004]],[0.008,0.006,0.001],5,{cap:'point',rings:6}))); tie(e[0],e[1]+0.002,e[2],0.016); };
+  // a plait along the path fn(t): a core rope from inside the nape (so it is attached, and no gap shows between crossings), then segments that each run slanted from
+  // one outer edge down to the middle, left and right in turn (the chevrons of a three-strand braid), each dark at both ends; a tie and a tuft at the end.
+  // All its pieces share one tie-to-tip height (hgSpan), so a gradient runs down the whole plait instead of restarting in every segment
+  const plait=(fn,len)=>{ const n=sg(100)>=50?12:8, s0=fn(0), e=fn(1), span=[s0[1]+0.04,e[1]-0.05], mk=g=>{ g.hgSpan=span; return swing(g); };
+    const core=[[s0[0]*0.82,s0[1]+0.05,s0[2]*0.78],s0,fn(0.33),fn(0.66),e]; { const g=mk(sweepTube(core,[0.014,0.017,0.015,0.012,0.009],sg(8),{cap:'round',rings:sg(14)})); add(g,strandHp(g)); }
+    for(let i=0;i<n;i++){ const t=(i+0.5)/n, p=fn(t), s=i%2?1:-1, w=0.017*(1-0.38*t), h=len/n*0.95, ol=Math.hypot(p[0],p[2])||1, ox=p[0]/ol, oz=p[2]/ol, lx=oz, lz=-ox;   // out of the head, and across the plait
+      const P=[[p[0]+lx*s*w,p[1]+h,p[2]+lz*s*w],[p[0]+lx*s*w*0.35+ox*0.006,p[1],p[2]+lz*s*w*0.35+oz*0.006],[p[0]-lx*s*w*0.45,p[1]-h,p[2]-lz*s*w*0.45]], a=Math.hypot(1.45*w,2*h);
+      const g=mk(sweepTube(P,[0.005,0.0125*(1-0.3*t),0.011*(1-0.3*t),0.003],sg(7),{cap:'point',rings:sg(8)})); add(g,strandHp(g,{lobe:true,lx,lz,al:-s*1.45*w/a,ay:2*h/a})); }
+    for(let k=-1;k<=1;k++){ const g=mk(sweepTube([[e[0]+k*0.004,e[1],e[2]],[e[0]+k*0.012,e[1]-0.02,e[2]],[e[0]+k*0.02,e[1]-0.045,e[2]-0.004]],[0.008,0.006,0.001],5,{cap:'point',rings:6})); add(g,strandHp(g)); }
+    tie(e[0],e[1]+0.002,e[2],0.016); };
   // a wound bun: a flattened ball (axis z, turned by `ry`) with two strands spiralling out of its centre, so it reads as hair wrapped round itself
   const bun=(cx,cy,cz,r,ry,rx)=>{ const mk=g=>{ g.rotateX(rx||0); g.rotateY(ry); g.translate(cx,cy,cz); return g; }; add(hang(mk(csph(r,sg(16),sg(12)).scale(1,0.95,0.7))));
     for(let k=0;k<2;k++){ const P=[]; for(let i=0;i<=9;i++){ const f=i/9, a=k*Math.PI+f*TAU*1.25, rr=r*(0.15+0.82*f); P.push([Math.cos(a)*rr,Math.sin(a)*rr*0.95,r*0.7*Math.sqrt(Math.max(0.05,1-f*f*0.9))+0.003]); }
@@ -108,35 +131,39 @@ function buildHair(X,F){
       add(fit(sweepTube([a,[a[0]+d[0]*len*0.5,a[1]+d[1]*len*0.2+0.01,a[2]+d[2]*len*0.5],[a[0]+d[0]*len,a[1]-0.04*Math.max(0.3,bg),a[2]+d[2]*len*1.1]],[0.022,0.02,0.002],sg(8),{cap:'point',rings:sg(9)}))); } }
   if(H==='curly'){ const r=hat?(L.hat==='helm'?0.11:0.118):0.132*hv, lump=(x,y,z)=>0.5+0.5*Math.sin(x*105+1.3)*Math.sin(y*118+0.4)*Math.sin(z*105+2.1);
     add(fit(scalp(0.109*hv)));   // the hairline underneath, so no bald skin shows between the curls
-    { const g=cap(r,0.5,0.34,0.14), p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i),y=p.getY(i),z=p.getZ(i),j=1+0.13*lump(x,y,z)+(h3(x*3,y*3,z*3)-0.5)*0.05; p.setXYZ(i,x*j,y*j,z*j); } smoothN(g); add(fit(g)); }   // a mass of round lumps (curls), not a smooth ball with noise
-    // loose curls round the edge: small, in two staggered rows behind the temples and one short row over the forehead (a single ring of big balls sat on the eyes like grapes)
-    if(!hat){ const rng=mulberry32(31), n=sg(100)>=50?26:14; for(let i=0;i<n;i++){ const th=(i/n)*TAU+rng()*0.2, front=Math.abs(Math.atan2(Math.sin(th),Math.cos(th)))<0.95, ph=(front?0.27+rng()*0.05*bg+0.03*bg:0.45+(i%2)*0.1+rng()*0.05)*Math.PI; if(front&&bg<0.05) continue; const q=sp(th,ph,r*(front?0.9:0.94)); add(csph(0.021+rng()*0.009,sg(8),sg(6)).translate(q[0],q[1],q[2]).scale(fs[0],1,1)); } } }
+    // one merged mass of overlapping curls (displacement of a single cap, so no ball floats and the colour gradient runs over the whole head, not per ball); the cap reaches lower at the sides and back so the curls hang round the ears
+    { const g=cap(r,0.49,0.46,0.13), p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i),y=p.getY(i),z=p.getZ(i),j=1+0.17*lump(x,y,z)+0.07*lump(x*1.9+1,y*1.9,z*1.9+3)+(h3(x*3,y*3,z*3)-0.5)*0.04; p.setXYZ(i,x*j,y*j,z*j); } smoothN(g); add(fit(g)); }
+  }
   if(H==='bob'||H==='long'||H==='waves'||H==='buns2'||H==='sidebraid'||H==='highpony'||H==='twintail'||H==='braid'||H==='ponytail'||H==='bun') add(fit(scalp((H==='bob'||H==='long'?0.116:0.113)*hv)));
   if(H==='bob'){ add(fit(band(0.118*hv,0.34*Math.PI,0.2*Math.PI,1.55,sg(36),sg(10)))); fringe(8,1.05,0.12); sideLocks(0.1*hl); backLocks(sg(20),0.09*hl,51); }
   if(H==='long'||H==='waves'){ fringe(8,1.1,0.1); sideLocks(0.2*hl);
     const rings=[{y:0.078,rx:0.08*hv,rz:0.028,zc:0.05}]; const n=sg(18), len=0.5*hl;   // (the first ring is tucked inside the scalp: the curtain's open top stood out as a box behind the ear)
     for(let i=0;i<=n;i++){ const t=i/n, e=t*t*(3-2*t); rings.push({y:0.04-len*t,rx:lerp(0.108,0.128,Math.sin(t*Math.PI*0.7))*(1-0.82*Math.pow(t,3))*hv,rz:lerp(0.05,0.06,Math.sin(t*Math.PI*0.6))*(1-0.85*Math.pow(t,3)),zc:0.062+0.045*Math.sin(Math.min(1,t*1.8)*Math.PI*0.5)-0.02*t}); }
-    const cg=loftRings(rings,sg(32)), cp=cg.attributes.position; for(let i=0;i<cp.count;i++){ const x=cp.getX(i), z=cp.getZ(i); if(z>0.04) cp.setZ(i,z+0.0035*Math.sin(x*150)); if(H==='waves') cp.setX(i,x+0.012*Math.sin(cp.getY(i)*62)*Math.min(1,Math.abs(cp.getY(i)-0.04)*9)); } smoothN(cg); add(swing(cg));
-    for(let i=0;i<5;i++){ const f=i/4*2-1, y0=0.04-len*0.9, P=[[f*0.05,y0,0.105],[f*0.058,y0-0.05*hl,0.1],[f*0.06+0.012*Math.sin(i*2),y0-0.1*hl-0.02*i%2,0.092]]; add(swing(sweepTube(P,[0.02,0.017,0.002],sg(7),{cap:'point',rings:sg(8)}))); }
-    for(const sd of [-1,1]){ const P=[[sd*0.1,0.0,-0.01],[sd*0.114,-0.1*hl,-0.02],[sd*0.124,-0.22*hl,-0.025],[sd*0.12,-0.34*hl,-0.02]]; add(swing(sweepTube(P,[0.02,0.026,0.022,0.003],sg(8),{cap:'point',rings:sg(14)}))); } }
+    // a hanging curtain or lock keeps its colour root to tip (the shaded-dark default of lockHp made the gradient vanish on it): bright, strand streaks, only the top few cm darker
+    const flow=g=>{ const p=g.attributes.position; let t0=1e9, t1=-1e9; for(let i=0;i<p.count;i++){ const y=p.getY(i); if(y<t0) t0=y; if(y>t1) t1=y; } const E=Math.max(0.02,t1-t0);
+      return (x,y,z,c)=>{ const u=clamp((t1-y)/E,0,1), st=0.5+0.5*Math.sin(Math.atan2(x,z-0.06)*46+y*9); c.copy(hairCol).multiplyScalar((0.82+0.2*Math.min(1,u*5))*(0.92+0.2*st)*(1.1-0.12*u)); c.lerp(_tint.set(0xffe2b0),0.08*u*u*u); }; };
+    const cg=loftRings(rings,sg(32)), cp=cg.attributes.position; for(let i=0;i<cp.count;i++){ const x=cp.getX(i), z=cp.getZ(i); if(z>0.04) cp.setZ(i,z+0.0035*Math.sin(x*150)); if(H==='waves') cp.setX(i,x+0.012*Math.sin(cp.getY(i)*62)*Math.min(1,Math.abs(cp.getY(i)-0.04)*9)); } const cc=cg.attributes.position; for(let i=0;i<cc.count;i++){ const x=cc.getX(i), z=cc.getZ(i)-0.06, l=Math.hypot(x,z)||1, d=0.0045*Math.sin(Math.atan2(x,z)*46)*Math.min(1,(0.04-cc.getY(i))*14); cc.setX(i,x+x/l*d); cc.setZ(i,cc.getZ(i)+z/l*d); }   // strand grooves down the whole curtain
+    smoothN(cg); add(swing(cg),flow(cg));
+    for(let i=0;i<5;i++){ const f=i/4*2-1, y0=0.04-len*0.9, P=[[f*0.05,y0,0.105],[f*0.058,y0-0.05*hl,0.1],[f*0.06+0.012*Math.sin(i*2),y0-0.1*hl-0.02*i%2,0.092]]; { const g=swing(sweepTube(P,[0.02,0.017,0.002],sg(7),{cap:'point',rings:sg(8)})); add(g,flow(g)); } }
+    for(const sd of [-1,1]){ const P=[[sd*0.104,0.05,0.0],[sd*0.113,-0.04*hl,-0.012],[sd*0.12,-0.16*hl,-0.02],[sd*0.12,-0.28*hl,-0.02],[sd*0.114,-0.4*hl,-0.012]]; const g=sweepTube(P,[0.026,0.032,0.028,0.02,0.002],sg(8),{cap:'point',rings:sg(16)}); g.scale(0.75,1,1); g.translate(sd*0.004,0,0); add(swing(g),flow(g)); } }
   if(H==='ponytail'){ fringe(8,1.0,0.12); sideLocks(0.05); gather(0,0.2,0.3);
     // a gathered tail: from the tie at the back of the crown it arcs up and back a little, swells and falls in three locks of different length
     const P=[[0,0.082,0.088],[0,0.098,0.13],[0,0.06,0.18],[0,-0.05*hl,0.205],[0,-0.17*hl,0.2],[0.008,-0.3*hl,0.175]];
-    tail(P,[0.018,0.036,0.05,0.046,0.032,0.003],[[0,1,0],[-0.034,0.7,1],[0.034,0.6,0]]); wisps(P,0.03,3,0.014); tie(0,0.082,0.09,0.022); }
+    tail(P,[0.018,0.036,0.05,0.051,0.045,0.035,0.023,0.01,0.002],[[0,1,0],[-0.034,0.7,1],[0.034,0.6,0]]); asStrands(()=>wisps(P,0.03,3,0.014)); tie(0,0.082,0.09,0.022); }
   if(H==='buns2'){ fringe(8,1.0,0.12); sideLocks(0.05); backLocks(sg(10),-0.02,43); if(!hat) for(const sd of [-1,1]){ gather(sd*1.9,0.46,0.27); bun(sd*0.084,0.092,0.056,0.052,sd*1.1); tie(sd*0.074,0.066,0.062,0.022); } }
   if(H==='highpony'){ fringe(8,1.0,0.12); sideLocks(0.05); gather(0,0.15,0.2);
     const hpP=[[0,0.108,0.065],[0,0.135,0.095],[0,0.13,0.15],[0,0.07,0.195],[0,-0.06*hl,0.22],[0.008,-0.2*hl,0.205],[0.012,-0.32*hl,0.18]];
-    tail(hpP,[0.018,0.036,0.05,0.046,0.038,0.024,0.003],[[0,1,0],[-0.036,0.7,1],[0.036,0.62,0]]); wisps(hpP,0.034,3,0.014); tie(0,0.112,0.062,0.024); }
+    tail(hpP,[0.018,0.036,0.05,0.049,0.043,0.033,0.021,0.009,0.002],[[0,1,0],[-0.036,0.7,1],[0.036,0.62,0]]); asStrands(()=>wisps(hpP,0.034,3,0.014)); tie(0,0.112,0.062,0.024); }
   if(H==='sidebraid'){ fringe(8,1.0,0.12); sideLocks(0.06); backLocks(sg(12),0.0,61);
-    const len=0.42*hl; plait(t=>[0.1-0.012*t,-len*t,0.075+0.04*Math.sin(t*2.6)],len,0.0,0.088,0.08,1);
+    const len=0.42*hl; plait(t=>[0.1-0.012*t,-len*t,0.075+0.04*Math.sin(t*2.6)],len);
     tie(0.1,0.0,0.078,0.02); }
   if(H==='twintail'){ fringe(8,1.0,0.1); sideLocks(0.05);
-    // two tails from ties just above and behind the ears: full at the tie, a soft outward bow, tapering, three locks each
+    // two tails from ties just above and behind the ears: full at the tie, a soft outward bow, tapering, three locks each, fanned front to back (z)
     for(const sd of [-1,1]){ gather(sd*1.75,0.4,0.2);
       const ttP=[[sd*0.09,0.062,0.045],[sd*0.118,0.03,0.062],[sd*0.134,-0.07*hl,0.072],[sd*0.134,-0.19*hl,0.066],[sd*0.12,-0.31*hl,0.05],[sd*0.1,-0.4*hl,0.04]];
-      tail(ttP,[0.022,0.04,0.042,0.034,0.02,0.003],[[0,1,0],[0,0.7,-0.03],[0,0.65,0.03]],true); wisps(ttP,0.024,2,0.011); tie(sd*0.09,0.062,0.045,0.02); } }
+      tail(ttP,[0.022,0.04,0.045,0.041,0.033,0.022,0.01,0.002],[[0,1,0],[-0.026,0.7,1],[0.026,0.65,0]],true); asStrands(()=>wisps(ttP,0.024,2,0.011)); tie(sd*0.09,0.062,0.045,0.02); } }
   if(H==='braid'){ fringe(8,1.0,0.12); sideLocks(0.06); gather(0,0.25,0.3);
-    const len=0.45*hl; plait(t=>[0,-0.01-len*t,0.11+0.03*Math.sin(t*3)],len,0.0,0.0,0.105,0);
+    const len=0.45*hl; plait(t=>[0,-0.01-len*t,0.106-0.055*t+0.008*Math.sin(t*3)],len);   // (it lies on the back: it used to bow 3 cm out and hang clear of it)
     tie(0,-0.01,0.105,0.02); }
   if(H==='bun'){ fringe(8,1.0,0.12); sideLocks(0.05); backLocks(sg(10),-0.02,41); gather(1.9,0.46,0.27); gather(-1.9,0.46,0.27); if(!hat){ bun(0,0.1,0.082,0.064,0,-0.6); tie(0,0.064,0.088,0.026); } }
   if(L.ahoge&&!hat&&H!=='bald'){ add(swing(sweepTube([[0.004,0.1,-0.042],[0.0,0.17,-0.05],[-0.02,0.23,-0.036],[0.0,0.27,-0.012],[0.02,0.26,0.008]],[0.0075,0.0065,0.005,0.003,0.0012],sg(6),{cap:'point',rings:sg(14)}))); }
