@@ -40,7 +40,8 @@ const EDIT=[
       {k:'hairGrad',label:'Gradient',type:'seg',base:'hair',opts:HG_MODES.map(m=>m.slice())},
       {k:'hairColor2',num:2,hint:'Gradient end',type:'color',opts:HAIRC,base:'hair'},
       {k:'hairThird',label:'Third colour',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]},
-      {k:'hairColor3',num:3,hint:'Third',type:'color',opts:HAIRC,base:'hair'}
+      {k:'hairColor3',num:3,hint:'Third',type:'color',opts:HAIRC,base:'hair'},
+      {k:'bangStyle',label:'Fringe style',type:'seg',base:'hair',opts:[['swept','Swept'],['straight','Straight'],['parted','Parted'],['side','Side']]}
     ].concat(['hairLength','hairVolume','bangs','hairSwing'].map(k=>({slider:k}))).concat([
       {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]}])},
     {name:'Face', rows:[{k:'face',type:'grid',kind:'face',ids:()=>[['round'],['oval'],['angular']]}].concat(['head','jaw','chin','cheeks'].map(k=>({slider:k})))},
