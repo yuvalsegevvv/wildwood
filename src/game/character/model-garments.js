@@ -52,12 +52,18 @@ function gmTop(X,D){
     { const px=torsoSize(X,D,0.36).rx*0.45; out.push(pc(gfitSeat(X,D,new THREE.BoxGeometry(0.052,0.052,0.004,5,5,1),px,0.36,0.002),c=>gmCol(c,L.topColor,0.78)),solid(gfitSeat(X,D,new THREE.BoxGeometry(0.052,0.006,0.005,5,1,1),px,0.382,0.0035),dk)); }   // a chest pocket (seated on the body: the bust stands under it)
   } else if(top==='jacket'){
     for(const sd of [-1,1]){ const x=sd*torsoSize(X,D,0.14).rx*0.5;
-      out.push(pc(gfitSeat(X,D,new THREE.BoxGeometry(0.06,0.032,0.005,6,4,1),x,0.15,0.0025),c=>gmCol(c,L.topColor,0.74)));   // flapped pockets, seated on the body
-      out.push(solid(gfitSeat(X,D,new THREE.BoxGeometry(0.06,0.004,0.006,6,1,1),x,0.134,0.004),0x2a2a2a));
-      out.push(solid(gfitRibbon(X,D,[[sd*0.03,0.55],[sd*0.06,0.49]],0.03,{lift:0.006}),dk)); }   // the collar's folded flaps, lying on the chest
+      out.push(pc(gfitSeat(X,D,new THREE.BoxGeometry(0.06,0.032,0.005,6,4,1),x,0.15,0.0105),c=>gmCol(c,L.topColor,0.74)));   // flapped pockets, seated on the body
+      out.push(solid(gfitSeat(X,D,new THREE.BoxGeometry(0.06,0.004,0.006,6,1,1),x,0.134,0.012),0x2a2a2a));
+      out.push(solid(gfitRibbon(X,D,[[sd*0.035,0.55],[sd*0.075,0.47],[sd*0.05,0.4]],0.042,{lift:0.012}),dk)); }
+    // worn open: a second layer (an offset of the body, back and sides) whose two front edges stand apart over a pale shirt, so a jacket no longer reads as a T-shirt with pockets
+    { const jlim=(a,x)=>[hemY*TK,(0.505-0.17*gmSmooth((Math.abs(x)-0.05)/0.1))*TK], jfn=(x,y,z,c)=>{ gmCol(c,L.topColor,1); if(Math.abs(Math.atan2(x,-z))<0.5) c.multiplyScalar(0.72); };
+      out.push(pc(gfitRibbon(X,D,[[0,0.53],[0,hemY+0.035]],0.075,{lift:0.002,th:0.002}),c=>c.set(0xe8e4dc)));
+      if(sg(100)>=35) out.push(pc(gfitShell(X,hemY*TK,0.505*TK,0.008,{a0:0.3,a1:Math.PI,lim:jlim,coarse:4}),jfn),pc(gfitShell(X,hemY*TK,0.505*TK,0.008,{a0:-Math.PI,a1:-0.3,lim:jlim,coarse:4}),jfn)); }   // (not in light mode: the triangle budget)   // the collar's folded flaps, lying on the chest
     out.push(gmCollar(X,D,0.568,0.03,0.005,(x,y,z,c)=>gmCol(c,L.topColor,0.72)));   // the high collar: a band on the neck's own section
-    out.push(gmBand(X,D,hemY+0.03,hemY,(x,y,z,c)=>gmCol(c,L.topColor,0.62),0.005));   // the ribbed hem
+    out.push(gmBand(X,D,hemY+0.03,hemY,(x,y,z,c)=>gmCol(c,L.topColor,0.62),0.011));   // the ribbed hem
   } else if(top==='hoodie'){
+    { const sc=trsSection(X,D,0.54), zb=sc.zc+sc.rzB; out.push(pc(csph(1,sg(14),sg(10)).scale(0.095*B,0.072,0.052).translate(0,0.53*TK,zb+0.014),(x,y,z,c)=>gmCol(c,L.topColor,y>0.565*TK?0.66:0.9)));   // the hood, lying in a bundle behind the neck (its dark opening on top)
+      out.push(pc(gfitSeat(X,D,new THREE.BoxGeometry(0.15*B,0.075,0.006,8,5,1),0,0.085,0.005),c=>gmCol(c,L.topColor,0.8))); }   // the pouch pocket
     out.push(gmBand(X,D,hemY+0.035,hemY,(x,y,z,c)=>gmCol(c,L.topColor,0.66),0.005));
     for(const sd of [-1,1]) out.push(solid(gfitCord(X,D,[[sd*0.03,0.5],[sd*0.034,0.4],[sd*0.03,0.3]],r=>0.0035+0.001*r,{lift:0.004}),0xe8e4dc),solid(gfitSeat(X,D,csph(0.006,sg(6),sg(5)),sd*0.03,0.295,0.004),0xc9a13a));   // drawstrings lying on the body down from the neck, with tips
   } else if(top==='vest'){
@@ -125,8 +131,8 @@ function gmHips(X,D){
     if(b==='pleated'){ out.push(pc(ofRibbon([[0.02,0.05*TK,-rz-0.01],[0.06,0.02*TK,-rz-0.03],[0.09,-0.05,-rz-0.03],[0.07,-0.1,-rz-0.02]],0.03,{up:[0,0,-1],seg:sg(8),th:0.003}),c=>c.set(0xc0344a))); }   // a ribbon belt's bow
   }
   if(!kT&&L.top==='tunic'&&b!=='skirt'&&b!=='kilt'&&b!=='pleated'){   // the tunic's flare over the thighs
-    const rows=[{y:0.0,rx:s0.rx+0.014,rz:rm,zc},{y:-0.035,rx:s0.rx+0.03,rz:rm+0.016,zc},{y:-0.07,rx:s0.rx+0.048,rz:rm+0.03,zc},{y:-0.125,rx:s0.rx+0.066,rz:rm+0.044,zc},{y:-0.18,rx:s0.rx+0.08,rz:rm+0.054,zc}];   // five rings: a curve that eases out
-    out.push(pc(ofLoft(rows,sg(36),0,TAU),(x,y,z,c)=>{ c.set(L.topColor); if(y<-0.16) c.set(0xe8d9b0); else if(y<-0.15) c.multiplyScalar(0.7); }));
+    const rows=[{y:0.0,rx:s0.rx+0.014,rz:rm,zc},{y:-0.035,rx:s0.rx+0.03,rz:rm+0.016,zc},{y:-0.08,rx:s0.rx+0.05,rz:rm+0.032,zc},{y:-0.16,rx:s0.rx+0.07,rz:rm+0.048,zc},{y:-0.25,rx:s0.rx+0.086,rz:rm+0.06,zc}];   // five rings: a curve that eases out
+    out.push(pc(ofLoft(rows,sg(36),0,TAU),(x,y,z,c)=>{ c.set(L.topColor); if(y<-0.225) c.set(0xe8d9b0); else if(y<-0.212) c.multiplyScalar(0.7); }));   // (to mid-thigh: a tunic, where the shorter one read as a T-shirt's hem)
   }
   out.push(...gmxHips(X,D));   // the crafted bottoms' belts, flaps and sashes (model-garments-more.js)
   return out;
