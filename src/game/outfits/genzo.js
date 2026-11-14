@@ -33,9 +33,13 @@ OUTFITS.genzo=(function(){
       return out; };
 
     /* ---- the hair: a close crop with a small knot on top bound with a bronze ring ---- */
-    const knot=(F,T)=>{ T.crown(0.108,0.4,0.2); T.fringe(5,0.5,0.1); T.sideLocks(0.02); T.backLocks(sg(10),0,11);
-      T.add(csph(0.034,sg(10),sg(8)).scale(1,1.15,1).translate(0,0.126*F.fs[1]/1,0.005),(x,y,z,c)=>{ T.hp(x,y,z,c); });
-      return [solid(ofRingAt([0,0.108,0.005],[0,1,0],0.03,0.0042,sg(6)),BRONZE)]; };
+    const knot=(F,T)=>{ const hv=T.hv, fy=F.fs[1]; T.add(T.fit(T.scalp(0.109*hv,0.06))); T.fringe(5,0.5,0.1); T.sideLocks(0.02); T.backLocks(sg(10),0,11);
+      // the hair is drawn up to the crown: ribbons lying on the scalp that all end at the knot's root, then a tied neck, a bronze ring and the knot with a short tail of loose hair
+      for(let i=0;i<6;i++){ const th=0.4+i*TAU/6; T.add(T.scalpLock(th,0.48*Math.PI,0.1*Math.PI,[0.006,0.011,0.012,0.008,0.002],{sw:0.1,lift:0.004,k:0.5,R:T.R-0.002})); }
+      T.add(sweepTube([[0,0.1*fy,0.004],[0,0.122*fy,0.006],[0,0.136*fy,0.008]],[0.03,0.02,0.017],sg(8),{cap:'round',rings:sg(8)}),T.hp);
+      T.add(csph(0.036,sg(12),sg(10)).scale(0.95,0.8,1).rotateX(-0.25).translate(0,0.156*fy,0.014),T.hp);
+      T.add(sweepTube([[0,0.16*fy,0.03],[0,0.18*fy,0.05],[0.004,0.186*fy,0.075]],[0.014,0.01,0.001],sg(6),{cap:'point',rings:sg(8)}),T.hp);
+      return [solid(ofRingAt([0,0.134*fy,0.008],[0,1,0],0.021,0.0042,sg(6)),BRONZE)]; };
 
     /* ---- the belt: a thick rope belt (ink and white strands) with a bronze bell and a tail, bronze shoulder guards ---- */
     const belt=()=>{ const s=torsoSize(X,D,0.03), rz=Math.max(s.rz,s.rzBack)+0.012, out=[];

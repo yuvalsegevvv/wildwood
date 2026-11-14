@@ -107,7 +107,8 @@ OUTFITS.torgeir=(function(){
     /* ---- the braids: two thick three-strand braids from behind the ears over the collar to the chest, bone rings along them and a big bone ring at the tip ---- */
     const braids=(F,T)=>{
       const hv=Math.min(T.hv,1.03), RH=0.118*hv;
-      T.add(T.fit(shell(0.113*hv,0,0.5*Math.PI,0,0.3,sg(26),sg(11))));                 // the hair under the helm: a cap (a hairline between the brow band and the brows)
+      T.add(T.fit(T.scalp(0.112*hv,0.08)));                 // the hair under the helm: a cap with a real hairline, then swept locks over it
+      T.backLocks(sg(14),0.02,17);
       // a short forelock under the brow band: four locks, tapering, swept to the left
       { const rng=mulberry32(91); for(let i=0;i<4;i++){ const f=i/3*2-1, af=Math.abs(f), yb=0.046-0.004*rng(), ph1=Math.acos(clamp(yb/RH,-0.9,0.9)), w=0.0125-0.003*af+0.002*rng();
           T.add(T.scalpLock(f*0.75,0.3*Math.PI,ph1,[0.009,w,w*1.1,w*0.6,0.0015],{sw:-0.12+f*0.16,tip:0.07,lift:0.003+0.004*(1-af),k:0.42,R:RH-0.009}),(x,y,z,c)=>{ T.hp(x,y,z,c); c.lerp(cHairD,0.12*(1-af)); }); } }

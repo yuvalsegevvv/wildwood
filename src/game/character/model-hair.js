@@ -76,20 +76,36 @@ function buildHair(X,F){
       if(R0.length<3) continue;
       add(swing(sweepTube(R0.map((q,i)=>{ const f=(i+1)/R0.length; return [q[0]+ox*spread*f*f,q[1]-0.01*f,q[2]+oz*spread*f*f]; }),[w*0.33,w*0.3,w*0.22,0.0012],5,{cap:'point',rings:10}))); } };
   const tie=(x,y,z,r)=>add(csph(r,sg(10),sg(8)).scale(1,0.8,1).translate(x,y,z),(xx,yy,zz,c)=>c.set(0xc83a4a));
+  // tied tails: `offs` are [sideways shift, thickness, shorter-by-one-point 0/1] per lock; a shift grows toward the tip so the tail fans out and frays (z for twintails: `zs`)
+  const tail=(P,rad,offs,zs)=>{ for(const [dx,w,cut] of offs){ const Q=P.slice(0,P.length-(cut?1:0)).map((q,i)=>{ const f=i/(P.length-1), d=dx*f*(0.4+f); return zs?[q[0],q[1],q[2]+d]:[q[0]+d,q[1],q[2]]; });
+    add(swing(sweepTube(Q,rad.map(r=>r*(w>0.9?1:w)),sg(10),{cap:'point',rings:sg(18)}))); } };
+  // hair gathered toward a tie: a pair of locks lying on the scalp that sweep from the temple up toward th (the tie), so the tail does not sprout from nowhere
+  const gather=(th,ph1,sw)=>{ if(hat) return; for(const k of [0,1]) add(scalpLock(th+(th===0?(k?1:-1)*0.9:-Math.sign(th)*0.2*k),0.52*Math.PI-0.03*Math.PI*k,ph1*Math.PI,[0.006,0.012,0.012,0.008,0.0015],{sw:th===0?(k?-1:1)*sw:Math.sign(th)*sw,lift:0.006+0.003*k,k:0.5})); };
+  // a plait: a chain of overlapping flattened lobes leaning alternately left and right along the path fn(t), ending in a tuft
+  const plait=(fn,len,_a,_b,_c,side)=>{ const n=sg(100)>=50?12:8; for(let i=0;i<n;i++){ const t=(i+0.5)/n, p=fn(t), s=i%2?1:-1, r=0.022*(1-0.45*t);
+      add(swing(csph(r,sg(8),sg(6)).scale(1,(n>8?1.9:2.5),0.8).rotateZ(s*0.8).translate(p[0]+s*0.01*(1-0.4*t),p[1],p[2]))); }
+    const e=fn(1); for(let k=-1;k<=1;k++) add(swing(sweepTube([[e[0]+k*0.004,e[1],e[2]],[e[0]+k*0.012,e[1]-0.02,e[2]],[e[0]+k*0.02,e[1]-0.045,e[2]-0.004]],[0.008,0.006,0.001],5,{cap:'point',rings:6}))); tie(e[0],e[1]+0.002,e[2],0.016); };
+  // a wound bun: a flattened ball (axis z, turned by `ry`) with two strands spiralling out of its centre, so it reads as hair wrapped round itself
+  const bun=(cx,cy,cz,r,ry,rx)=>{ const mk=g=>{ g.rotateX(rx||0); g.rotateY(ry); g.translate(cx,cy,cz); return g; }; add(hang(mk(csph(r,sg(16),sg(12)).scale(1,0.95,0.7))));
+    for(let k=0;k<2;k++){ const P=[]; for(let i=0;i<=9;i++){ const f=i/9, a=k*Math.PI+f*TAU*1.25, rr=r*(0.15+0.82*f); P.push([Math.cos(a)*rr,Math.sin(a)*rr*0.95,r*0.7*Math.sqrt(Math.max(0.05,1-f*f*0.9))+0.003]); }
+      add(hang(mk(sweepTube(P,[0.012*r/0.05,0.011*r/0.05,0.01*r/0.05,0.008*r/0.05,0.003],sg(6),{cap:'point',rings:sg(20)})))); } };
 
   // a signature outfit's hair item and head item (docs/CHARACTER.md section 9): kH.hair(F, T) composes the pieces above (T) and its own geometry (T.add paints and collects it), kHat.head(F, T) is the hat, built after the base hats below
-  const T={add,swing,wisps,sp,flat,fit,hang,scalpLock,crown,fringe,sideLocks,backLocks,blade,tie,hp,R,hv,hl,bg};
+  const T={add,swing,wisps,sp,flat,fit,hang,scalp,scalpLock,crown,fringe,sideLocks,backLocks,blade,tie,hp,R,hv,hl,bg};
   if(kH&&kH.hair){ const n0=parts.length, ex=kH.hair(F,T); if(ex) parts.push(...ex); ofTintFrom(X,'hair',parts,n0); }
   if(H==='buzz') add(fit(scalp(0.108*hv,0.035)));
   if(H==='short'){ add(fit(scalp(0.114*hv))); add(fit(band(0.111*hv,0.38*Math.PI,0.17*Math.PI,1.9,sg(30),sg(8)))); fringe(8,1.0,0.14); sideLocks(0.05); backLocks(sg(18),0,11); }
   const hatOver=hat&&!['circlet','bandana','laurel','catphones'].includes(L.hat);   // a hat that covers the crown: the blades standing off the scalp would poke through it
   if(H==='messy'){ add(fit(scalp(0.116*hv))); fringe(8,1.05,0.3); sideLocks(0.05); backLocks(sg(14),0.02,21);
     const rng=mulberry32(4242); for(let i=0;i<(hatOver?0:10);i++){ const th=rng()*TAU, ph=(0.14+rng()*0.3)*Math.PI; add(hang(blade(th,ph,(0.04+rng()*0.04)*(0.8+0.3*hl),0.016+rng()*0.006,[(rng()-0.5)*0.6,0.1+rng()*0.3,0.2+rng()*0.4]))); } }
-  if(H==='spiky'){ add(fit(scalp(0.114*hv))); sideLocks(0.05); backLocks(sg(12),0.01,31);
-    // blades fanned over the crown and swept back, three longer ones pointing forward over the brow
-    for(const [th,ph,len,lean] of [[0.25,0.13,0.085,[0,0.5,0.9]],[-0.35,0.15,0.08,[0,0.5,0.9]],[0.9,0.2,0.085,[0.2,0.35,0.8]],[-0.95,0.2,0.085,[-0.2,0.35,0.8]],[1.7,0.28,0.085,[0.2,0.2,0.7]],[-1.7,0.28,0.085,[-0.2,0.2,0.7]],[2.5,0.27,0.08,[0,0.1,0.6]],[-2.5,0.27,0.08,[0,0.1,0.6]],[3.1,0.25,0.085,[0,0,0.6]]]) if(!hatOver) add(hang(blade(th,ph*Math.PI,len*(0.85+0.25*hl),0.03,lean)));
-    if(!hatOver) for(const f of [-0.75,0,0.75]){ const th=f*0.8, ph=0.2*Math.PI, len=0.06*Math.max(0.3,bg), a=sp(th,ph,R*0.97), d=sp(th,0.42*Math.PI,1);
-      add(fit(sweepTube([a,[a[0]+d[0]*len*0.5,a[1]+d[1]*len*0.2+0.01,a[2]+d[2]*len*0.5],[a[0]+d[0]*len,a[1]-0.045*Math.max(0.3,bg),a[2]+d[2]*len*1.1]],[0.022,0.02,0.002],sg(8),{cap:'point',rings:sg(9)}))); } }
+  if(H==='spiky'){ add(fit(scalp(0.114*hv))); sideLocks(0.05); backLocks(sg(10),0.01,31);
+    // layered anime spikes: rows of blades that all sweep up and back, big on the crown, smaller toward the sides and nape (the lean is the same in the world frame)
+    if(!hatOver) for(const [n,ph,len,off,half] of [[6,0.15,0.1,0.3,1],[7,0.29,0.08,0.1,1],[sg(100)>=50?6:0,0.42,0.06,0.2,0.62]]) for(let i=0;i<n;i++){
+      const th=half<1?Math.PI-Math.PI*half+(i+0.5)/n*2*Math.PI*half:(i+off)/n*TAU, fr=Math.abs(Math.cos(th*0.5));   // fr: 1 at the front, 0 at the back
+      add(hang(blade(th,ph*Math.PI,len*(0.85+0.25*hl)*(1-0.15*fr),0.03*(1-0.2*(ph>0.3?1:0)),[-Math.sin(th)*0.7,0.65,0.85])));
+      }
+    if(!hatOver) for(const f of [-0.7,0,0.7]){ const th=f*0.8, ph=0.2*Math.PI, len=0.05*Math.max(0.3,bg), a=sp(th,ph,R*0.97), d=sp(th,0.42*Math.PI,1);
+      add(fit(sweepTube([a,[a[0]+d[0]*len*0.5,a[1]+d[1]*len*0.2+0.01,a[2]+d[2]*len*0.5],[a[0]+d[0]*len,a[1]-0.04*Math.max(0.3,bg),a[2]+d[2]*len*1.1]],[0.022,0.02,0.002],sg(8),{cap:'point',rings:sg(9)}))); } }
   if(H==='curly'){ const r=hat?(L.hat==='helm'?0.11:0.118):0.132*hv, lump=(x,y,z)=>0.5+0.5*Math.sin(x*105+1.3)*Math.sin(y*118+0.4)*Math.sin(z*105+2.1);
     add(fit(scalp(0.109*hv)));   // the hairline underneath, so no bald skin shows between the curls
     { const g=cap(r,0.5,0.34,0.14), p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i),y=p.getY(i),z=p.getZ(i),j=1+0.13*lump(x,y,z)+(h3(x*3,y*3,z*3)-0.5)*0.05; p.setXYZ(i,x*j,y*j,z*j); } smoothN(g); add(fit(g)); }   // a mass of round lumps (curls), not a smooth ball with noise
@@ -103,25 +119,26 @@ function buildHair(X,F){
     const cg=loftRings(rings,sg(32)), cp=cg.attributes.position; for(let i=0;i<cp.count;i++){ const x=cp.getX(i), z=cp.getZ(i); if(z>0.04) cp.setZ(i,z+0.0035*Math.sin(x*150)); if(H==='waves') cp.setX(i,x+0.012*Math.sin(cp.getY(i)*62)*Math.min(1,Math.abs(cp.getY(i)-0.04)*9)); } smoothN(cg); add(swing(cg));
     for(let i=0;i<5;i++){ const f=i/4*2-1, y0=0.04-len*0.9, P=[[f*0.05,y0,0.105],[f*0.058,y0-0.05*hl,0.1],[f*0.06+0.012*Math.sin(i*2),y0-0.1*hl-0.02*i%2,0.092]]; add(swing(sweepTube(P,[0.02,0.017,0.002],sg(7),{cap:'point',rings:sg(8)}))); }
     for(const sd of [-1,1]){ const P=[[sd*0.1,0.0,-0.01],[sd*0.114,-0.1*hl,-0.02],[sd*0.124,-0.22*hl,-0.025],[sd*0.12,-0.34*hl,-0.02]]; add(swing(sweepTube(P,[0.02,0.026,0.022,0.003],sg(8),{cap:'point',rings:sg(14)}))); } }
-  if(H==='ponytail'){ fringe(8,1.0,0.12); sideLocks(0.05); tie(0,0.07,0.088,0.02);
-    const P=[[0,0.078,0.09],[0,0.05,0.16],[0,-0.03,0.2],[0,-0.14*hl,0.185],[0.012,-0.26*hl,0.15]];
-    add(swing(sweepTube(P,[0.026,0.036,0.04,0.03,0.003],sg(10),{cap:'point',rings:sg(18)}))); wisps(P,0.03,3,0.012);
-    for(const sd of [-1,1]) add(swing(sweepTube([[sd*0.012,0.075,0.092],[sd*0.03,0.04,0.17],[sd*0.042,-0.04,0.2],[sd*0.04,-0.15*hl,0.18],[sd*0.03,-0.24*hl,0.15]],[0.012,0.02,0.022,0.016,0.002],sg(8),{cap:'point',rings:sg(14)}))); }
-  if(H==='buns2'){ fringe(8,1.0,0.12); sideLocks(0.05); backLocks(sg(10),-0.02,43); if(!hat) for(const sd of [-1,1]){ add(hang(csph(0.05,sg(16),sg(12)).translate(sd*0.082,0.088,0.056))); tie(sd*0.075,0.06,0.066,0.036); } }
-  if(H==='highpony'){ fringe(8,1.0,0.12); sideLocks(0.05); tie(0,0.108,0.07,0.024);
-    const hpP=[[0,0.112,0.07],[0,0.15,0.13],[0,0.09,0.205],[0,-0.06*hl,0.24],[0.01,-0.22*hl,0.215],[0.014,-0.32*hl,0.18]]; add(swing(sweepTube(hpP,[0.026,0.036,0.04,0.034,0.024,0.003],sg(10),{cap:'point',rings:sg(20)}))); wisps(hpP,0.034,3,0.014); }
+  if(H==='ponytail'){ fringe(8,1.0,0.12); sideLocks(0.05); gather(0,0.2,0.3);
+    // a gathered tail: from the tie at the back of the crown it arcs up and back a little, swells and falls in three locks of different length
+    const P=[[0,0.082,0.088],[0,0.098,0.13],[0,0.06,0.18],[0,-0.05*hl,0.205],[0,-0.17*hl,0.2],[0.008,-0.3*hl,0.175]];
+    tail(P,[0.018,0.036,0.05,0.046,0.032,0.003],[[0,1,0],[-0.034,0.7,1],[0.034,0.6,0]]); wisps(P,0.03,3,0.014); tie(0,0.082,0.09,0.022); }
+  if(H==='buns2'){ fringe(8,1.0,0.12); sideLocks(0.05); backLocks(sg(10),-0.02,43); if(!hat) for(const sd of [-1,1]){ gather(sd*1.9,0.46,0.27); bun(sd*0.084,0.092,0.056,0.052,sd*1.1); tie(sd*0.074,0.066,0.062,0.022); } }
+  if(H==='highpony'){ fringe(8,1.0,0.12); sideLocks(0.05); gather(0,0.15,0.2);
+    const hpP=[[0,0.108,0.065],[0,0.135,0.095],[0,0.13,0.15],[0,0.07,0.195],[0,-0.06*hl,0.22],[0.008,-0.2*hl,0.205],[0.012,-0.32*hl,0.18]];
+    tail(hpP,[0.018,0.036,0.05,0.046,0.038,0.024,0.003],[[0,1,0],[-0.036,0.7,1],[0.036,0.62,0]]); wisps(hpP,0.034,3,0.014); tie(0,0.112,0.062,0.024); }
   if(H==='sidebraid'){ fringe(8,1.0,0.12); sideLocks(0.06); backLocks(sg(12),0.0,61);
-    const len=0.42*hl; for(let s=0;s<3;s++){ const ph=s*TAU/3, P=[]; for(let i=0;i<=10;i++){ const t=i/10; P.push([0.1+0.02*Math.sin(t*16+ph)*(0.4+0.6*t)-0.012*t,0.0-len*t,0.075+0.04*Math.sin(t*2.6)+0.014*Math.cos(t*16+ph)]); }
-      add(swing(sweepTube(P,[0.02,0.026,0.026,0.024,0.014,0.003],sg(8),{cap:'point',rings:sg(30)}))); }
-    tie(0.088,0.0,0.08,0.02); tie(0.088,-len*0.97,0.1,0.017); }
+    const len=0.42*hl; plait(t=>[0.1-0.012*t,-len*t,0.075+0.04*Math.sin(t*2.6)],len,0.0,0.088,0.08,1);
+    tie(0.1,0.0,0.078,0.02); }
   if(H==='twintail'){ fringe(8,1.0,0.1); sideLocks(0.05);
-    for(const sd of [-1,1]){ tie(sd*0.088,0.07,0.04,0.018);
-      const ttP=[[sd*0.088,0.07,0.04],[sd*0.15,0.045,0.07],[sd*0.19,-0.06,0.1],[sd*0.2,-0.2*hl,0.09],[sd*0.17,-0.34*hl,0.05]]; add(swing(sweepTube(ttP,[0.02,0.03,0.032,0.024,0.003],sg(10),{cap:'point',rings:sg(18)}))); wisps(ttP,0.024,2,0.011); } }
-  if(H==='braid'){ fringe(8,1.0,0.12); sideLocks(0.06); tie(0,0.0,0.105,0.02);
-    const len=0.45*hl; for(let s=0;s<3;s++){ const ph=s*TAU/3, P=[]; for(let i=0;i<=10;i++){ const t=i/10; P.push([0.022*Math.sin(t*16+ph)*(0.4+0.6*t)*(1-0.3*t),-0.01-len*t,0.11+0.03*Math.sin(t*3)+0.016*Math.cos(t*16+ph)]); }
-      add(swing(sweepTube(P,[0.02,0.026,0.026,0.024,0.014,0.003],sg(8),{cap:'point',rings:sg(30)}))); }
-    tie(0,-0.01-len*0.96,0.116,0.017); }
-  if(H==='bun'){ fringe(8,1.0,0.12); sideLocks(0.05); backLocks(sg(10),-0.02,41); if(!hat){ add(hang(csph(0.056,sg(16),sg(12)).translate(0,0.092,0.078))); tie(0,0.058,0.085,0.045); } }
+    // two tails from ties just above and behind the ears: full at the tie, a soft outward bow, tapering, three locks each
+    for(const sd of [-1,1]){ gather(sd*1.75,0.4,0.2);
+      const ttP=[[sd*0.09,0.062,0.045],[sd*0.118,0.03,0.062],[sd*0.134,-0.07*hl,0.072],[sd*0.134,-0.19*hl,0.066],[sd*0.12,-0.31*hl,0.05],[sd*0.1,-0.4*hl,0.04]];
+      tail(ttP,[0.022,0.04,0.042,0.034,0.02,0.003],[[0,1,0],[0,0.7,-0.03],[0,0.65,0.03]],true); wisps(ttP,0.024,2,0.011); tie(sd*0.09,0.062,0.045,0.02); } }
+  if(H==='braid'){ fringe(8,1.0,0.12); sideLocks(0.06); gather(0,0.25,0.3);
+    const len=0.45*hl; plait(t=>[0,-0.01-len*t,0.11+0.03*Math.sin(t*3)],len,0.0,0.0,0.105,0);
+    tie(0,-0.01,0.105,0.02); }
+  if(H==='bun'){ fringe(8,1.0,0.12); sideLocks(0.05); backLocks(sg(10),-0.02,41); gather(1.9,0.46,0.27); gather(-1.9,0.46,0.27); if(!hat){ bun(0,0.1,0.082,0.064,0,-0.6); tie(0,0.064,0.088,0.026); } }
   if(L.ahoge&&!hat&&H!=='bald'){ add(swing(sweepTube([[0.004,0.1,-0.042],[0.0,0.17,-0.05],[-0.02,0.23,-0.036],[0.0,0.27,-0.012],[0.02,0.26,0.008]],[0.0075,0.0065,0.005,0.003,0.0012],sg(6),{cap:'point',rings:sg(14)}))); }
 
   if(H!=='bald'&&H!=='buzz'&&!hat&&sg(100)>=50){   // (not on phones) a few loose strands standing off the crown (version 3.2), the same ones every build

@@ -285,7 +285,11 @@ OUTFITS.corvin=(function(){
 
     /* ================= the hair: silver, combed back in soft waves; a toothed skirt of hair at the back under the cap, two swept locks over each temple, a short tied tail at the nape ================= */
     const hair=(F,T)=>{ const R=T.R, hl=T.hl, out=[], pal=(x,y,z,c)=>{ T.hp(x,y,z,c); const w=Math.sin(Math.atan2(x,-z)*13+y*34)*0.5+0.5; c.lerp(ofCol(0xdedad2),0.24*w*clamp(y*14+0.6)); if(y<-0.03) c.multiplyScalar(0.84); };
-      T.add(T.fit(shell(0.112,0,0.4*Math.PI,0,0.22,sg(24),sg(8))),pal);
+      T.add(T.fit(T.scalp(0.111*T.hv,0.08)),pal);   // the hairline (high at the temples), then locks combed from it over the crown to the nape
+      { const n=sg(100)>=50?11:7; for(let i=0;i<n;i++){ const b0=(i/(n-1)*2-1)*1.05, ab=Math.abs(b0), a0=0.55+0.1*ab, a1=2.9+0.35*(1-ab)+0.1*Math.sin(i*2.3), P=[];
+          for(let k=0;k<=6;k++){ const f=k/6, a=lerp(a0,a1,f), b=b0*(1-0.3*f)+0.05*Math.sin(f*5+i), cb=Math.cos(b), rr=R+0.004*Math.sin(f*Math.PI)+0.004*(1-ab)*Math.sin(f*Math.PI);   // a: arc from the front over the top to the back
+            P.push([rr*Math.sin(b),rr*cb*Math.sin(a),-rr*cb*Math.cos(a)]); }
+          const w=0.0125+0.004*(1-ab), g=sweepTube(P,[0.006,w,w*1.15,w*0.9,w*0.5,0.0015],sg(8),{cap:'point',rings:sg(16)}); T.flat(g,0.55); T.add(T.fit(g),pal); } }
       // the skirt: a shell over the back of the head whose lower edge runs high over the ears and down to the nape, cut into teeth
       { const g=shell(0.118+0.03*(T.hv-1),0.34*Math.PI,0.4*Math.PI,3.2,0,sg(36),sg(8)), p=g.attributes.position, p0=0.34*Math.PI, tl=0.4*Math.PI;
         for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), rr=Math.hypot(x,y,z), pol=Math.acos(clamp(y/rr,-1,1)), t=(pol-p0)/tl, az=Math.atan2(x,z), bf=smoothstep(0,1,clamp(1-Math.abs(az)/1.45));

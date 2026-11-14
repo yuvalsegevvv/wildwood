@@ -118,7 +118,8 @@ OUTFITS.sazanka=(function(){
     /* ================= the hair: a short crop under the hood, a long jagged fringe, a short lock on the right and one long lock on the left, tied with cord ================= */
     const hair=(F,T)=>{
       const out=[], hp=hp2(T), hl=T.hl, bg=T.bg, R=T.R;
-      out.push(paint(T.fit(shell(0.113*T.hv,0,0.5*Math.PI,0,0.3,sg(28),sg(10))),hp));                                  // the crop, mostly under the hood
+      out.push(paint(T.fit(T.scalp(0.112*T.hv,0.14)),hp));                                  // the crop, mostly under the hood: a real hairline with a ragged edge
+      T.backLocks(sg(6),0.0,23);                                                           // short strands over the cap, so the edge is hair and not a rim
       if(bg>=0.05){ const rng=mulberry32(91), n=8;
         for(let i=0;i<n;i++){ const f=i/(n-1)*2-1, af=Math.abs(f), yb=0.072-0.03*bg-0.012*bg*(i%2)-0.012*rng()*bg, ph1=Math.acos(clamp(yb/R,-0.9,0.9)), w=0.0155-0.0035*af+0.003*rng();
           out.push(paint(T.scalpLock(f*1.0,0.29*Math.PI,ph1,[0.009,w,w*1.1,w*0.6,0.0015],{sw:0.2*(0.7+0.6*(1-af))+f*0.22,tip:0.11*bg,lift:0.002+0.006*(1-af),k:0.42}),hp)); } }
