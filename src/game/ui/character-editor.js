@@ -37,10 +37,10 @@ const EDIT=[
     {name:'Hair', rows:[
       {k:'hair',type:'grid',kind:'hair',slot:'r',ids:edHair},
       {k:'hairColor',num:1,hint:'Hair',type:'color',opts:HAIRC,base:'hair'},{type:'palette',slot:'hair'},
-      {k:'hairGrad',label:'Gradient',type:'seg',base:'hair',opts:HG_MODES.map(m=>m.slice())},
-      {k:'hairColor2',num:2,hint:'Gradient end',type:'color',opts:HAIRC,base:'hair'},
-      {k:'hairThird',label:'Third colour',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]},
-      {k:'hairColor3',num:3,hint:'Third',type:'color',opts:HAIRC,base:'hair'},
+      {k:'hairGrad',label:'Gradient',type:'seg',base:'hair',grad:true,opts:HG_MODES.map(m=>m.slice())},
+      {k:'hairColor2',num:2,hint:'Gradient end',type:'color',opts:HAIRC,base:'hair',grad:true},
+      {k:'hairThird',label:'Third colour',type:'seg',base:'hair',grad:true,opts:[[true,'On'],[false,'Off']]},
+      {k:'hairColor3',num:3,hint:'Third',type:'color',opts:HAIRC,base:'hair',grad:true},
       {k:'bangStyle',label:'Fringe style',type:'seg',base:'hair',opts:[['swept','Swept'],['straight','Straight'],['parted','Parted'],['side','Side']]}
     ].concat(['hairLength','hairVolume','bangs','hairSwing'].map(k=>({slider:k}))).concat([
       {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]}])},
@@ -217,7 +217,7 @@ function renderEditor(){
   for(const row of edCur().rows){
     if(row.fem && LOOK.sex!=='female') continue;
     if(row.when&&!row.when()) continue;   // a slider that only matters for what is worn (the skirt sliders)
-    if(row.base && ofPieces(LOOK)[row.base] && row.type!=='color') continue;   // an outfit's piece in that slot has its own look: these rows (facial hair, antenna hair, backpack) do nothing while it is worn
+    if(row.base && ofPieces(LOOK)[row.base] && row.type!=='color' && !row.grad) continue;   // (the gradient rows stay: a signature hair takes the same gradient, model-hairgrad.js)   // an outfit's piece in that slot has its own look: these rows (facial hair, antenna hair, backpack) do nothing while it is worn
     if(row.only && !ofPieces(LOOK)[row.base]) continue;
     if(row.need&&!LOOK[row.need]) continue;   // a colour row of a cape or an aura that is not worn   // a recolour row of a piece that is not worn
     const wrap=document.createElement('div'); wrap.className='ed-row'+(row.label||row.slider||row.type==='setups'?'':' ed-sub');
@@ -275,9 +275,9 @@ function renderEditor(){
       }
       wrap.append(box);
     } else if(row.type==='color'){
-      const tinted=row.base&&(ofPieces(LOOK)[row.base]||gmxAliased(LOOK,row.base)), key=tinted?OF_TINT[row.base]:row.k;   // a worn outfit piece is recoloured (-1 = the colours it was designed in)
+      const tinted=!row.grad&&row.base&&(ofPieces(LOOK)[row.base]||gmxAliased(LOOK,row.base)), key=tinted?OF_TINT[row.base]:row.k;   // a worn outfit piece is recoloured (-1 = the colours it was designed in)
       if(tinted&&row.num>1) continue;   // (the second and third hair colour belong to the base hair: a worn set has its own colour blocks)
-      edColourBlock(wrap,{title:row.skin?'Skin tone':'Colour '+(row.num||1),hint:row.hint||row.label||'',get:()=>LOOK[key],set:v=>setLook(key,v),opts:row.opts,premium:row.premium,
+      edColourBlock(wrap,{title:row.skin?'Skin tone':row.grad&&ofPieces(LOOK)[row.base]?'Gradient colour '+(row.num-1):'Colour '+(row.num||1),hint:row.hint||row.label||'',get:()=>LOOK[key],set:v=>setLook(key,v),opts:row.opts,premium:row.premium,
         designed:tinted?{label:'Designed colours',on:!(LOOK[key]>=0),click:()=>setLook(key,-1)}:null});
     } else if(row.type==='voice'){
       // the hero's skill shouts (audio/voices-hero.js): a male or a female voice, or the worn outfit set's own voice
