@@ -399,6 +399,7 @@ game
   world/plant-models-more.js         More tree species for variety: poplar, beech, willow, stone pine, cedar, ginkgo, larch, acacia and the gloom oak (G.trees / G.treesHi, a low-poly and a detailed model each)
   world/bush-models.js               Bush kinds beyond the leafy shrub: berry bush, hazel, juniper (frost juniper in the Reach), thorny thicket and dry scrub, a detailed and a low-poly model each, and bshKind / bshAdd that place them in genChunk's bush loop without drawing a random number
   world/stands.js                    Stands, veteran trees and road verges for genChunk's post-passes: species grow in ~60 m patches, one giant oak or beech per ~200 m with a court of ferns and mushrooms, and flowers along the roads; none of it draws from the chunk's rand
+  world/land-extras.js               Per-land vegetation passes for genChunk: the home forest's autumn colours, more cherry trees, bamboo and flowers in the Sakura Vale, the Gloamhorn's dead trees, pumpkin patches and spider webs, and the Sunscar's thinning (ghost trees)
   world/grass-models.js              Grass tufts in three levels of detail (fanned bunches of tapering blades: green, tall, drooping dry ones and seed stalks; grassMat colours and moves them), grass placement helpers (grassTint, grassSort), flowers with petals
   world/instancing.js                Chunked instanced meshes (frustum culled, with per-instance levels of detail), distance culling, tree collision grid (addCol, nearCols)
   player/state.js                    Player state P and spawn point

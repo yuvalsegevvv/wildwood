@@ -82,7 +82,7 @@ function* genChunk(ci){
 
   // trees
   const items={}; for(const k in G.trees) items[k]=[];
-  const trees=[];
+  const trees=[], sunGhosts=[];
   const isl=chunkRect(ci,0), ISK=inIsles((isl[0]+isl[1])/2,(isl[2]+isl[3])/2)?1.9:1;   // emberwake: the isles' jungle is twice as dense
   const MAXT=Math.round(2400*Q*per*ISK); let placed=0;
   for(let a=0;a<70000*per*ISK && placed<MAXT;a++){
@@ -126,7 +126,9 @@ function* genChunk(ci){
       addCol(x,z,RAD[type]*s);
       const m=mtx(x,h-0.15,z,rand()*TAU,s,s*R(0.92,1.1),s,R(-0.04,0.04),R(-0.04,0.04));
       type=treeVariety(type,x,z,h,'sun');   // (after the matrix: nothing above draws on the type)
-      items[type].push({x,z,m,c:tint(type==='thorn'?pick(PAL.thorn):type==='acacia'?pick(PAL.acacia):type==='dragontree'?pick(PAL.dragontree):pick(PAL.palm))}); trees.push({x,z,s}); placed++; continue;
+      const sc=tint(type==='thorn'?pick(PAL.thorn):type==='acacia'?pick(PAL.acacia):type==='dragontree'?pick(PAL.dragontree):pick(PAL.palm));
+      if(gk<0.25&&h3(Math.floor(x*1.3),Math.floor(z*1.3),79)<0.65){ sunGhosts.push({x,z}); trees.push({x,z,s}); placed++; continue; }   // the desert is nearly bare: a ghost is placed and counted like a tree (so the stream does not move) but not drawn, and loses its collider after the loop; oases keep their palms
+      items[type].push({x,z,m,c:sc}); trees.push({x,z,s}); placed++; continue;
     }
     if(inGloam(x,z)){   // the Gloamhorn: a few gnarled snags and wind-bent dark spruce on the heath, none by the cliffs or at the keep-outs (bareGround is true all over the west)
       if(h<1.5||g>0.6||gloamIn(x,z)<14||gloamKeepOut(x,z,3)||vDist(x,z)<VR+8||storyClear(x,z)||dgEntClear(x,z)) continue;
@@ -179,6 +181,8 @@ function* genChunk(ci){
     trees.push({x,z,s});
     placed++;
   }
+  for(const g of sunGhosts) lxUnCol(g.x,g.z);
+  lxAutumn(items); lxVale(ci,items,trees); lxGloam(ci,items,trees);   // land-extras.js: autumn, the vale, the Gloamhorn
   skStandApply(items);   // stands.js: species in patches (a pure post-pass: the stream does not move)
   const vets=skVeterans(ci,items);   // one giant oak or beech per ~200 m
   for(const k in G.trees){ const list=items[k]; if(list.length) addTreeKind(k,list); }
@@ -273,6 +277,7 @@ function* genChunk(ci){
     const fh={x,z,m,c:tint(FL[idx],0.08)};
     if(!(inSun(x,z)||inGloam(x,z))){ stemItems.push({x,z,m}); headItems.push(fh); } n++;   // (no meadow flowers in the desert or on the heath: a ghost, see the ferns)
   }
+  lxValeFlowers(ci,stemItems,headItems);   // land-extras.js
   skVerge(ci,stemItems,headItems);   // stands.js: flowers along the roads
   if(stemItems.length){ addInstanced(G.stemHi||G.stem,matFlower,stemItems,{maxDist:85,hgt:0.8,rad:0.3}); addInstanced(G.headHi||G.head,matFlower,headItems,{maxDist:85,hgt:0.8,rad:0.3}); }
   yield;
@@ -308,7 +313,7 @@ function* genChunk(ci){
   // mushrooms around this area's trees
   const mushItems=[];
   for(let a=0;a<(Q*(LOW?260:420))*per*1.5 && trees.length;a++){
-    const t=pick(trees); if(t.s<0.6||inHoar(t.x,t.z)||inAmber(t.x,t.z)) continue;
+    const t=pick(trees); if(t.s<0.6||inHoar(t.x,t.z)||inAmber(t.x,t.z)||inSun(t.x,t.z)) continue;
     const ang=rand()*TAU, d=R(0.7,1.8)*t.s, cx=t.x+Math.cos(ang)*d, cz=t.z+Math.sin(ang)*d;
     const brown=rand()<0.45, cnt=1+Math.floor(rand()*4);
     for(let k=0;k<cnt;k++){
@@ -347,6 +352,7 @@ function* genChunk(ci){
   }
   if(lilyItems.length) addInstanced(G.lily,matFlat,lilyItems,{receive:true,hgt:0.2,rad:0.7});
   if(lilyFlowers.length) addInstanced(G.lilyFlower,matFlat,lilyFlowers,{hgt:0.3,rad:0.2});
+  lxGround(ci);   // land-extras.js: pumpkins and webs
   yield* genZoneProps(ci);   // zone dressing: camps, webs, graves, boss surroundings, ruins (zone-props.js; after the plants, so none of them moves)
 }
 
