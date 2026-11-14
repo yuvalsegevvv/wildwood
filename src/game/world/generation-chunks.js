@@ -182,7 +182,7 @@ function* genChunk(ci){
     placed++;
   }
   for(const g of sunGhosts) lxUnCol(g.x,g.z);
-  lxAutumn(items); lxVale(ci,items,trees); lxGloam(ci,items,trees);   // land-extras.js: autumn, the vale, the Gloamhorn
+  lxAutumn(items); lxVale(ci,items,trees); lxGloam(ci,items,trees); lxMore(ci,items,trees);   // land-extras.js: autumn, the vale, the Gloamhorn
   skStandApply(items);   // stands.js: species in patches (a pure post-pass: the stream does not move)
   const vets=skVeterans(ci,items);   // one giant oak or beech per ~200 m
   for(const k in G.trees){ const list=items[k]; if(list.length) addTreeKind(k,list); }
@@ -199,7 +199,7 @@ function* genChunk(ci){
     if(inGrey(x,z)&&h>greyTreeline(x,z)-12 || inGlen(x,z,2) || greyWet(x,z,-1)) continue;
     const fd=forestDensity(x,z);
     if(rand()>clamp(1-Math.abs(fd-0.55)*2)+0.08) continue;
-    const s=R(0.6,1.5), vale=inVale(x,z), bloom=!hoar&&rand()<(vale?0.35:0.1);   // the vale's azaleas
+    const s=R(0.6,1.5), vale=inVale(x,z), bloom=!hoar&&rand()<(vale?0.35:0.1)&&!(inSun(x,z)||inGloam(x,z)||inAmber(x,z)||inIsles(x,z));   // the vale's azaleas
     const bi={x,z,m:mtx(x,h-0.1,z,rand()*TAU,s*R(0.9,1.2),s*R(0.7,1.1),s*R(0.9,1.2)),c:tint(pick(hoar?PAL.frostBush:bloom?(vale?PAL.azalea:PAL.shrubBloom):PAL.bush))},
       bk=bshKind(x,z,h,fd,hoar?'hoar':vale?'vale':inGrey(x,z)?'grey':inSun(x,z)?'sun':inAmber(x,z)?'amber':inGloam(x,z)?'gloam':inIsles(x,z)?'isles':'home',bloom);   // bushes: more kinds by a position hash (bush-models.js), no random number
     if(bk==='leafy') bushItems[n%2].push(bi); else { bi.c=bshColor(bk,x,z); bshItems[bk].push(bi); }
@@ -252,8 +252,8 @@ function* genChunk(ci){
     if(inIsles(x,z)&&(vgBare(x,z)||ewKeepOut(x,z,0)||coastDist(x,z)<26)) continue;   // emberwake: no tufts on the beaches, at the keep-outs
     if(inAmber(x,z)){   // savanna: the tall savanna tufts (gold or green with the season, savGrassMat), darkened to ash on the Burnt Plain; not in the village (vd) and thinner on rock
       if(vd<VR+18||waCoast(x,z)<30||waWaterDist(x,z)<3||savKeepOut(x,z,0)) continue;
-      const ash=savBurnK(x,z); gc.setRGB(1,1,1).multiplyScalar(R(0.88,1.12)).lerp(SAV_ASH,ash*0.9);
-      savItems.push({x,z,m:mtx(x,h-0.02,z,rand()*TAU,s*R(1.0,1.5),s*R(0.8,1.3)*(1+meadow*0.6)*(1-ash*0.5),s*R(1.0,1.5)),c:gc.clone()}); n++; continue;
+      const ash=savBurnK(x,z); gc.setRGB(0.95,0.86,0.58).multiplyScalar(R(0.88,1.12)).lerp(SAV_ASH,ash*0.9);
+      savItems.push({x,z,m:mtx(x,h-0.02,z,rand()*TAU,s*R(0.85,1.25),s*R(0.8,1.3)*(1+meadow*0.6)*(1-ash*0.5),s*R(0.85,1.25)),c:gc.clone()}); n++; continue;
     }
     if(hoar) gc.set(pick(PAL.tussock)); else if(LITE){ terrainColor(x,z,h,g,gc); gc.lerp(fresh,0.3).multiplyScalar(R(0.95,1.2)); } else { terrainColor(x,z,h,g,gc); grassTint(gc,(R(0.95,1.2)-0.95)*4); }   // (one rand either way: the chunk's stream must not change)
     const free=!hoar&&!bare&&ra<0.02&&vd>VR+30&&!(Math.abs(z-TUN.z)<TUN.w+3&&x>TUN.x0-14&&x<TUN.x1+14);   // grassClump may grow neighbours here
@@ -293,7 +293,7 @@ function* genChunk(ci){
     const big=rand()<0.2, b=big?R(0.9,2.3):R(0.2,0.65);
     const sx=b*R(0.8,1.4), sy=b*R(0.5,1.0), sz=b*R(0.8,1.3);
     if(big){ if(Math.hypot(x-spawn.x,z-spawn.z)<6) continue; addCol(x,z,Math.min(sx,sz)*0.9); }
-    (hoar?snowRocks:rockItems).push({x,z,big,m:mtx(x,h-sy*0.3,z,rand()*TAU,sx,sy,sz,R(-0.2,0.2),R(-0.2,0.2)),c:tint(0xffffff,0.1)}); n++;
+    (hoar?snowRocks:rockItems).push({x,z,big,m:mtx(x,h-sy*0.3,z,rand()*TAU,sx,sy,sz,R(-0.2,0.2),R(-0.2,0.2)),c:tint(inSun(x,z)?0xf0c890:inAmber(x,z)?0xe0b888:0xffffff,0.1)}); n++;
   }
   addRocks(rockItems,G.rockHi,G.rockHiS,G.rock);
   addRocks(snowRocks,G.rockSnowHi,G.rockSnowHiS,G.rockSnow);

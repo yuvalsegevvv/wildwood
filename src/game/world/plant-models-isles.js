@@ -8,7 +8,8 @@ function islVine(x,y,z,len,r){ return new THREE.ConeGeometry(r||0.1,len,4).rotat
 function islFin(az,H,Lo,th){   // a buttress root: a thin board that rises from the ground beside the trunk and slopes back into it
   const g=new THREE.BoxGeometry(th,H,Lo,1,4,1).translate(0,H/2,Lo/2+0.5), p=g.attributes.position;
   for(let i=0;i<p.count;i++){ const y=p.getY(i); p.setZ(i,0.4+(p.getZ(i)-0.4)*(1-0.9*Math.pow(y/H,0.8))); }
-  g.computeVertexNormals(); return g.rotateY(az);
+  g.computeVertexNormals(); const nn=g.attributes.normal; for(let i=0;i<nn.count;i++){ const l=Math.hypot(nn.getX(i),nn.getY(i),nn.getZ(i)); if(!(l>0.5)) nn.setXYZ(i,0,1,0); }   // the top edge collapses to a line: its normals were zero or NaN and drew black quads
+  return g.rotateY(az);
 }
 function makeCeiba(){
   const Q=mrng(8401), qr=Q.R, tp=[], lp=[], H=34, C=new THREE.Vector3(0,H-3,0);
