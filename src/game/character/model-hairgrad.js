@@ -6,9 +6,11 @@ const HG_MODES=[['none','Plain'],['ombre','Ombre'],['tips','Dipped tips'],['root
 function hgApply(X,parts,n0,n1){
   const L=X.L, mode=L.hairGrad;
   if(!mode||mode==='none'||!HG_MODES.some(m=>m[0]===mode)||n1<=n0) return;
-  // the colour the hair is really painted in: the average of what the parts carry (a signature outfit's hair has its designed colour, not look.hairColor: measured against
-  // X.hairCol none of its vertices passed for hair and the gradient did nothing on it), brought back up by the 0.9 the shading takes on average
-  const c1=new THREE.Color(0,0,0); { let n=0; for(let k=n0;k<n1;k++){ const col=parts[k].attributes.color; if(!col) continue; for(let i=0;i<col.count;i+=3){ c1.r+=col.getX(i); c1.g+=col.getY(i); c1.b+=col.getZ(i); n++; } } if(n) c1.multiplyScalar(1/(0.9*n)); else c1.copy(X.hairCol); }
+  // the colour the hair is painted in is look.hairColor (X.hairCol) for a normal hair and for a signature hair in its designed colour: the reference then, exactly. Only when hardly a
+  // vertex is that colour (a signature hair that keeps its own colour under another pick) is the reference the parts' average; averaging always let beads and ribbons shift every set's gradient
+  const hc=X.hairCol, hm=Math.max(hc.r,hc.g,hc.b,0.01), c1=new THREE.Color().copy(hc); { let n=0, hit=0, ar=0, ag=0, ab=0;
+    for(let k=n0;k<n1;k++){ const col=parts[k].attributes.color; if(!col) continue; for(let i=0;i<col.count;i+=3){ const r=col.getX(i), g=col.getY(i), b=col.getZ(i), m=Math.max(r,g,b,0.01); n++; ar+=r; ag+=g; ab+=b; if(Math.abs(r/m-hc.r/hm)+Math.abs(g/m-hc.g/hm)+Math.abs(b/m-hc.b/hm)<=0.55) hit++; } }
+    if(n&&hit<n*0.6) c1.setRGB(ar/(0.9*n),ag/(0.9*n),ab/(0.9*n)); }
   const c2=new THREE.Color(Number.isFinite(L.hairColor2)?L.hairColor2:0xc25a86), mx=Math.max(c1.r,c1.g,c1.b,0.01);
   const c3=new THREE.Color(Number.isFinite(L.hairColor3)?L.hairColor3:0x6b3f8f), tri=L.hairThird===true;
   const rt=c=>[c.r/Math.max(c1.r,0.04),c.g/Math.max(c1.g,0.04),c.b/Math.max(c1.b,0.04)], r2=rt(c2), r3=rt(c3);
