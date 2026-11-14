@@ -67,7 +67,7 @@ const barkLo=hex=>(x,y,z,nx,ny,nz,c)=>{ c.set(hex).multiplyScalar((0.7+0.42*h3(M
 const CONI={
   pine:{trunkH:4, layers:5, r0:2.3, lh:2.8, spacing:1.45, start:1.6, habit:'pine', pads:7, H:9.6},
   spruce:{trunkH:3, layers:7, r0:1.8, lh:1.2, spacing:1.35, start:1.8, taper:0.7, sag:0.2, lift:0.1, frondW:0.34, core:0.3},   // like the cedar (the owner's favourite): distinct flat, drooping tiers with the trunk showing between
-  frostspruce:{trunkH:2.6, layers:8, r0:1.3, lh:1.1, spacing:1.1, start:1.2, taper:0.55, sag:0.5, lift:0.05, frondW:0.3, core:0.3, snow:1},
+  frostspruce:{trunkH:2.6, layers:8, r0:1.05, lh:1.1, spacing:1.1, start:0.9, taper:0.55, sag:0.5, lift:0.05, frondW:0.22, core:0.3, snow:1},
   cedar:{trunkH:3.2, layers:6, r0:2.1, lh:0.9, spacing:1.55, start:1.5, taper:0.6, sag:0.05, lift:0.12, frondW:0.42, core:0.25},
   larch:{trunkH:4, layers:8, r0:1.7, lh:1.0, spacing:1.2, start:1.8, taper:0.7, sag:0.15, lift:0.12, frondW:0.3, core:0.25}
 };

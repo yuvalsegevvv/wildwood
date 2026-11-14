@@ -123,7 +123,7 @@ function treeVariety(type,x,z,h,land){
   const k=h3(Math.floor(x*1.3),Math.floor(z*1.3),23);
   if(land==='home'){
     if((type==='pine'||type==='spruce')&&k<0.7&&inGrey(x,z)&&h>greyTreeline(x,z)-14) return 'krummholz';
-    if((type==='pine'||type==='spruce')&&inGrey(x,z)&&h>greyTreeline(x,z)-36) return 'frostspruce';   // the Greyspine's snowy slopes: snow-laden spruce   // the Greyspine's treeline: dwarf mountain pines
+    if((type==='pine'||type==='spruce')&&inGrey(x,z)&&h>greyTreeline(x,z)-20) return 'frostspruce';   // the Greyspine's snowy slopes: snow-laden spruce   // the Greyspine's treeline: dwarf mountain pines
     if(type==='birch'&&k>=0.3&&k<0.42) return 'rowan';
     if(type==='oakB'&&k>=0.4&&k<0.54&&h<12) return 'hawthorn';   // low ground: a forked, wide hawthorn
     if(type==='spruce'&&k>=0.28&&k<0.42&&h>12) return 'fir';   // the forest's giants on the higher ground

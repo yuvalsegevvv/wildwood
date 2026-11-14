@@ -5,7 +5,7 @@
    savBurnK(x,z) (0..1) is the Burnt Plain's ash: the grass props and tufts darken with it (SAV_ASH, generation-chunks.js). Reads the atlas's water distance (waWaterDist) and the roads / village helpers like the other lands.
    Used by: terrain-color.js, generation-chunks.js. Test: client-smoke (it draws the terrain), tools/zoneprops-smoke.js. Names: sav..., _sav..., SAV_... */
 const SAV_ASH=new THREE.Color(0x2c2623);
-const _savC={gold:new THREE.Color(0xcaa84c),straw:new THREE.Color(0xb48e3c),green:new THREE.Color(0x5f9a34),green2:new THREE.Color(0x7aa83c),bare:new THREE.Color(0xa87a48),
+const _savC={gold:new THREE.Color(0xb8963f),straw:new THREE.Color(0xb48e3c),green:new THREE.Color(0x6f8a38),green2:new THREE.Color(0x86963e),bare:new THREE.Color(0xa87a48),
   rock:new THREE.Color(0xa05a3c),rockHi:new THREE.Color(0xc08a5c),ash:new THREE.Color(0x3a3330),shoot:new THREE.Color(0x6fa43c),slab:new THREE.Color(0xdcc6a2),scorch:new THREE.Color(0x3a322e)};
 const _savG=new THREE.Color(), _savR=new THREE.Color();
 // the Burnt Plain's ash (0..1): a blotchy disc about the zone's centre, strongest inside half its radius

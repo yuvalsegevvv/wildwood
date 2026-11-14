@@ -35,8 +35,8 @@ function makeBaobab(){   // the bottle trunk (a lathe, grooved), nine stubby lim
 }
 // the tall tufts: all blades gold (dry:1), so savGrassMat's shift is the only place green comes from
 function buildSavGrass(){
-  const T=(n,s,r,w,seed)=>makeGrassTuft({blades:n,segs:s,radius:r,h:[0.85,1.7],w:[w,w*1.7],bend:[0.2,1.0],dry:1},seed);
-  if(VD>=2) return [T(18,5,0.3,0.02,81),T(10,3,0.3,0.034,82),T(7,2,0.22,0.055,83)];
+  const T=(n,s,r,w,seed)=>makeGrassTuft({blades:n,segs:s,radius:r,h:[0.7,1.3],w:[w,w*1.7],bend:[0.2,1.0],dry:1},seed);
+  if(VD>=2) return [T(30,5,0.34,0.03,81),T(10,3,0.3,0.034,82),T(7,2,0.22,0.055,83)];
   return [T(8,2,0.24,0.04,81)];
 }
 const SAV_WET_U={value:0.5};   // 0 Goldfall .. 1 Greenfall: the grass shader's season (world/savanna-sky.js sets it every frame)
@@ -44,7 +44,7 @@ function savGrassMat(){   // plantMat's wind sway, then a shift of the gold towa
   const m=plantMat({wind:0.24,double:true}), base=m.onBeforeCompile;
   m.onBeforeCompile=sh=>{ base(sh); sh.uniforms.uSavWet=SAV_WET_U;
     sh.fragmentShader='uniform float uSavWet;\n'+sh.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
-      { float sl=dot(diffuseColor.rgb,vec3(0.3,0.59,0.11)); vec3 sg=vec3(sl*0.58,sl*1.18,sl*0.42); diffuseColor.rgb=mix(diffuseColor.rgb,sg,uSavWet*smoothstep(0.02,0.1,sl)); }`); };
+      { float sl=dot(diffuseColor.rgb,vec3(0.3,0.59,0.11)); vec3 sg=vec3(sl*0.70,sl*0.98,sl*0.40); diffuseColor.rgb=mix(diffuseColor.rgb,sg,uSavWet*smoothstep(0.02,0.1,sl)); }`); };
   m.customProgramCacheKey=()=>'plant_savgrass';
   return m;
 }
