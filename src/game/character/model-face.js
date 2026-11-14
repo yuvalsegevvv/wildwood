@@ -13,7 +13,7 @@ function faceShape(L){ const f=L.face==='oval'?[0.93,1.08]:L.face==='round'?[1.0
    wraps it (hair, beards, hats), so they keep fitting. Anime-leaning face: a flat front, a jaw that tapers only a little to a rounded chin (a sharper one looked exaggerated). */
 function headSculptFn(X){
   const {L,S,fem}=X, G=faceG, sm=faceSm;
-  const jawK=Math.max(0.05,(fem?0.3:0.24)*(1-(S.jaw-1)*1.6)*(L.face==='angular'?0.8:L.face==='oval'?1.1:1)), chinK=0.86*S.chin, chinOut=0.008*S.chin, chk=0.007*S.cheeks+0.014*(S.cheeks-1);
+  const jawK=Math.max(0.05,(fem?0.3:0.15)*(1-(S.jaw-1)*1.6)*(L.face==='angular'?0.8:L.face==='oval'?1.1:1)), chinK=0.86*S.chin, chinOut=0.008*S.chin, chk=0.007*S.cheeks+0.014*(S.cheeks-1);
   return (g,face)=>{ const p=g.attributes.position;
     for(let i=0;i<p.count;i++){
       let x=p.getX(i), y=p.getY(i), z=p.getZ(i); const front=z<0, ax=Math.abs(x);
@@ -102,7 +102,7 @@ function facePupil(shape,k,sg){
 function buildFace(X){
   const {L,S,fem,sg,skin,skinPaint,hairCol}=X, kF=X.kit&&X.kit.sl.face, fs=faceShape(L), sculpt=headSculptFn(X), G=faceG, parts=[];
   const ES=(kF&&kF.eyes)||{}, eI=ES.iris||1, eHt=ES.h||1, eWd=ES.w||1, eLs=ES.lash||1;   // an outfit's eye style: iris size, eye height / width, lash weight, highlight count, tilt (docs/CHARACTER.md section 9)
-  const E=S.eyeSize*(fem?1.03:1)*0.74, ex=0.046*S.eyeGap*fs[0], ey=(-0.002+0.012*S.eyeHeight)*HEAD_TALL, SW=0.0295*E*eWd, SH=0.0245*E*eHt*0.9*S.eyeOpen;   // 0.9: the base eye is a tenth less tall than it was; eyeOpen narrows / widens the opening only (the iris stays round, the lids cover more of it)
+  const E=S.eyeSize*(fem?1.03:0.9)*0.74, ex=0.046*S.eyeGap*fs[0], ey=(-0.002+0.012*S.eyeHeight)*HEAD_TALL, SW=0.0295*E*eWd, SH=0.0245*E*eHt*0.9*S.eyeOpen;   // 0.9: the base eye is a tenth less tall than it was; eyeOpen narrows / widens the opening only (the iris stays round, the lids cover more of it)
   const nS=S.noseSize*(fem?0.88:1), yT=-0.028*HEAD_TALL, R={ex,ey,SW,SH,E,fem,nS,wk:lerp(1,nS,0.6),yR:ey+0.009,yT,yB:yT-0.0075*nS,Ht:0.0098*nS};
   const skull=smoothN(faceRelief(sculpt(faceSkullGeo(0.105,sg(60),sg(40)),false).scale(fs[0],fs[1],1),R)), zAt=frontSurface(skull);
   const blushC=new THREE.Color(0xe98c88), pos=skull.attributes.position;

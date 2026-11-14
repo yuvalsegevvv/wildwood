@@ -41,13 +41,13 @@ const musD=(S,fem,y)=>1+(S.muscle>=0?(fem?0.02:0.045)*S.muscle*faceG(y,0.32,0.08
 const musP=(S,fem,y)=>(fem?0.004:0.015)*Math.max(S.muscle,0)*faceG(y,0.34,0.06)+(fem?0.0:0.006)*Math.max(S.muscle,0)*faceG(y,0.12,0.07);   // (what torsoSize adds to the front: the pecs, and a man's abs)
 // the measurements every part shares (also handed to outfits as rig.dims)
 function charDims(L,S,fem,fs){
-  const B=S.build, lr=Math.pow(B,0.9), TK=0.93*S.torso, mk=musK(S), hs=(fem?1.37:1.4)*S.head, thigh=0.46*S.legs, shin=0.44*S.legs, ankleH=0.06*(0.6+0.4*S.feet), neckR=(fem?0.04:0.05)*S.neck;
+  const B=S.build, lr=Math.pow(B,0.9), TK=0.93*S.torso, mk=musK(S), hs=(fem?1.37:1.36)*S.head, thigh=0.46*S.legs, shin=0.44*S.legs, ankleH=0.06*(0.6+0.4*S.feet), neckR=(fem?0.04:0.056)*S.neck;
   const D={fem,B,lr,TK,hs,thigh,shin,ankleH,neckR,hipY:thigh+shin+ankleH,
     headY:0.555*TK+0.042*S.neck+0.1*fs[1]*hs,       // the head's centre above the hips: the chin sits just above the shoulders
-    shX:(fem?0.138:0.156)*B*S.shoulders,            // shoulder joint, off the middle
+    shX:(fem?0.138:0.171)*B*S.shoulders,            // shoulder joint, off the middle
     shY:0.45*TK,                                    // and its height above the hips
     hx:(fem?0.08:0.078)*B*(1+(S.hips-1)*0.6),      // hip joint, off the middle
-    aw:(fem?0.9:1.08)*lr*S.arms*mk.a, tw:(fem?1.02:1.0)*lr*S.thighs*mk.t, cw:(fem?0.96:1.04)*lr*S.calves*mk.c, upper:0.28, fore:0.305, wrist:0.25, mk};
+    aw:(fem?0.9:1.2)*lr*S.arms*mk.a, tw:(fem?1.02:1.07)*lr*S.thighs*mk.t, cw:(fem?0.96:1.1)*lr*S.calves*mk.c, upper:0.28, fore:0.305, wrist:0.25, mk};
   D.ER=0.034*D.aw/Math.sqrt(mk.a); D.KR=0.05*lr*Math.sqrt(mk.t);              // the elbow's and the knee's radius: both sides of the joint use it (the elbow grows at half the muscle's rate, /sqrt(mk.a): fully slim, the swelling forearm next to it read as a knot)
   return D;
 }
@@ -57,7 +57,7 @@ function profR(prof,y){ for(let i=1;i<prof.length;i++) if(y<=prof[i][1]){ const 
 // Below the hip joints (y < 0) it is the PELVIS: a bowl wider than the thighs' tops (widest at -0.03..-0.07, the greater trochanter) down to the crotch at -0.165, so each
 // thigh turns inside it and comes out under its rim (the hip crease in front, the gluteal fold behind) instead of standing out as an "ear" beside a narrow dome
 const TORSO_F=[[0.001,-0.165],[0.062,-0.16],[0.112,-0.145],[0.152,-0.115],[0.174,-0.07],[0.174,-0.03],[0.166,0.0],[0.15,0.07],[0.116,0.17],[0.104,0.22],[0.116,0.3],[0.132,0.37],[0.138,0.43],[0.121,0.472]];
-const TORSO_M=[[0.001,-0.165],[0.056,-0.16],[0.106,-0.145],[0.146,-0.115],[0.164,-0.07],[0.165,-0.03],[0.16,0.0],[0.142,0.08],[0.124,0.15],[0.136,0.23],[0.156,0.31],[0.17,0.38],[0.17,0.43],[0.146,0.472]];   // the profile stops at the shoulder's tip: the trapezius and the neck's flare are the concat below (they scale with the neck, not the chest)
+const TORSO_M=[[0.001,-0.165],[0.056,-0.16],[0.106,-0.145],[0.14,-0.115],[0.154,-0.07],[0.154,-0.03],[0.15,0.0],[0.138,0.08],[0.13,0.15],[0.144,0.23],[0.166,0.31],[0.183,0.38],[0.185,0.43],[0.16,0.472]];   // the profile stops at the shoulder's tip: the trapezius and the neck's flare are the concat below (they scale with the neck, not the chest)
 /* The shoulder girdle and the neck's root (design y above TRS_Y0): the lathe's own circle cannot give a slope at the sides only, so above the chest every ring is
    rebuilt from three curves of its own: the half-width w (the front view: chest -> trapezius -> neck), the front depth df (the side view: the upper chest rounds back
    into the sternal notch, then the neck) and the back depth db (the long trapezius slope behind, to the neck's base). The deltoid is then a ball round the arm's
@@ -88,9 +88,9 @@ const chestDepthK=ce=>ce<1?Math.pow(Math.max(0,(ce-0.42)/0.58),1.3):ce<=1.6?ce:1
 // (+1 = about 3 cm out in front at the navel, 1.5 a clear paunch, -1 a flat, toned front). The back never follows it: the seat is the hips' and the glutes' alone
 // the glutes' depth behind at design y (at the centre of each lobe): they rise smoothly from the sacrum (a long upper slope), are fullest in the lower middle (-0.03) and round
 // under into the gluteal fold; hipCurve scales and widens them, hipTall stretches them up and down. torsoSize asks the same (with the curve and height at least 1, its roomier envelope)
-function trsGlute(S,B,fem,y){ const c=-0.03; return (fem?0.05:0.038)*B*hipAmp(S.hipCurve)*(S.muscle>=0?1+0.2*S.muscle:1+0.1*S.muscle)*faceG(y,c,(y>c?0.095*(1+0.4*S.hipTall):0.075*(1+0.5*S.hipTall))*hipWide(S.hipCurve)); }
+function trsGlute(S,B,fem,y){ const c=-0.03; return (fem?0.05:0.028)*B*hipAmp(S.hipCurve)*(S.muscle>=0?1+0.2*S.muscle:1+0.1*S.muscle)*faceG(y,c,(y>c?0.095*(1+0.4*S.hipTall):0.075*(1+0.5*S.hipTall))*hipWide(S.hipCurve)); }
 // a man's ribcage is deeper than the lathe's ellipse gave (from the side he read paper thin): +RIB_DEPTH of the depth round the chest, front and back (torsoSize too)
-const RIB_DEPTH=0.06, ribK=(fem,y)=>fem?1:1+RIB_DEPTH*faceG(y,0.3,0.1);
+const RIB_DEPTH=0.13, ribK=(fem,y)=>fem?1:1+RIB_DEPTH*faceG(y,0.3,0.1);
 function trsBellyK(S,B,y){ const b=S.belly; return faceG(y,0.1,0.13)*((B-1)*1.4+(b>=0?0.3*b:0.08*b)); }
 const TRS_Y0=0.3, TRS_INSET=0.004, TRS_DROP=0.6;   // where the rebuilt section starts (below 0.36-0.4 it IS the old lathe, so there is no seam), how far the filler ball stays inside the arm's ball (4 mm: closer z-fights), how far below the joint it runs (x its radius)
 function trsUpper(S,D,y){
