@@ -6,23 +6,30 @@ const HG_MODES=[['none','Plain'],['ombre','Ombre'],['tips','Dipped tips'],['root
 function hgApply(X,parts,n0,n1){
   const L=X.L, mode=L.hairGrad;
   if(!mode||mode==='none'||!HG_MODES.some(m=>m[0]===mode)||n1<=n0) return;
-  const c2=new THREE.Color(Number.isFinite(L.hairColor2)?L.hairColor2:0xc25a86), c1=X.hairCol, mx=Math.max(c1.r,c1.g,c1.b,0.01);
+  // the colour the hair is really painted in: the average of what the parts carry (a signature outfit's hair has its designed colour, not look.hairColor: measured against
+  // X.hairCol none of its vertices passed for hair and the gradient did nothing on it), brought back up by the 0.9 the shading takes on average
+  const c1=new THREE.Color(0,0,0); { let n=0; for(let k=n0;k<n1;k++){ const col=parts[k].attributes.color; if(!col) continue; for(let i=0;i<col.count;i+=3){ c1.r+=col.getX(i); c1.g+=col.getY(i); c1.b+=col.getZ(i); n++; } } if(n) c1.multiplyScalar(1/(0.9*n)); else c1.copy(X.hairCol); }
+  const c2=new THREE.Color(Number.isFinite(L.hairColor2)?L.hairColor2:0xc25a86), mx=Math.max(c1.r,c1.g,c1.b,0.01);
   const c3=new THREE.Color(Number.isFinite(L.hairColor3)?L.hairColor3:0x6b3f8f), tri=L.hairThird===true;
   const rt=c=>[c.r/Math.max(c1.r,0.04),c.g/Math.max(c1.g,0.04),c.b/Math.max(c1.b,0.04)], r2=rt(c2), r3=rt(c3);
   let top=-1e9, bot=1e9;
   for(let k=n0;k<n1;k++){ const p=parts[k].attributes.position; for(let i=0;i<p.count;i++){ const y=p.getY(i); if(y>top) top=y; if(y<bot) bot=y; } }
   const span=Math.max(top-bot,0.05);
   for(let k=n0;k<n1;k++){ const g=parts[k], p=g.attributes.position, col=g.attributes.color; if(!col) continue;
+    // each lock also runs root to tip by its OWN height (55%), so a fringe's ends and a short cut's nape take the tip colour like dyed hair; by the whole hair's height alone a short style
+    // was just striped level across the skull. A small part (a bun's ball, a bead) has no root and tip: the whole hair's height only
+    let pt=-1e9, pb=1e9; for(let i=0;i<p.count;i++){ const y=p.getY(i); if(y>pt) pt=y; if(y<pb) pb=y; } const ps=pt-pb, own=ps>0.035?0.55:0;
     for(let i=0;i<p.count;i++){
       const r=col.getX(i), gg=col.getY(i), b=col.getZ(i), m=Math.max(r,gg,b,0.01);
       if(Math.abs(r/m-c1.r/mx)+Math.abs(gg/m-c1.g/mx)+Math.abs(b/m-c1.b/mx)>0.55) continue;   // not hair-coloured: a tie, a ribbon
-      const u=Math.min(1,Math.max(0,(top-p.getY(i))/span));
+      const ug=Math.min(1,Math.max(0,(top-p.getY(i))/span)), u=own?ug*(1-own)+own*Math.min(1,Math.max(0,(pt-p.getY(i))/ps)):ug;
       const x=p.getX(i); let t2, t3=0;
       if(mode==='ombre'){ t2=smoothstep(0.12,0.7,u); t3=tri?smoothstep(0.55,1,u):0; }
       else if(mode==='tips'){ t2=smoothstep(0.55,0.75,u); t3=tri?smoothstep(0.8,0.95,u):0; }
       else if(mode==='roots'){ t2=1-smoothstep(0.08,0.5,u); t3=tri?1-smoothstep(0,0.2,u):0; }
       else if(mode==='split'){ t2=smoothstep(-0.012,0.012,x); t3=tri?smoothstep(0.7,0.95,u):0; }
-      else { t2=smoothstep(0.2,0.35,Math.sin(x*70+p.getZ(i)*40)*0.5+0.5)*smoothstep(0.1,0.35,u); t3=tri?smoothstep(0.78,0.95,u):0; }   // streaks: a few bands of the second colour down the locks
+      else { const az=Math.atan2(x,p.getZ(i)); t2=smoothstep(0.62,0.8,Math.sin(az*11+1.7)*0.5+0.5+0.12*Math.sin(az*29))*smoothstep(0.05,0.3,u);   // (bands by the angle round the head: they run down the locks; bands across x and z were blotches on the crown)
+        t3=tri?smoothstep(0.78,0.95,u):0; }   // streaks: a few bands of the second colour down the locks
       const w2=t2*(1-t3), k=[1+(r2[0]-1)*w2+(r3[0]-1)*t3,1+(r2[1]-1)*w2+(r3[1]-1)*t3,1+(r2[2]-1)*w2+(r3[2]-1)*t3];
       col.setXYZ(i,r*k[0],gg*k[1],b*k[2]); } }
 }
