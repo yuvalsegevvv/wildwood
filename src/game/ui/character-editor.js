@@ -25,16 +25,11 @@ const EDIT=[
   {tab:'Body', subs:[
     {name:'Gender', rows:[
       {k:'sex',type:'grid',kind:'sex',ids:()=>[['male'],['female']]},
-      {k:'skin',skin:true,type:'color',premium:false,opts:SKINS.concat(SKINS_ODD)},{slider:'undertone'}]},
+      {k:'skin',skin:true,type:'color',premium:false,opts:SKINS.concat(SKINS_ODD,KIN_FUR,TINTC)},{slider:'undertone'},
+      {k:'furMark',label:'Mixed skin',type:'seg',opts:KIN_MARKS.map(m=>m.slice())},
+      {type:'dcolor',k:'furColor2',num:2,hint:'Second skin colour (the mixed pattern, ear and tail tips)',premium:false,none:'As designed',opts:SKINS.concat(SKINS_ODD,KIN_FUR,TINTC)}]},
     {name:'Build', rows:[{type:'setups'},{slider:'height'},{slider:'build'}]},
-    // version 3: the Kin features (shared/kin.js, drawn by character/model-kin.js): no race, just optional ears, a tail, a muzzle and fur; the plain ones are free, the others are made at a Wayfarers' Lodge (horns and a mane are in Clothes > Decor)
-    {name:'Kin', rows:[
-      {k:'kinEars',label:'Ears',type:'grid',kind:'kinEars',slot:'e',ids:()=>[['']].concat(kinList('e').concat(kinSetList('e')).map(p=>[p.id,p.name,p.text]))},
-      {k:'kinMuzzle',label:'Muzzle',type:'grid',kind:'kinMuzzle',slot:'m',ids:()=>[['']].concat(kinList('m').concat(kinSetList('m')).map(p=>[p.id,p.name,p.text]))},
-      {k:'kinTail',label:'Tail',type:'grid',kind:'kinTail',slot:'k',ids:()=>[['']].concat(kinList('k').concat(kinSetList('k')).map(p=>[p.id,p.name,p.text]))},
-      {type:'dcolor',k:'furColor',num:1,hint:'Fur',premium:false,none:'Skin tone',opts:KIN_FUR.concat(SKINS)},
-      {k:'furMark',label:'Markings',type:'seg',opts:KIN_MARKS.map(m=>m.slice())},
-      {type:'dcolor',k:'furColor2',num:2,hint:'Markings, ear and tail tips',premium:false,none:'As designed',opts:KIN_FUR.concat(TINTC)}]},
+    // the Kin features (shared/kin.js, model-kin.js) have no menu of their own: ears are with the hats, tails with the capes, the muzzle with the face, and the fur is the skin tone (any colour plate) with its mixed patterns
     {name:'Upper body', rows:['chest','chestShape','shoulders','waist','belly','muscle','hips','hipCurve','hipTall','chestLift','chestGap','chestJiggle','torso'].map(k=>({slider:k}))},
     {name:'Limbs', rows:['legs','thighs','calves','arms','neck','hands','feet'].map(k=>({slider:k}))}
   ]},
@@ -54,12 +49,13 @@ const EDIT=[
     {name:'Beard & marks', rows:[
       {k:'facial',type:'grid',kind:'facial',ids:()=>[['none'],['stubble'],['mustache'],['beard']],base:'face'},
       // an outfit's face item: its marks, eye style and eye colour, and its facial hair or glasses (src/game/outfits)
-      {k:'faceItem',type:'grid',kind:'faceItem',ids:()=>[['']].concat(ofItems('face'))}]}
+      {k:'faceItem',type:'grid',kind:'faceItem',ids:()=>[['']].concat(ofItems('face'))},
+      {k:'kinMuzzle',label:'Muzzle',type:'grid',kind:'kinMuzzle',slot:'m',ids:()=>[['']].concat(kinList('m').concat(kinSetList('m')).map(p=>[p.id,p.name,p.text]))}]}
   ]},
   {tab:'Clothes', subs:[
     // the signature outfits (src/game/outfits): every piece has its own sub-tab, so the pieces of different sets mix. A colour row marked base:'<slot>' paints the base garment, or, while that slot wears an outfit's piece,
     // recolours the piece (look.tint<Slot>; 'Designed colours' puts the original back).
-    {name:'Hat', close:true, rows:[{k:'hat',type:'grid',kind:'hat',slot:'h',col:'hatColor',ids:()=>HT_HATS.map(h=>h.slice()).concat(HTX_HATS.map(h=>h.slice()),ofItems('hat'))},{k:'hatColor',label:'',type:'color',base:'hat',opts:TINTC},{type:'palette',slot:'hat'},{slider:'hatSize',when:()=>LOOK.hat&&LOOK.hat!=='none'&&LOOK.hat!=='outfit'},{slider:'hatTilt',when:()=>LOOK.hat&&LOOK.hat!=='none'&&LOOK.hat!=='outfit'},{type:'armor',slot:'helmet'}]},
+    {name:'Hat', close:true, rows:[{k:'hat',type:'grid',kind:'hat',slot:'h',col:'hatColor',ids:()=>HT_HATS.map(h=>h.slice()).concat(HTX_HATS.map(h=>h.slice()),ofItems('hat'))},{k:'hatColor',label:'',type:'color',base:'hat',opts:TINTC},{type:'palette',slot:'hat'},{k:'kinEars',label:'Ears',type:'grid',kind:'kinEars',slot:'e',ids:()=>[['']].concat(kinList('e').concat(kinSetList('e')).map(p=>[p.id,p.name,p.text]))},{slider:'hatSize',when:()=>LOOK.hat&&LOOK.hat!=='none'&&LOOK.hat!=='outfit'},{slider:'hatTilt',when:()=>LOOK.hat&&LOOK.hat!=='none'&&LOOK.hat!=='outfit'},{type:'armor',slot:'helmet'}]},
     {name:'Top', rows:[{k:'top',type:'grid',kind:'top',slot:'t',col:'topColor',ids:()=>GM_TOPS.map(h=>h.slice()).concat(GMX_TOPS.map(h=>h.slice()),ofItems('top'))},{k:'topColor',label:'',type:'color',base:'top',opts:TINTC},{type:'palette',slot:'top'},{slider:'neckline',when:()=>gmdIs(LOOK.top)},{slider:'skirtLen',when:()=>gmdIs(LOOK.top)},{slider:'skirtFlare',when:()=>gmdIs(LOOK.top)},{type:'armor',slot:'top'}]},
     {name:'Bottom', rows:[{k:'bottom',type:'grid',kind:'bottom',slot:'b',col:'bottomColor',ids:()=>GM_BOTTOMS.map(h=>h.slice()).concat(GMX_BOTTOMS.map(h=>h.slice()),ofItems('bottom'))},{k:'bottomColor',label:'',type:'color',base:'bottom',opts:TINTC},{type:'palette',slot:'bottom'},{slider:'skirtLen',when:()=>edSkirtWorn()},{slider:'skirtFlare',when:()=>edSkirtWorn()},{type:'armor',slot:'bottom'}]},
     {name:'Underwear', rows:[{type:'dcolor',k:'underColor',num:1,hint:'Cloth',none:'Cream',opts:TINTC},{type:'dcolor',k:'underColor2',num:2,hint:'Waistband and strap',none:'Darker cloth',opts:TINTC}]},   // what shows where a garment is taken off (model-body.js underCol / underBand)
@@ -67,6 +63,7 @@ const EDIT=[
     // version 3.2: the cape (the backpack is the free one) and the aura, each with its own colours; crafted ones are made at a Wayfarers' Lodge (shared/cospieces.js), and every one can be tried on
     {name:'Cape', rows:[
       {k:'cape',type:'grid',kind:'cape',slot:'c',ids:()=>[['']].concat(COS_CAPES.map(d=>[d[0],d[1],d[6]]))},
+      {k:'kinTail',label:'Tail',type:'grid',kind:'kinTail',slot:'k',ids:()=>[['']].concat(kinList('k').concat(kinSetList('k')).map(p=>[p.id,p.name,p.text]))},
       {type:'dcolor',k:'capeColor',num:1,hint:'Cloth',need:'cape',opts:TINTC},{type:'dcolor',k:'capeTrim',num:2,hint:'Trim',need:'cape',opts:TINTC},{slider:'capeLen',when:()=>!!LOOK.cape&&LOOK.cape!=='pack'}]},
     {name:'Aura', rows:[
       {k:'aura',type:'grid',kind:'aura',slot:'a',ids:()=>[['']].concat(COS_AURAS.map(d=>[d[0],d[1],d[8]]))},
@@ -132,6 +129,7 @@ function edTryBar(){
 }
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
 function setLook(k,v){
+  if(k==='skin') LOOK.furColor=-1;   // the fur is the skin tone now: an old save's separate fur colour goes when a tone is picked
   if(k==='sex' && !LOOK.custom){ const keep={skin:LOOK.skin,cls:LOOK.cls,left:LOOK.left}; for(const s of SLIDER_KEYS) keep[s]=LOOK[s]; LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,keep); }   // the sliders and skin carry over
   else if(k==='model'){ const M=v!=='base'&&CHAR_MODELS[v]; if(M&&M.sexes&&M.sexes.length&&M.sexes[0]!==LOOK.sex) LOOK.sex=M.sexes[0];   // the set-up: the character's recommended gender,
     LOOK=ofWear(LOOK,v); LOOK.custom=true; }   // all seven pieces in their designed colours (and, below, the recommended sliders); every row can then change one piece or colour

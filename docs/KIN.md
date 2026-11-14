@@ -40,3 +40,7 @@ Brindle (hyena), Dessa (rhino) and Sefi (cheetah) each bring their own ears, tai
 - Budget: the heaviest ear + tail + muzzle together add under 600 triangles at hero detail (`cospieces-smoke` checks it). Parts never use fur shells or extra bones; the tail swings through `rig.anims`.
 - Look fields are untrusted: no bare keys, colours are range-checked, markings looked up with an own-property check.
 - K2 (the three Kin signature outfits, above) sets these fields through `CHAR_MODELS.<id>.kin`; the mixing rows keep working because they are ordinary look fields.
+
+## Where the Kin parts are in the editor
+
+The Kin menu is gone. Ears are a row of the Hat tab, tails a row of the Cape tab, the muzzle a row of the Face tab. The fur is the skin tone: the skin row offers the skin plates, the fur plate (`KIN_FUR`) and the usual colour plate (`TINTC`), and under it "Mixed skin" (`furMark`) with its second colour (`furColor2`). `furColor` is no longer set by the editor; picking a skin tone clears an old save's value (`setLook`, `game/ui/character-editor.js`).
