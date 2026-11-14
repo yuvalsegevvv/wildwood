@@ -13,6 +13,7 @@ function lxAutumn(items){
     for(const it of L){ if(!lxHome(it.x,it.z)||h3(Math.floor(it.x*1.1),Math.floor(it.z*1.1),71)>0.15) continue;
       it.c=lxCol(k==='birch'?PAL.birchAutumn:k==='ginkgo'?[0xe8c23a,0xf0d04a,0xd8b030]:PAL.autumn,it.x,it.z,72); } }
 }
+function lxIsVale(x,z){ return waLandId(x,z)===1; }   // the Sakura Vale only (inVale is also true in the Hoarfrost Reach: cherries grew on its snow)
 function lxUnCol(x,z){ const a=colGrid.get(ck(Math.floor(x/CG),Math.floor(z/CG))); if(!a) return; for(let i=0;i<a.length;i+=3) if(a[i]===x&&a[i+1]===z){ a.splice(i,3); return; } }
 function lxTreeOk(x,z,h){ return h>=0.8&&grad(x,z)<0.95&&!bareGround(x,z)&&!storyClear(x,z)&&!dgEntClear(x,z)&&vDist(x,z)>=VR+6&&!nearPath(x,z,3.5)&&arenaDist(x,z)>=25&&!inTunnelCut(x,z,2)&&Math.hypot(x-spawn.x,z-spawn.z)>=7; }
 function lxPlace(items,trees,type,x,z,h,s,rng,col){
@@ -20,46 +21,47 @@ function lxPlace(items,trees,type,x,z,h,s,rng,col){
   addCol(x,z,RAD[type]*s); items[type].push({x,z,m,c:col}); trees.push({x,z,s});
 }
 function lxVale(ci,items,trees){
-  const r=chunkRect(ci,0), cx=(r[0]+r[1])/2, cz=(r[2]+r[3])/2; if(!inVale(cx,cz)&&!inVale(r[0],r[2])&&!inVale(r[1],r[3])) return;
+  const r=chunkRect(ci,0), cx=(r[0]+r[1])/2, cz=(r[2]+r[3])/2; if(!lxIsVale(cx,cz)&&!lxIsVale(r[0],r[2])&&!lxIsVale(r[1],r[3])) return;
   const move=[];
   for(const k of ['maple','pine','kuromatsu','cedar','sakura']){ const L=items[k]; if(!L) continue;
-    for(let i=L.length-1;i>=0;i--){ const it=L[i]; if(!inVale(it.x,it.z)) continue; const hv=h3(Math.floor(it.x*1.1),Math.floor(it.z*1.1),73), grove=noise2(it.x*0.02-60,it.z*0.02+14);
-      const to=(grove>0.05&&getH(it.x,it.z)<26&&hv<0.6)?'bamboo':(k==='maple'&&hv<0.65||(k==='pine'||k==='kuromatsu'||k==='cedar')&&hv<0.75)?'sakura':null;
+    for(let i=L.length-1;i>=0;i--){ const it=L[i]; if(!lxIsVale(it.x,it.z)) continue; const hv=h3(Math.floor(it.x*1.1),Math.floor(it.z*1.1),73), grove=noise2(it.x*0.02-60,it.z*0.02+14);
+      const to=(grove>0.05&&getH(it.x,it.z)<26&&hv<0.6)?'bamboo':(k==='maple'&&hv<0.65||(k==='pine'||k==='kuromatsu'||k==='cedar')&&hv<0.9)?'sakura':null;
       if(to&&to!==k){ L.splice(i,1); move.push([to,it]); } } }
   for(const [to,it] of move){ it.c=lxCol(PAL[to],it.x,it.z,74); items[to].push(it); }
+  if(items.sakura){ const big=new THREE.Matrix4().makeScale(1.35,1.35,1.35); for(const it of items.sakura) if(lxIsVale(it.x,it.z)&&!it.lxBig){ it.m=it.m.clone().multiply(big); it.lxBig=1; } }   // the vale's cherries stand 35% larger (the owner asked)
   const {r:rg,R:rr}=mrng((ci*41+13)|0); let n=0;
   for(let a=0;a<60&&n<30;a++){
-    const x=rr(r[0]+8,r[1]-8), z=rr(r[2]+8,r[3]-8); if(!inVale(x,z)) continue; const h=getH(x,z); if(!lxTreeOk(x,z,h)||greyWet(x,z,-1.2)) continue;
-    const bam=noise2(x*0.02-60,z*0.02+14)>0.05&&h<26, type=bam?'bamboo':'sakura', s=bam?rr(0.8,1.15):rr(0.8,1.3);
+    const x=rr(r[0]+8,r[1]-8), z=rr(r[2]+8,r[3]-8); if(!lxIsVale(x,z)) continue; const h=getH(x,z); if(!lxTreeOk(x,z,h)||greyWet(x,z,-1.2)) continue;
+    const bam=noise2(x*0.02-60,z*0.02+14)>0.05&&h<26, type=bam?'bamboo':'sakura', s=bam?rr(0.8,1.15):rr(1.1,1.75);
     if(!canPlace(x,z,(bam?2.2:4.2)*Math.min(s,1.1))) continue;
     lxPlace(items,trees,type,x,z,h,s,rg,lxCol(PAL[type],x,z,75)); n++;
   }
 }
 function lxMore(ci,items,trees){   // additive: an understorey of bananas and tree ferns in the Isles' jungle, dwarf pines on the Greyspine's pastures (they were bare)
-  const r=chunkRect(ci,0), cx=(r[0]+r[1])/2, cz=(r[2]+r[3])/2, isl=inIsles(cx,cz), gry=inGrey(cx,cz); if(!isl&&!gry) return;
+  const r=chunkRect(ci,0), cx=(r[0]+r[1])/2, cz=(r[2]+r[3])/2, isl=inIsles(cx,cz), gry=inGrey(cx,cz); const hoa=inHoar(cx,cz); if(!isl&&!gry&&!hoa) return;
   const {r:rg,R:rr}=mrng((ci*59+29)|0); let n=0;
-  for(let a=0;a<50&&n<(isl?20:12);a++){
+  for(let a=0;a<(gry?90:50)&&n<(isl?20:gry?28:hoa?14:12);a++){
     const x=rr(r[0]+6,r[1]-6), z=rr(r[2]+6,r[3]-6), h=getH(x,z);
-    if(isl?!inIsles(x,z):!inGrey(x,z)) continue;
-    if(!lxTreeOk(x,z,h)||greyWet(x,z,-1)||(isl&&(coastDist(x,z)<30||ewKeepOut(x,z,2)))||(gry&&(h>greyTreeline(x,z)-14||inGlen(x,z,2)))) continue;
-    const type=isl?(rg()<0.5?'banana':'treefern'):'krummholz', s=isl?rr(0.9,1.4):rr(0.5,0.85);
+    if(isl?!inIsles(x,z):hoa?!inHoar(x,z):!inGrey(x,z)) continue;
+    if(!lxTreeOk(x,z,h)||greyWet(x,z,-1)||(isl&&(coastDist(x,z)<30||ewKeepOut(x,z,2)))||(gry&&(h>greyTreeline(x,z)-14||inGlen(x,z,2)))||(hoa&&(iceDist(x,z)<4||inPass(x,z,3)))) continue;
+    const type=isl?(rg()<0.5?'banana':'treefern'):hoa?(rg()<0.65?'dwarfbirch':'krummholz'):'krummholz', s=isl?rr(0.9,1.4):hoa?rr(0.8,1.2):rr(0.5,0.85);
     if(!items[type]||!canPlace(x,z,(isl?2.2:1.6)*Math.min(s,1.1))) continue;
-    lxPlace(items,trees,type,x,z,h,s,rg,lxCol(isl?PAL[type]:PAL.krummholz,x,z,79)); n++;
+    lxPlace(items,trees,type,x,z,h,s,rg,lxCol(isl?PAL[type]:type==='dwarfbirch'?PAL.frostBirch:PAL.krummholz,x,z,79)); n++;
   }
 }
 function lxValeFlowers(ci,stem,head){
-  const r=chunkRect(ci,0); if(!inVale((r[0]+r[1])/2,(r[2]+r[3])/2)) return;
+  const r=chunkRect(ci,0); if(!lxIsVale((r[0]+r[1])/2,(r[2]+r[3])/2)) return;
   const {r:rg,R:rr}=mrng((ci*43+17)|0), FL=PAL.valeFlowers; let n=0;
   for(let c=0;c<26&&n<420;c++){
-    const cx=rr(r[0]+6,r[1]-6), cz=rr(r[2]+6,r[3]-6), hex=FL[(rg()*FL.length)|0]; if(!inVale(cx,cz)) continue;
+    const cx=rr(r[0]+6,r[1]-6), cz=rr(r[2]+6,r[3]-6), hex=FL[(rg()*FL.length)|0]; if(!lxIsVale(cx,cz)) continue;
     for(let k=0;k<16;k++){ const a=rg()*TAU, d=rr(0,4.5), x=cx+Math.cos(a)*d, z=cz+Math.sin(a)*d, h=getH(x,z);
       if(h<0.8||grad(x,z)>0.6||forestDensity(x,z)>0.8||vDist(x,z)<VR+1||inTunnelCut(x,z)||bareGround(x,z)||greyWet(x,z,-0.5)) continue;
-      const s=rr(1.1,1.8), m=mtx(x,h-0.02,z,rg()*TAU,s,s,s); stem.push({x,z,m}); head.push({x,z,m,c:new THREE.Color(hex).multiplyScalar(0.92+0.16*rg())}); n++; } }
+      const s=rr(1.5,2.4), m=mtx(x,h-0.02,z,rg()*TAU,s,s,s); stem.push({x,z,m}); head.push({x,z,m,c:new THREE.Color(hex).multiplyScalar(0.92+0.16*rg())}); n++; } }
 }
 let lxSpots=[];
 function lxGloam(ci,items,trees){
   lxSpots=[]; const r=chunkRect(ci,0); if(!inGloam((r[0]+r[1])/2,(r[2]+r[3])/2)&&!inGloam(r[0],r[2])&&!inGloam(r[1],r[3])) return;
-  const L=items.spruce; for(let i=L.length-1;i>=0;i--){ const it=L[i]; if(inGloam(it.x,it.z)&&h3(Math.floor(it.x*1.1),Math.floor(it.z*1.1),76)<0.75){ L.splice(i,1); it.c=new THREE.Color(0x8c867c); items.snag.push(it); } }
+  const L=items.spruce; for(let i=L.length-1;i>=0;i--){ const it=L[i]; if(inGloam(it.x,it.z)&&h3(Math.floor(it.x*1.1),Math.floor(it.z*1.1),76)<0.9){ L.splice(i,1); it.c=new THREE.Color(0x8c867c); items.snag.push(it); } }
   const {r:rg,R:rr}=mrng((ci*47+19)|0); let n=0;
   for(let a=0;a<110&&n<46;a++){
     const x=rr(r[0]+6,r[1]-6), z=rr(r[2]+6,r[3]-6); if(!inGloam(x,z)) continue; const h=getH(x,z);
