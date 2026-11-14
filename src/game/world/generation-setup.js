@@ -88,6 +88,7 @@ function buildGeometries(){
   }
   buildMoreTrees();   // plant-models-more.js: after the detailed set, so G.treesHi exists
   buildBushKinds();   // bush-models.js: berry, hazel, juniper, thicket, scrub
+  buildLandExtras();   // land-extras.js: pumpkin, spider web
   let rg=new THREE.DodecahedronGeometry(1,1);
   { const p=rg.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i),y=p.getY(i),z=p.getZ(i),j=1+(h3(x,y,z)-0.5)*0.5; p.setXYZ(i,x*j,y*j,z*j);} rg.computeVertexNormals(); }
   const rockSnowCol=new THREE.Color(0xf0f5f8);   // the Hoarfrost's boulders: cold grey stone with snow on every upward face

@@ -82,8 +82,8 @@ const p=W.players.get('a'), evs=[], grab=()=>{ for(const m of (inbox.a||[])) if(
 // ---- the reserved door ----
 { const D=x.GLOAM_DG_DOOR; ok('the reserved Gloamvault door: id gloamvault, a name, radius 12, in zone m38, off every camp and node, not near the village',D.id==='gloamvault'&&D.name==='The Gloamvault'&&D.r===12&&x.zoneAt(D.x,D.z)&&x.zoneAt(D.x,D.z).key==='m38'&&x.gloamKeepOut(D.x+D.r,D.z,0)&&x.vDist(D.x,D.z)>x.VR+30,D.x+','+D.z+' rot '+D.rot); }
 
-// ---- the festival's name appears nowhere in src/ or docs/ (the owner asked for a dark land, not that holiday) ----
-{ const bad=new RegExp(['hallo','ween'].join('')+'|'+['sam','hain'].join('')+'|'+['pump','kin'].join(''),'i'), hits=[];
+// ---- the festival's name appears nowhere in src/ or docs/ (the owner asked for a dark land, not that holiday; pumpkins are allowed since the owner asked for them in the Gloamhorn's revamp) ----
+{ const bad=new RegExp(['hallo','ween'].join('')+'|'+['sam','hain'].join(''),'i'), hits=[];
   const walk=d=>{ for(const f of fs.readdirSync(d,{withFileTypes:true})){ const q=path.join(d,f.name); if(f.isDirectory()){ if(f.name!=='node_modules'&&f.name!=='.git') walk(q); } else if(/\.(js|json|html|css|md|py|txt)$/.test(f.name)&&bad.test(fs.readFileSync(q,'utf8'))) hits.push(path.relative(path.join(__dirname,'..'),q)); } };
   walk(path.join(__dirname,'../src')); walk(path.join(__dirname,'../docs'));
   ok('no file in src/ or docs/ uses the festival\'s name',hits.length===0,hits.join(', ')); }
