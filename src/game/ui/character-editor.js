@@ -32,8 +32,11 @@ const EDIT=[
       {k:'furMark',label:'Mixed skin',type:'seg',opts:KIN_MARKS.map(m=>m.slice())},
       {type:'dcolor',k:'furColor2',num:2,hint:'Second skin colour (the mixed pattern, ear and tail tips)',premium:false,none:'As designed',opts:SKINS.concat(SKINS_ODD,KIN_FUR,TINTC)}]},
     // the Kin features (shared/kin.js, model-kin.js) have no menu of their own: ears are with the hats, tails with the capes, the muzzle with the face, and the fur is the skin tone (any colour plate) with its mixed patterns
-    {name:'Upper body', rows:['chest','chestShape','shoulders','waist','belly','muscle','hips','hipCurve','hipTall','chestLift','chestGap','chestJiggle','torso'].map(k=>({slider:k}))},
-    {name:'Limbs', rows:['legs','thighs','calves','arms','neck','hands','feet'].map(k=>({slider:k}))}
+    // the body's shape, top to bottom, one region a page; the Chest page is a woman's (a sub with fem:true is not offered to a male hiker: its sliders shape the bust and do nothing for him)
+    {name:'Torso', rows:['shoulders','neck','torso','waist','belly','muscle'].map(k=>({slider:k}))},
+    {name:'Chest', fem:true, rows:['chest','chestShape','chestLift','chestGap','chestJiggle'].map(k=>({slider:k}))},
+    {name:'Arms', rows:['arms','hands'].map(k=>({slider:k}))},
+    {name:'Hips & legs', rows:['hips','hipCurve','hipTall','legs','thighs','calves','feet'].map(k=>({slider:k}))}
   ]},
   {tab:'Face', close:true, subs:[
     {name:'Hair', rows:[
@@ -84,10 +87,12 @@ const EDIT=[
     // an outfit's weapon dressing restyles whatever weapon you hold, whatever your class
     // version 3.1: gloves, the eighth piece: six plain ones and the glove of every set that has one (model-gloves.js)
     {name:'Gloves', rows:[{k:'gloves',type:'grid',kind:'gloves',slot:'g',col:'gloveColor',ids:()=>[['none']].concat(Object.keys(GL_BASE).map(id=>[id,GL_BASE[id].name,GL_BASE[id].text]),ofItems('glove'))},{k:'gloveColor',label:'',type:'color',base:'glove',opts:TINTC},{type:'palette',slot:'glove'}]},
-    {name:'Weapon', rows:[{k:'noWeapon',label:'Weapon in hand',type:'seg',opts:[[false,'Shown'],[true,'Hidden','Play with empty hands: your weapon still works, it is just not drawn']]},{k:'weaponItem',label:'Outfit weapon look',type:'grid',kind:'weapon',ids:()=>[['']].concat(ofItems('weapon'))},{k:'tintWeapon',label:'',type:'color',base:'weapon',only:true,opts:TINTC},
-      // the strong hand (slot v) sits in the weapon's tab: a silly item takes the weapon's place in the right hand, looks only
-      {k:'strongItem',label:'Strong hand: replaces the weapon',type:'grid',kind:'strongItem',slot:'v',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='v').map(r=>[r[1],r[2],r[4]]))},
-      {type:'dcolor',k:'strongColor',num:1,hint:'Main',need:'strongItem',opts:TINTC},{type:'dcolor',k:'strongTrim',num:2,hint:'Second',need:'strongItem',opts:TINTC}]},
+    // the Weapon page: what is in the strong hand. First the choice to show it at all, then the silly items (slot v: one takes the weapon's place in the hand, looks only), then the outfits' weapon
+    // dressings (a long list: it comes last, so the short rows are never pushed out of sight under it on a phone)
+    {name:'Weapon', rows:[{k:'noWeapon',label:'Weapon in hand',type:'seg',opts:[[false,'Shown'],[true,'Hidden','Play with empty hands: your weapon still works, it is just not drawn']]},
+      {k:'strongItem',label:'Silly weapon: held instead of your weapon, whatever your class',type:'grid',kind:'strongItem',slot:'v',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='v').map(r=>[r[1],r[2],r[4]]))},
+      {type:'dcolor',k:'strongColor',num:1,hint:'Main',need:'strongItem',opts:TINTC},{type:'dcolor',k:'strongTrim',num:2,hint:'Second',need:'strongItem',opts:TINTC},
+      {k:'weaponItem',label:'Outfit weapon look',type:'grid',kind:'weapon',ids:()=>[['']].concat(ofItems('weapon'))},{k:'tintWeapon',label:'',type:'color',base:'weapon',only:true,opts:TINTC}]},
     {name:'Armor', rows:[{type:'armor',slot:'all'},{type:'armor',slot:'helmet'},{type:'armor',slot:'top'},{type:'armor',slot:'bottom'},{type:'armor',slot:'shoes'}]}
   ]}
 ];
@@ -103,7 +108,7 @@ const OS_SHOW=12;
 function osOwned(id){ return !OUTFITS[id]||!!(typeof GEAR!=='undefined'&&GEAR&&GEAR.os&&GEAR.os.includes(id)); }
 // a grid of more than OS_SHOW tiles shows the first OS_SHOW and scrolls, so the colour rows under it stay in sight
 function osCap(box){
-  if(box.children.length<=OS_SHOW) return;
+  if(box.children.length<=OS_SHOW||innerWidth<720) return;   // (not on a phone: the sheet's body is about 120 px tall there, and a list that scrolls inside it swallows every swipe, so the rows under it could never be reached)
   requestAnimationFrame(()=>{ const a=box.children[0], cols=Math.max(1,getComputedStyle(box).gridTemplateColumns.split(' ').length); if(!a||!a.offsetHeight) return;
     const gap=parseFloat(getComputedStyle(box).rowGap)||8, rows=Math.ceil(OS_SHOW/cols); box.style.maxHeight=Math.ceil(rows*a.offsetHeight+(rows-1)*gap+4)+'px'; box.classList.add('scroll'); });
 }
@@ -209,7 +214,9 @@ function renderEditor(){
     b.onclick=()=>{ edTab=i; renderEditor(); }; edTabs.append(b);
   });
   const subs=EDIT[edTab].subs; edSub[edTab]=Math.min(edSub[edTab],subs.length-1);
+  if(subs[edSub[edTab]].fem&&LOOK.sex!=='female') edSub[edTab]=0;   // (the page open is a woman's and the hiker is now a man: back to the tab's first page)
   subs.forEach((sb,i)=>{
+    if(sb.fem&&LOOK.sex!=='female') return;
     const b=document.createElement('button'); b.className='ed-sub'; b.textContent=sb.name; b.setAttribute('aria-selected',i===edSub[edTab]);
     b.onclick=()=>{ edSub[edTab]=i; renderEditor(); }; edSubs.append(b);
   });
@@ -324,7 +331,7 @@ function renderEditor(){
     edBody.append(wrap);
   }
   edColourPanel();   // the one shared palette and favourites panel, at the end of the page
-  { const items=[...edBody.children].filter(e=>e.classList.contains('ed-items')), two=items.length>0;   // two columns on a wide screen: every item list (a tab may have two: the weapon outfits and the hand items) goes into ONE left column, everything else into the right one
+  { const items=[...edBody.children].filter(e=>e.classList.contains('ed-items')), two=items.length>0&&innerWidth>=1000;   // (below 1000 px there is one column and the rows keep their order: sorted into lists-first, a toggle above a list ended up under it)   // two columns on a wide screen: every item list (a tab may have two: the weapon outfits and the hand items) goes into ONE left column, everything else into the right one
     edBody.classList.toggle('cols2',two); edBody.classList.toggle('flow2',!two);
     if(two){ const L=document.createElement('div'), R=document.createElement('div'); L.className='ed-left'; R.className='ed-right';
       [...edBody.children].forEach(e=>(items.includes(e)?L:R).append(e)); edBody.append(L,R); } }
