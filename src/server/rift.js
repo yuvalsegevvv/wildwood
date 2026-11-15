@@ -3,7 +3,7 @@
    exports: riftSanitize(g,out) (sanitizeGear hook), riftMsgP (MSG.rift), riftRewardS(run,m) (rewardAllS hook), riftDownTickS(run,p,dt) (dgDownTickS hook), riftLeaveP(run,p) (dgLeaveP hook),
             riftEnergyP(p), riftStartP(p,R,x2), riftRunNewS(p,R,x2), DG_KITS.rift (the wave kit, set directly: 'rift' is not a dungeon mission, so the Delve board never deals it)
    hooks marked `// rift:` (docs/RIFT.md section 4): players.js sanitizeGear, dungeons/mobs.js rewardAllS, dungeons/runs.js dgSetupS (no puzzle stones) and dgDownTickS, dungeons/lobby.js dgLeaveP,
-            dungeons/instances.js (the slot range, the void lets hits and projectiles through), dungeon-slots.js (32 slots)
+            dungeons/instances.js (the slot range, the void lets hits and projectiles through), dungeon-slots.js (48 slots, RIFT_SLOT_END = 32)
    messages in: rift{a:'open'} (within RIFT_TALK of a tear) -> {t:'rift',a:'info',id,e (energy, 1 decimal),full (seconds to full),L,best,lv (the entry level),cost}; rift{a:'go',x2:0|1} (at the tear) starts a run;
                 leaving is the dungeons' dg{a:'leave'} (the HUD's Leave button and the results card).
    events: the dungeons' (tp with dg {m:'rift'...}, spawn, the snapshot's dg tuple = [phase, seconds, 0, wave, monsters, seconds to the next wave, x2, xp]), plus riftw [pid, wave] (the wave banner) and dge at the end.
@@ -23,6 +23,8 @@ function riftInfoP(p,R){
   const g=riftSaveOf(p), now=Date.now();
   sendTo(p.id,{t:'rift',a:'info',id:R.id,e:Math.floor(riftEnergyAt(g,now)*10)/10,full:riftFullIn(g,now),L:Math.max(RIFT_LV,p.level|0),best:g.best|0,clears:g.clears|0,lv:R.lv,cost:RIFT_E_DOUBLE,mode:R.mode,tiers:R.tiers||[],tier:g.tier|0});
 }
+const RIFT_SLOT_END=32;   // rifts scan slots RIFT_SLOT0..RIFT_SLOT_END-1; 32-47 are the Abyss's (AB_SLOT0, shared/dungeon-slots.js)
+const riftDefOf=run=>RIFT_DEFS[run.rift];   // abyss: one read for a run's def, so an Abyss run can supply its own (B2)
 const RIFT_TXT_SHARED='Rifts need Solo mode or a server: a shared room cannot keep a run apart from the world.';
 function riftStartP(p,R,x2,lv){
   if(io.broadcastSnaps){ toastTo(p.id,RIFT_TXT_SHARED,'bad'); return; }
@@ -36,7 +38,7 @@ function riftStartP(p,R,x2,lv){
 }
 // a run object of the dungeons' shape (server/dungeons/instances.js dgNewRunS) in the first free rift slot, its layout riftLayout, one member, no party; lv: the tier picked (0: the XP rift, at your level)
 function riftRunNewS(p,R,x2,lv){
-  let slot=-1; for(let i=RIFT_SLOT0;i<DG_MAX_INST;i++) if(!DG_SLOT_RUN[i]){ slot=i; break; }
+  let slot=-1; for(let i=RIFT_SLOT0;i<RIFT_SLOT_END;i++) if(!DG_SLOT_RUN[i]){ slot=i; break; }
   if(slot<0) return null;
   const L=riftLayout(R), B=dgBake(L); B.open=true; lv=lv|0;
   const O=dgSlotOrigin(slot), run={id:dgNextRun++,slot,ox:O.x,oz:O.z,theme:R,th:R.id,mission:'rift',seed:0,L:lv||Math.max(RIFT_LV,p.level|0),tier:0,rtier:lv,lay:L,B,
@@ -67,7 +69,7 @@ const RIFT_PAY={
   essence:{
     kill(){},
     stage(run,p,mb,st){ if(mb&&mb.got.kills>0) riftEssenceP(run,p,mb,riftEssAt(st,run.rtier)-riftEssAt(st-1,run.rtier)); },
-    clear(run,p,mb){ const R=RIFT_DEFS[run.rift], e=R&&essOf(essIdOf(R.essence)), g=riftSaveOf(p); if(run.rtier>(g.tier|0)){ g.tier=run.rtier; const nx=RIFT_TIERS[RIFT_TIERS.indexOf(run.rtier)+1]; if(nx) toastTo(p.id,'Level '+nx+' rifts are open to you now.','good'); }
+    clear(run,p,mb){ const R=riftDefOf(run), e=R&&essOf(essIdOf(R.essence)), g=riftSaveOf(p); if(run.rtier>(g.tier|0)){ g.tier=run.rtier; const nx=RIFT_TIERS[RIFT_TIERS.indexOf(run.rtier)+1]; if(nx) toastTo(p.id,'Level '+nx+' rifts are open to you now.','good'); }
       if(e&&mb) toastTo(p.id,'The rift paid '+mb.got.mats+' '+e.name+'.','good'); },
   },
   coins:{
@@ -76,19 +78,19 @@ const RIFT_PAY={
   },
   stones:{
     kill(){},
-    stage(run,p,mb,st){ if(!(mb&&mb.got.kills>0)) return; const R=RIFT_DEFS[run.rift], k=R.stone, n=(riftStonesAt(st,run.L)-riftStonesAt(st-1,run.L))*(run.x2?2:1); if(n<=0) return;
+    stage(run,p,mb,st){ if(!(mb&&mb.got.kills>0)) return; const R=riftDefOf(run), k=R.stone, n=(riftStonesAt(st,run.L)-riftStonesAt(st-1,run.L))*(run.x2?2:1); if(n<=0) return;
       const was=p.gear[k]|0; p.gear[k]=Math.min(RL_STONE_MAX,was+n); if(mb) mb.got.mats+=p.gear[k]-was; },
-    clear(run,p,mb){ const R=RIFT_DEFS[run.rift]; if(mb) toastTo(p.id,'The rift paid '+mb.got.mats+' '+RL_STONE_NAME[R.stone]+'s.','good'); },
+    clear(run,p,mb){ const R=riftDefOf(run); if(mb) toastTo(p.id,'The rift paid '+mb.got.mats+' '+RL_STONE_NAME[R.stone]+'s.','good'); },
   },
 };
 function riftEssenceP(run,p,mb,n){
-  const R=RIFT_DEFS[run.rift], id=R&&essIdOf(R.essence); n=Math.max(0,n|0)*(run.x2?2:1); if(!id||!n) return;
+  const R=riftDefOf(run), id=R&&essIdOf(R.essence); n=Math.max(0,n|0)*(run.x2?2:1); if(!id||!n) return;
   const add=awkEssenceP(p,id,n); if(mb) mb.got.mats+=add;
 }
 // a stage reached (every mode counts 10): each stage not yet paid is paid now (essence: by the tier; xp: nothing, kills pay)
 function riftStageS(run,st){ const k=run.k, pay=riftPayOf(run); st=Math.min(RIFT_WAVES,st|0);
   while((k.st|0)<st){ k.st=(k.st|0)+1; if(pay.stage) for(const p of dgPresentS(run)) pay.stage(run,p,dgMemberOf(run,p),k.st); } }
-const riftPayOf=run=>{ const R=RIFT_DEFS[run.rift]; return RIFT_PAY[R&&R.reward]||RIFT_PAY.xp; };
+const riftPayOf=run=>{ const R=riftDefOf(run); return RIFT_PAY[R&&R.reward]||RIFT_PAY.xp; };
 function riftRewardS(run,m){
   const pay=riftPayOf(run);
   for(const q of dgPresentS(run)){ const mb=dgMemberOf(run,q); pay.kill(run,m,q,mb); q.dirty=true; if(mb) mb.got.kills++; }
@@ -125,14 +127,14 @@ function riftWonS(run){
    Shared by the modes: run.k = {st (stages paid, 0-10), q (spawns waiting: [def id, herald, not before run.t, stage, role]), kills, ti (the next tear), ...the mode's own}, the pour
    (riftQueueS / riftPourS: monsters through the tears, at most RIFT_ALIVE_MAX alive), the wave step (riftWaveStepS: Waves, Heartwood and Gale), riftHudS (the snapshot's numbers). */
 const RIFT_MODE_KITS=Object.create(null);
-const riftModeOf=run=>{ const R=RIFT_DEFS[run.rift]; return RIFT_MODE_KITS[R&&R.mode]||RIFT_MODE_KITS.waves; };
+const riftModeOf=run=>{ const R=riftDefOf(run); return RIFT_MODE_KITS[R&&R.mode]||RIFT_MODE_KITS.waves; };
 const riftAliveS=run=>{ let n=0; for(const m of run.mons) if(!m.dead&&!m.remove) n++; return n; };
 // one kind of the rift by its plan (kinds join at their stage, by weight)
-function riftPickS(run,stage){ const R=RIFT_DEFS[run.rift], kinds=R.kinds.filter(c=>c.from<=Math.max(1,stage)), tw=kinds.reduce((s,c)=>s+c.w,0); let r=Math.random()*tw;
+function riftPickS(run,stage){ const R=riftDefOf(run), kinds=R.kinds.filter(c=>c.from<=Math.max(1,stage)), tw=kinds.reduce((s,c)=>s+c.w,0); let r=Math.random()*tw;
   for(const c of kinds){ r-=c.w; if(r<=0) return c.id; } return kinds[0].id; }
 // n monsters through the tears over `over` seconds from now (role 'breaker': it goes for run.k.heart), herald true: the rift's Herald
 function riftQueueS(run,n,over,stage,role){ const k=run.k; for(let i=0;i<n;i++) k.q.push([riftPickS(run,stage),false,run.t+over*i/Math.max(1,n),stage,role||'']); k.q.sort((a,b)=>a[2]-b[2]); }
-function riftQueueHeraldS(run,at,stage){ const k=run.k, R=RIFT_DEFS[run.rift]; k.q.push([R.herald,true,at,stage,'']); k.q.sort((a,b)=>a[2]-b[2]); }
+function riftQueueHeraldS(run,at,stage){ const k=run.k, R=riftDefOf(run); k.q.push([R.herald,true,at,stage,'']); k.q.sort((a,b)=>a[2]-b[2]); }
 function riftPourS(run){
   const k=run.k, S0=run.B.marks.S; let alive=riftAliveS(run);
   while(k.q.length&&k.q[0][2]<=run.t&&alive<RIFT_ALIVE_MAX&&S0.length){
@@ -158,7 +160,7 @@ function riftWaveStepS(run,breakers,onWave){
 }
 const riftWaveClockS=run=>{ const k=run.k; return !k.w?Math.max(0,Math.ceil(RIFT_COUNT_S-run.t)):k.w>=RIFT_WAVES?0:Math.max(0,Math.ceil(RIFT_WAVE_S-(run.t-k.start))); };
 // the snapshot's numbers (shared/rift.js DG_HUD.rift): [stage, monsters, clock, x2, paid, tier, a, b]
-function riftHudS(run,stage,clock,a,b){ const k=run.k, R=RIFT_DEFS[run.rift], gk=R&&(R.reward==='essence'||R.reward==='stones')?'mats':R&&R.reward==='coins'?'coins':'xp'; let got=0; for(const mb of run.members.values()) got=Math.max(got,mb.got[gk]);
+function riftHudS(run,stage,clock,a,b){ const k=run.k, R=riftDefOf(run), gk=R&&(R.reward==='essence'||R.reward==='stones')?'mats':R&&R.reward==='coins'?'coins':'xp'; let got=0; for(const mb of run.members.values()) got=Math.max(got,mb.got[gk]);
   run.hud=[stage|0,riftAliveS(run)+k.q.length,Math.max(0,Math.ceil(clock||0)),run.x2?1:0,Math.round(got),run.rtier|0,Math.round(a||0),Math.round(b||0)]; }
 // the breakers (Heartwood): walk to the objective and swing at it; true when it breaks
 function riftBreakersS(run,ob,dt){
@@ -176,9 +178,9 @@ function riftGuardsS(run,ob,n,hpK){ const L=dgLocalS(run,ob.x,ob.z);
   for(let i=0;i<n;i++){ const a=i/n*TAU+Math.random()*0.5, m=riftSpawnS(run,riftPickS(run,3),L.x+Math.sin(a)*4,L.z+Math.cos(a)*4,false); if(!m) continue;
     m.dgHunt=false; m.riftGuard=ob.id; if(hpK&&hpK!==1) m.maxHp=m.hp=m.maxHp*hpK; } }
 // an objective's health in hits of the rift's average monster at the run's level (its brittle damage)
-const riftObjHpS=(run,hits)=>{ const R=RIFT_DEFS[run.rift], ds=R.kinds.map(c=>defAt(DEF_BY_ID[c.id],run.L).dmg*RIFT_DMG_K); return Math.max(1,Math.round(hits*ds.reduce((s,v)=>s+v,0)/Math.max(1,ds.length))); };
+const riftObjHpS=(run,hits)=>{ const R=riftDefOf(run), ds=R.kinds.map(c=>defAt(DEF_BY_ID[c.id],run.L).dmg*RIFT_DMG_K); return Math.max(1,Math.round(hits*ds.reduce((s,v)=>s+v,0)/Math.max(1,ds.length))); };
 DG_KITS.rift={
-  setup(run){ run.k={st:0,q:[],kills:0,ti:0}; const R=RIFT_DEFS[run.rift], M=RIFT_MODES[R.mode]||RIFT_MODES.waves;
+  setup(run){ run.k={st:0,q:[],kills:0,ti:0}; const R=riftDefOf(run), M=RIFT_MODES[R.mode]||RIFT_MODES.waves;
     toastTo(null,R.mode==='waves'?'Glass is forming. Hold the platforms: '+RIFT_WAVES+' waves.':M.name+': '+M.how,''); riftModeOf(run).setup(run); },
   tick(run,dt){ if(run.endT) return; riftModeOf(run).tick(run,dt); },
   onKill(run,m){ run.k.kills++; const K=riftModeOf(run); if(K.onKill) K.onKill(run,m); },

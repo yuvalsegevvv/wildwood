@@ -2,7 +2,7 @@
 /* agent map: one RIFT_MODE_KITS entry; objectives 'pylon' (v = 0, st 2 = broken); the colossus is m.immune until then. Stages: 2 a pylon, 9 at half its health, 10 its death. Test: tools/rift-smoke.js */
 const RIFT_COLOSSUS_HP=2.5, RIFT_PYLON_S=3, RIFT_QUARRY_POUR_S=26;
 RIFT_MODE_KITS.quarry={
-  setup(run){ const k=run.k, isles=riftBigIslesS(run,5), far=isles[0], R=RIFT_DEFS[run.rift];
+  setup(run){ const k=run.k, isles=riftBigIslesS(run,5), far=isles[0], R=riftDefOf(run);
     k.col=riftSpawnS(run,R.herald,far.x,far.z,true); if(k.col){ k.col.maxHp=k.col.hp=k.col.maxHp*RIFT_COLOSSUS_HP; k.col.immune=true; k.col.riftCol=true; }
     k.py=(isles.length>4?isles.slice(1):isles).slice(0,4).map(c=>{ const ob=dgObjS(run,'pylon',c.x,c.z,{r:2,v:0}); riftGuardsS(run,ob,3,1); return ob; });
     k.broken=0; k.pt=RIFT_QUARRY_POUR_S; k.dead=false; RIFT_MODE_KITS.quarry.hud(run); },

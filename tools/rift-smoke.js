@@ -45,7 +45,7 @@ at(A); W.receive('a',{t:'rift',a:'open'}); const inf=msgs('a','rift').pop();
 ok('the window: energy, time to full, level, cost',inf&&inf.a==='info'&&inf.e===100&&inf.full===0&&inf.L===40&&inf.cost===20);
 // a doubled run
 W.receive('a',{t:'rift',a:'go',x2:1}); const run=[...x.DG_RUNS.values()].find(r=>r.rift);
-ok('the run starts in a rift slot, solo, at your level, doubled, 20 energy spent',!!run&&run.slot>=x.RIFT_SLOT0&&run.slot<x.DG_MAX_INST&&A.inst===run.id&&run.L===40&&run.x2&&run.members.size===1&&!run.party&&Math.abs(A.gear.rift.e-80)<0.01,run&&run.slot);
+ok('the run starts in a rift slot, solo, at your level, doubled, 20 energy spent',!!run&&run.slot>=x.RIFT_SLOT0&&run.slot<32&&A.inst===run.id&&run.L===40&&run.x2&&run.members.size===1&&!run.party&&Math.abs(A.gear.rift.e-80)<0.01,run&&run.slot);
 ok('the tp builds the rift on the client: mission rift, its theme',(()=>{ const tp=msgs('a','tp').pop(); return tp&&tp.dg&&tp.dg.m==='rift'&&tp.dg.th==='shardmere'; })());
 ok('the void blocks walking but no hit or projectile',run.B.open&&x.dgSolid(run.B,2,2)&&!x.dgWallAtS(run.ox+2,run.oz+2));
 // leaving before the first kill refunds
@@ -53,6 +53,10 @@ W.receive('a',{t:'dg',a:'leave'});
 ok('leaving before a kill: back at the tear, the run closed, the energy back',!A.inst&&!x.DG_RUNS.has(run.id)&&Math.abs(A.gear.rift.e-100)<0.01&&Math.hypot(A.x-D.x,A.z-D.z)<5);
 // a dungeon never takes a rift slot
 { const T=x.DG_THEMES.bare, r2=x.dgLaunchS(A,T,'purge',{L:30,back:{x:A.x,z:A.z},dev:true}); ok('a dungeon run takes a dungeon slot',r2&&r2.slot<x.DG_DG_SLOTS); if(r2){ W.receive('a',{t:'dg',a:'leave'}); tick(1300); } }
+// a rift never takes a slot from 32 up (the Abyss's): with 16-31 full, the rift is "busy" and slot 32 stays free
+{ const S0=x.DG_SLOT_RUN.slice(); for(let i=x.RIFT_SLOT0;i<32;i++) x.DG_SLOT_RUN[i]=1e9+i; at(A); A.dead=false; A.hp=A.maxHp; W.receive('a',{t:'rift',a:'go',x2:0});
+  ok('every rift slot taken: no run, nothing in slot 32 or above',!A.inst&&!x.DG_SLOT_RUN.slice(32).some(v=>v)&&x.DG_MAX_INST>=48);
+  for(let i=0;i<S0.length;i++) x.DG_SLOT_RUN[i]=S0[i]; }
 // a plain run: waves and XP
 at(A); A.dead=false; A.hp=A.maxHp; W.receive('a',{t:'rift',a:'go',x2:0});
 const r=[...x.DG_RUNS.values()].find(q=>q.rift); ok('a plain run spends no energy',!!r&&!r.x2&&Math.abs(A.gear.rift.e-100)<0.01);

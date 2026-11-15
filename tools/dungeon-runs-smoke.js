@@ -31,7 +31,7 @@ const withRandom=(v,fn)=>{ const r=Math.random; Math.random=()=>v; try{ return f
 
 // ---- slots and the floor ----
 { const o0=x.dgSlotOrigin(0), o1=x.dgSlotOrigin(1), o4=x.dgSlotOrigin(4);
-  ok('slots lie far east of the walkable world, 600 m apart, 4 a row, 32 of them, the first 16 the dungeons\' (the rest are the rifts\')',x.DG_X0>=x.WX1+1000&&o1.x-o0.x===600&&o4.z-o0.z===600&&o4.x===o0.x&&x.DG_MAX_INST===32&&x.DG_DG_SLOTS===16&&x.dgSlotAt(o0.x+10,o0.z+10)===0&&x.dgSlotAt(o4.x+300,o4.z+250)===4&&x.dgSlotAt(0,0)===-1);
+  ok('slots lie far east of the walkable world, 600 m apart, 4 a row, 32 of them, the first 16 the dungeons\' (the rest are the rifts\')',x.DG_X0>=x.WX1+1000&&o1.x-o0.x===600&&o4.z-o0.z===600&&o4.x===o0.x&&x.DG_MAX_INST===48&&x.DG_DG_SLOTS===16&&x.dgSlotAt(o0.x+10,o0.z+10)===0&&x.dgSlotAt(o4.x+300,o4.z+250)===4&&x.dgSlotAt(0,0)===-1);
   ok('the floor of a slot is flat at DG_FLOOR_Y; the world keeps its hills',x.getH(o0.x+5,o0.z+5)===x.DG_FLOOR_Y&&x.getH(o1.x+200,o1.z+90)===x.DG_FLOOR_Y&&[[0,0],[100,-50],[-200,150]].some(([a,b])=>x.getH(a,b)!==x.DG_FLOOR_Y)); }
 ok('the kit registry loaded with no bad kit, and Purge is built',x.DG_KIT_BAD.length===0&&!!x.DG_KITS.purge&&x.dgPoolS().includes('purge'),JSON.stringify(x.DG_KIT_BAD));
 

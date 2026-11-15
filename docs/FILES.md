@@ -273,6 +273,7 @@ shared
   rift/blade.js                      The Blade Rift, the Gloamhorn's rift (pays Weapon Reroll Stones): its tear in the Gloamhorn's wilds west of Wraithwick, a steel-blue and violet aura, six glass kinds of the dusk and a Herald (the colossus); mode Quarry, a long cross
   rift/bulwark.js                    The Bulwark Rift, the Amber Reach's rift (pays Armor Reroll Stones): its tear in the Amber Reach's wilds west of Tallgrass, a sky-blue and amber aura, six glass kinds of the savanna and a Herald; mode Heartwood, a broken square round the hub
   rift/charm.js                      The Charm Rift, the Emberwake Isles' rift (pays Accessory Reroll Stones): its tear on the isles east of Coralhaven, a sea-cyan and coral aura, six glass kinds of the isles and a Herald; mode Lanterns, a double comb
+  abyss.js                           The Abyss (a solo roguelike mode, behind AB_ON): the flag, the six difficulties, the round level table, the boss rounds and the caps. Pure; loaded by both sides
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -373,6 +374,7 @@ server
   rift/lanterns.js                   Rift mode Lanterns (the Long-night Rift): a dark void (the client's look); four shadow cores on the platforms, each shielded while its three wardens live; break an open core with a 2 s channel (the talk key); a small wave every RIFT_LANTERN_POUR_S; all cores broken call the Night Herald; its death wins
   rift/quarry.js                     Rift mode Quarry (the Stone Rift): a stone colossus (the Herald, x RIFT_COLOSSUS_HP more) walks the platforms, immune while its four glass pylons stand; each pylon has three guards; break a pylon with a 3 s channel; all four broken open the colossus; its death wins
   rift/gauntlet.js                   Rift mode Gauntlet (the Forge Rift): no waves; five forge champions one after another (a Herald-sized elite of the rift's kinds, tougher each time, with a few adds), fire vents flaring under you (a glowing ring, RIFT_VENT_WARN s, a fifth of your health), a RIFT_GAUNT_S clock: out of time = lost
+  abyss.js                           The Abyss on the server (behind AB_ON): the save gear.ab cleaned field by field, the flag the server asks (abOnS) and the window message (abyss{a:'open'}). B1: no run yet
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
