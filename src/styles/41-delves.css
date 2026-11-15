@@ -1,0 +1,50 @@
+/*@ The Delves rewards menu (#dgRewards): eight dungeon cards, the tier strip, the reward card (pieces, equipment-level bar, rarity line, pool tiles, details), the Compare tiers table; a row of icons above the card on a phone */
+#dgRewards{ width:min(760px,calc(100vw - 24px)); }
+@media (max-width:719px){ #dgRewards{ width:auto; } }
+#dgrBody{ display:grid; grid-template-columns:190px 1fr; gap:12px; align-items:start; }
+.dgr-list{ display:flex; flex-direction:column; gap:6px; }
+.dgr-card{ --dgc:#cdd98f; position:relative; display:flex; align-items:center; gap:8px; padding:6px 8px; text-align:left; color:var(--ink); cursor:pointer; border-radius:6px; border:1px solid var(--line); border-left:4px solid var(--dgc); background:rgba(0,0,0,.22); font:inherit; }
+.dgr-card.on{ border-color:#f2cf5a; border-left-color:var(--dgc); background:rgba(242,207,90,.1); box-shadow:0 0 0 1px rgba(242,207,90,.35); }
+.dgr-card.locked{ opacity:.62; }
+.dgr-pic{ flex:none; width:38px; height:38px; display:grid; place-items:center; border-radius:6px; background:rgba(0,0,0,.3); font:600 18px Alegreya,Georgia,serif; color:var(--dgc); overflow:hidden; }
+.dgr-pic .mp-pic{ width:38px; height:38px; }
+.dgr-ct{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.dgr-ct b{ font:600 13.5px Alegreya,Georgia,serif; line-height:1.15; }
+.dgr-ct small{ font-size:11px; color:var(--ink-dim); }
+.dgr-kind{ flex:none; width:26px; height:26px; }
+.dgr-kico,.dgr-kico svg{ display:block; width:26px; height:26px; }
+.dgr-lock{ position:absolute; right:4px; top:2px; font-size:11px; }
+.dgr-main{ --dgc:#cdd98f; min-width:0; }
+.dgr-hero{ padding:8px 12px; margin-bottom:8px; border-radius:6px; border:1px solid var(--line); border-left:4px solid var(--dgc); background:rgba(0,0,0,.22); }
+.dgr-hero h3{ margin:0; font:400 21px Alegreya,Georgia,serif; color:var(--dgc); }
+.dgr-sub{ font-size:12px; color:var(--ink-dim); }
+.dgr-tiers{ display:grid; grid-template-columns:repeat(11,1fr); gap:3px; margin-bottom:8px; }
+.dgr-tier{ position:relative; display:flex; flex-direction:column; align-items:center; padding:4px 0 3px; border-radius:6px; border:1px solid var(--line); background:rgba(0,0,0,.22); color:var(--ink); font:inherit; cursor:pointer; }
+.dgr-tier b{ font:600 13px Alegreya,Georgia,serif; } .dgr-tier small{ font-size:9.5px; color:var(--ink-dim); } .dgr-tier i{ font-style:normal; font-size:10px; line-height:1.2; }
+.dgr-tier.done{ border-color:rgba(138,223,154,.4); } .dgr-tier.done i{ color:#8adf9a; }
+.dgr-tier.open{ border-color:#f2cf5a; box-shadow:0 0 8px rgba(242,207,90,.45); } .dgr-tier.open i{ color:#f2cf5a; }
+.dgr-tier.lock{ opacity:.6; }
+.dgr-tier.sel{ background:rgba(242,207,90,.16); outline:2px solid #f2cf5a; outline-offset:-1px; }
+.dgr-reward{ display:flex; flex-direction:column; gap:10px; padding:10px 12px; border-radius:6px; border:1px solid rgba(242,207,90,.35); background:rgba(0,0,0,.22); }
+.dgr-cnt{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 12px; } .dgr-cnt b{ font:600 17px Alegreya,Georgia,serif; color:#f2cf5a; } .dgr-cnt span{ font-size:12px; color:var(--ink-dim); }
+.dgr-pips i{ display:inline-block; width:9px; height:9px; margin-right:3px; border-radius:50%; border:1px solid #f2cf5a; } .dgr-pips i.sure{ background:#f2cf5a; }
+.dgr-h{ margin-bottom:4px; font-size:11.5px; letter-spacing:.03em; text-transform:uppercase; color:var(--ink-dim); }
+.dgr-bar{ display:flex; height:20px; border-radius:5px; overflow:hidden; border:1px solid var(--line); }
+.dgr-seg{ display:grid; place-items:center; font-size:11px; font-weight:600; color:#10140e; }
+.dgr-key{ display:flex; flex-wrap:wrap; gap:3px 12px; margin-top:5px; font-size:11.5px; color:var(--ink-dim); } .dgr-k i{ display:inline-block; width:9px; height:9px; margin-right:4px; border-radius:2px; }
+.dgr-rarow{ display:flex; flex-wrap:wrap; gap:4px; } .dgr-rc{ padding:1px 8px; border-radius:999px; border:1px solid; font-size:12px; background:rgba(0,0,0,.25); }
+.dgr-tiles{ display:flex; flex-wrap:wrap; gap:6px; }
+.dgr-tile{ width:72px; display:flex; flex-direction:column; align-items:center; gap:3px; padding:5px 2px; border-radius:6px; border:1px solid var(--line); background:rgba(0,0,0,.2); color:var(--ink); font:inherit; cursor:pointer; }
+.dgr-tile small{ font-size:10px; line-height:1.15; text-align:center; color:var(--ink-dim); } .dgr-tile.on{ border-color:#f2cf5a; background:rgba(242,207,90,.12); }
+.dgr-info{ margin-top:8px; padding:8px 10px; border-radius:6px; border:1px solid var(--line); background:rgba(0,0,0,.28); font-size:12.5px; }
+.dgr-il{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:2px 10px; padding:2px 0; } .dgr-note{ margin:6px 0 0; font-size:11.5px; color:var(--ink-dim); }
+.dgr-cw{ margin-top:10px; overflow-x:auto; }
+.dgr-cmp{ width:100%; border-collapse:collapse; font-size:12px; font-variant-numeric:tabular-nums; } .dgr-cmp th{ font-weight:400; color:var(--ink-dim); text-align:center; padding:2px 3px; }
+.dgr-cmp td{ text-align:center; padding:3px; border-top:1px solid rgba(238,240,226,.08); cursor:pointer; } .dgr-cmp td.zero{ color:var(--ink-dim); opacity:.5; } .dgr-cmp tr.sel td{ background:rgba(242,207,90,.13); color:#f2cf5a; }
+.dgb-rew{ margin-left:auto; }
+@media (max-width:719px){
+  #dgrBody{ grid-template-columns:1fr; gap:8px; }
+  .dgr-list{ flex-direction:row; overflow-x:auto; gap:6px; padding-bottom:3px; }
+  .dgr-card{ flex:none; padding:4px; border-left-width:1px; border-bottom:3px solid var(--dgc); } .dgr-ct,.dgr-kind{ display:none; } .dgr-pic{ width:44px; height:44px; } .dgr-pic .mp-pic{ width:44px; height:44px; }
+  .dgr-tiers{ grid-template-columns:repeat(6,1fr); } .dgr-tile{ width:calc(33.3% - 4px); }
+}

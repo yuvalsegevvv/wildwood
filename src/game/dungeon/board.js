@@ -94,6 +94,7 @@ function dgBoardRender(){
   const facts=dgBoardEl('div','dgb-facts');
   dgBoardAdd(facts,dgBoardEl('span','dgb-fact lv','Level '+dgtLevel(pick)),dgBoardEl('span','dgb-fact','Enter from level '+DG_ENTRY_LV));
   { const sn=bdcDoorNote(th); if(sn) facts.appendChild(dgBoardEl('span','dgb-fact bdc-stirfact','\u2605 '+sn)); }   // bond: the hour's stirring dungeon
+  { const rw=dgBoardEl('button','chip dgb-rew','Rewards'); rw.type='button'; rw.addEventListener('click',()=>{ UI_SFX.click(); dgrmOpen(th,pick); }); facts.appendChild(rw); }   // dgrev D8b: what this dungeon pays (rewards-menu.js)
   hero.appendChild(facts); body.appendChild(hero);
   body.appendChild(dgBoardEl('p','dgb-state '+(m.ok&&open?'ok':'no'),!m.ok?(m.gate?'':'Sealed. ')+(m.why||'You cannot enter yet.'):open?'The way is open for you.':'Tier '+DG_BOARD_ROMAN[pick]+' opens when you clear tier '+DG_BOARD_ROMAN[pick-1]+' of any dungeon.'));
   const tp=dgBoardEl('div','dgb-tier'), tl=dgBoardEl('button','chip dgb-tl','\u25C0'), tr=dgBoardEl('button','chip dgb-tr','\u25B6');

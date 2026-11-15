@@ -195,7 +195,7 @@ The travel window (`game/ui/travel.js`: `openTravel`, `renderTravel`, it has no 
 | D6 **(built)** | Gloves: slot, the 6 kinds, combat hooks; the Termite Cathedral | new `gloves-smoke`, `skills-smoke` |
 | D7 **(built)** | Shields: slot, the 7 kinds, hurt hooks; the Cenote | new `shields-smoke`, `server-smoke` |
 | D8 **(built)** | Client: inventory slots and icons, forge tabs, details text, the board, a results card with several pieces; the docs | `rewards-client-smoke`, `client-smoke`, `phone-layout-smoke` |
-| D8b | The Delves rewards menu (7b) | new `dungeon-rewards-menu-smoke`, `phone-layout-smoke` |
+| D8b **(built)** | The Delves rewards menu (7b) | new `dungeon-rewards-menu-smoke`, `phone-layout-smoke` |
 | D8c | Dungeons from the teleport circle (7c) | `dungeon-runs-smoke`, `dungeon-board-client-smoke`, `client-smoke` |
 | D9 | Full suite (every new `tools/*-smoke.js` needs its row in `tools/tests.json`, and every new source file its line in `src/manifest.json` and `python3 build.py --write-index`, or `build.py --check` fails), `npm run fuzz`, `economy-fuzz`, `world-soak`, `gen-docs`, merge | `npm test` |
 
@@ -260,3 +260,10 @@ The main files touched: `shared/dungeon-rewards.js`, `dungeon-items.js`, `rolls.
 - Forge: the Temper, Roll and Sacrifice rows show `Lv N`, the stat (`dgStatHtml`) and the stone count (Tempering Stones / Weapon / Armor / Accessory); the intro texts and the stone chip tooltips name every kind (shields use Armor stones, capes and gloves Accessory stones) and levels 30-60.
 - The Delve board's tier picker says the gear levels and piece count of the picked tier (`DG_TIERS[t].eq` / `.n`) and wraps on a phone (`.dgb-tier`). The results card lists each piece with its icon, rarity border, name and level (`dgResultShow`, `.dgr-it`). Player shop rows carry the bonus text as a hover / long-press title.
 - Not checked with a real browser screenshot; headless tests only.
+
+### D8b as built (decisions)
+
+- `game/dungeon/rewards-menu.js` (`dgrm...`, state `DGRM = {th, tier, pick}`), markup `#dgRewards` (+ `#dgrBody`), `'dgRewards'` in `PANELS`, `styles/41-delves.css`. Opens: the Delve board's **Rewards** chip (`dgb-rew`, opens on the board's picked tier), the inventory header's **Delves** button (`#invDelves`), and the travel window (D8c). `dgrmOpen(theme, tier)`; the tier defaults to the highest open one.
+- Everything is computed from `DG_TIERS`, `DG_REWARDS`, `DG_REWARD_W`, `rlLinesFor`, `dgItem(dgPieceId(kind, pick, 7 + eq, 0, 0))` and `gear.dg.top`; nothing is sent to the server. The pool tiles show the piece at the tier's most likely equipment level (common, +0); the details card lists the fixed bonus at every level the tier can roll. A locked dungeon (land gate: `dgGateOpen`) stays viewable and shows its land hint. A locked tier can be previewed ("clear tier N first").
+- The boss picture is `mpPic(theme.boss)` (a dungeon boss's def is in `DEF_BY_ID` through `combat/boss-dungeon.js`); the headless build has no GL, so frames stay empty there. On a portrait phone the dungeon list becomes a scrolling row of boss pictures above the card (the names are in the hero line).
+- Test: `tools/dungeon-rewards-menu-smoke.js` (all 8 x 11 builds, states, three ways in). Not checked with a real browser screenshot.

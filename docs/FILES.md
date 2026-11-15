@@ -48,6 +48,7 @@ styles
   38-bonds.css                       Bonds (game/bond/): the Bonds panel (cards, the orb pouch, this hour's Stirrings), the orb pop-up, the +1 and guest marks on skill tiles and the action bar
   39-characters.css                  The Characters panel's frame (game/awakening/hub.js): the character list on the left, the hero card with the default look behind it, the tabs, the skills tab's rows with their swap button, the look tab; a phone stacks it
   40-tooltip.css                     The in-game hover note (ui/tooltip.js) and the scrollbars: bark, brass and parchment instead of the browser's grey
+  41-delves.css                      The Delves rewards menu (#dgRewards): eight dungeon cards, the tier strip, the reward card (pieces, equipment-level bar, rarity line, pool tiles, details), the Compare tiers table; a row of icons above the card on a phone
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -679,6 +680,7 @@ game
   economy/dungeon-gear.js            Level-30 dungeon gear in the UI: the ring's notes in the item details, the Tempering Stone count and drop note, the forge's Temper tab, the testing buttons, the events `stone` and `temper`
   economy/rolls.js                   Rolled level-40 gear in the UI (version 3): the three lines in the item details, the forge's Roll and Sacrifice tabs, the reroll stone chips, the cooldown reduction of rolled gear, the events `sac` and `reroll`, the testing buttons
   dungeon/board.js                   The Delve board: the panel a dungeon door opens (the dungeon, its lock, the two missions on offer this hour, the countdown, your party, the leader's Start) and the prompt to join a party's run (dgi)
+  dungeon/rewards-menu.js            The Delves rewards menu: what each of the eight dungeons pays at each of the eleven tiers (the cards, the tier strip, the piece count, the equipment-level split, the rarity line, the pool, a details card, the Compare tiers table)
   dungeon/run.js                     A dungeon run on the client: its state (DG_RUN), entering and leaving it on the server's tp (the tp hook), the run's events (dgo, dgb, dgr, dge) and snapshot field (dg), and the run's frame (dgFrame)
   dungeon/view.js                    The dungeon's meshes: floor, walls and caps from the bake's cells (merged; the theme's light props baked into their vertex colours), the theme's props by kind, the portal, the hall's rune ring, the objective markers; built in the scene at the run's slot, disposed on leaving
   dungeon/view-mine.js               Dungeon view, the Blackseam's props: coal seam walls, pit props and buttresses, ore carts, keg stacks, mine lamps, coal heaps, rails and slag vents, added to DG_PROP_KINDS
