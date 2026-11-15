@@ -253,19 +253,19 @@ const runK=runOf('k');
 
 // ---- a start at a door: the gate, the offer, leaving, an empty run closing ----
 { const Ent=x.DG_ENTRANCES.hollowroots, ap=x.dgApron(Ent);
-  const M=join('m','Mo',{gear:{zt:{home:{on:1,max:1}}}}), N=join('n','Nia'); IMM.add('m'); tick(2);
+  const M=join('m','Mo',{gear:{}}), N=join('n','Nia'); IMM.add('m'); tick(2);
   clear(); dg('m','start',{dungeon:'hollowroots',type:'purge'}); tick(2);
   ok('away from the door a run cannot start',!M.inst&&/door/.test(toasts('m')));
   const near={x:Ent.x+Math.sin(Ent.a)*3,z:Ent.z+Math.cos(Ent.a)*3};   // (the talk key works within DG_ENT_TALK of the door; the apron, where a run puts you back, is a little further out)
-  M.x=near.x; M.z=near.z; N.x=near.x+0.5; N.z=near.z; clear(); dg('m','open'); dg('n','start',{dungeon:'hollowroots',type:'purge'}); tick(2);
+  M.x=near.x; M.z=near.z; N.x=near.x+0.5; N.z=near.z; clear(); dg('m','open'); dg('n','start',{dungeon:'hollowroots',type:x.dgOffer('hollowroots',Date.now(),x.dgPoolS())[0],tier:1}); tick(2);
   const bd=lastMsg('m','dgboard'), offer=x.dgOffer('hollowroots',Date.now(),x.dgPoolS());
-  ok('at the door the board opens: dgboard {th, offer, pool, left, L, tier, gate, ok, why, lead}',!!bd&&bd.th==='hollowroots'&&JSON.stringify(bd.offer)===JSON.stringify(offer)&&bd.L===30&&bd.tier===1&&bd.gate===1&&bd.ok===1&&bd.lead===1&&bd.left>0,JSON.stringify(bd));
-  ok('Wildwood at +0: its door stays shut',!N.inst&&/\+1|Carapax/.test(toasts('n')));
+  ok('at the door the board opens: dgboard {th, offer, pool, left, L, tier, top, gate, ok, why, lead}',!!bd&&bd.th==='hollowroots'&&JSON.stringify(bd.offer)===JSON.stringify(offer)&&bd.L===30&&bd.tier===0&&bd.top===0&&bd.gate===1&&bd.ok===1&&bd.lead===1&&bd.left>0,JSON.stringify(bd));
+  ok('a tier that is not open (II with nothing cleared) is refused at the door; Wildwood\'s door needs no +1',!N.inst&&/not open/.test(toasts('n'))&&bd.gate===1);
   clear(); dg('m','start',{dungeon:'hollowroots',type:x.dgPoolS().find(k=>!offer.includes(k))||'nosuch'}); tick(2);   // (a built mission that is not on offer this hour)
   ok('a type not on offer this hour is refused ("the offer changed") and the board comes again',!M.inst&&/offer changed/.test(toasts('m'))&&!!lastMsg('m','dgboard'));
-  dg('m','start',{dungeon:'hollowroots',type:offer[0]}); tick(3);
+  dg('m','start',{dungeon:'hollowroots',type:offer[0],tier:0}); tick(3);
   const run=runOf('m');
-  ok('at the door, with the level and the tier, the offered type starts a run',!!run&&run.th==='hollowroots'&&run.tier===1&&run.L===30&&!run.dev);
+  ok('at the door, with the level and the tier, the offered type starts a run',!!run&&run.th==='hollowroots'&&run.tier===0&&run.L===30&&!run.dev);
   clear(); dg('m','leave'); tick(2);
   ok('leaving (the portal) puts you on the door\'s apron',!M.inst&&Math.hypot(M.x-ap.x,M.z-ap.z)<0.01&&!!mOf('m','tp').find(t=>t.dg===false));
   secs(x.DG_EMPTY_S+1.5); ok('a run nobody is in closes after '+x.DG_EMPTY_S+' s',!x.DG_RUNS.has(run.id)); }
@@ -278,8 +278,8 @@ const runK=runOf('k');
 
 // ---- the save ----
 { const g=x.sanitizeGear({dg:{clear:{'hollowroots:purge':3,'bare:purge':2,'x:y':1,'hollowroots:nope':4,'constructor:purge':1,'jadesprings:defense':'7'},best:{'hollowroots:purge':95.6,'bonefrostbarrow:siege':-5}}},'warrior');
-  ok('gear.dg is sanitized: unknown dungeons, missions and the test set dropped, counts clamped',JSON.stringify(g.dg)==='{"clear":{"hollowroots:purge":3,"jadesprings:defense":7},"best":{"hollowroots:purge":95,"bonefrostbarrow:siege":1}}',JSON.stringify(g.dg));
-  ok('an old save gets an empty record',JSON.stringify(x.sanitizeGear({coins:5},'mage').dg)==='{"clear":{},"best":{}}'); }
+  ok('gear.dg is sanitized: unknown dungeons, missions and the test set dropped, counts clamped',JSON.stringify(g.dg)==='{"clear":{"hollowroots:purge":3,"jadesprings:defense":7},"best":{"hollowroots:purge":95,"bonefrostbarrow:siege":1},"top":1}',JSON.stringify(g.dg));
+  ok('an old save gets an empty record',JSON.stringify(x.sanitizeGear({coins:5},'mage').dg)==='{"clear":{},"best":{},"top":0}'); }
 
 // ---- the kit registry refuses a bad kit without stopping ----
 { const kept={defense:x.DG_KITS.defense,siege:x.DG_KITS.siege}; delete x.DG_KITS.defense; delete x.DG_KITS.siege;   // (every mission has its kit now: two are taken out for the checks and put back)

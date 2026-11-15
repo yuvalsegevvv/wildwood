@@ -3,7 +3,7 @@
    Data (shared/dungeons.js, never copied here): DG_ENTRANCES (x, z, a, kind, name, sign), DG_ENT_CLEAR, DG_ENT_TALK, dgEntranceNear, dgGateOpen, dgUnlocked, DG_LANDS.
    Public:  dgOpenDoor(id)      the talk key at a door (id = the entrance's key = its theme id): sealed -> a toast with what unlocks it; open -> dgBoardOpen(themeId) once the
                                 Delve board exists (a later agent defines that global), otherwise "The way is not ready yet".
-            dgEntSealed(E)      true while the door's gate is shut for YOUR gear (Wildwood: not played at +1; the others: Hanami / Rimehold not walked into).
+            dgEntSealed(E)      true while the door's gate is shut for YOUR gear (the land's village not walked into yet; the tier no longer matters).
    Hooks (each marked `// dungeons:` in the file that calls it): dgEntTint (terrain-color.js), dgEntClear (generation-chunks.js), dgEntPrompt + dgOpenDoor (talking.js),
             dgEntMapMarks / dgEntMiniMarks / dgEntName (map.js), dgEntWater / dgEntSounds (audio/driver.js), dgEntBuild / dgEntUpdate (generation-setup.js, main/loop.js). */
 

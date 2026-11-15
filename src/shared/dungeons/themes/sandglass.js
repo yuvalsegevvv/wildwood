@@ -5,7 +5,7 @@
      s glass spikes (floor; hazard 'spikes': where the run sets off the spike warning, then the glass thrusts up and cuts)    G guardian post (floor: the Sand Golem or Dune Drake that keeps the Glass Vault).
    Khet's own props (none) are not drawn here. The monsters are the Sunscar's (desert kinds, `res` / `acc` on their defs), scaled to the dungeon's level (40 at +0) by dgKOf. */
 defineDungeonTheme({
-  id:'sandglass', name:'The Sandglass', land:'sun', at:'The Whitefloor', lv:40, entry:36,
+  id:'sandglass', name:'The Sandglass', land:'sun', at:'The Whitefloor', lv:40,
   mobs:{walkers:['dustdjinn','duneprowler','tombguard','sunpriest','efreet'], guardians:['sandgolem','dunedrake']},   // the Sunscar's level 33-36 kinds that fit a 4 m door (elderworm, 1.5 m, is too big even for a guardian post)
   boss:'khet', music:'sun2',
   pal:{wall:0x8a6a44, floor:0x5a4630, fog:0x120c06, light:0xffd070},

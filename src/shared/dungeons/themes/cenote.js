@@ -6,7 +6,7 @@
    The temple was sunk when the sea rose, so nothing here is the Hollow Roots'. Ahmetl's own props (his star stones) are drawn by the boss view. The monsters are the isles' (zones e44-e48), scaled to the dungeon's level (48 at +0) by dgKOf.
    The tile art is the Termite Cathedral's skeleton redrawn (same door shapes and floor plan, so every tile passes dgTileProblems and the set covers every door mask). */
 defineDungeonTheme({
-  id:'cenote', name:'The Cenote of Hollow Stars', land:'isles', at:'The Jungle Edge', lv:48, entry:45,
+  id:'cenote', name:'The Cenote of Hollow Stars', land:'isles', at:'The Jungle Edge', lv:48,
   mobs:{walkers:['hollowfaithful','straitraider','reefraider','stonejaguar','lagoonray','coralbeetle'], guardians:['terracemason','roadsentinel']},   // the isles' level 43-48 kinds that fit a 4 m door (the Hollowed who still pray here, the eels of the flooded halls, the raiders camped on the rim)
   boss:'ahmetl', music:'isles2',
   pal:{wall:0x4f6a5a, floor:0x2c3d3a, fog:0x041416, light:0x7fe8ff},

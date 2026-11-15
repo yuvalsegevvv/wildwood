@@ -5,7 +5,7 @@
 // Usage: node tools/dungeons-smoke.js            the checks
 //        node tools/dungeons-smoke.js --show defense 7   draws that dungeon (the tile graph, then the cells: one character per 2 x 2 cells)
 const {loadShared}=require('./load');
-const X=loadShared(['NODE_KEEPOUT','DG_CELL','DG_TC','DG_BOSS_R','ARENAS','DG_N','DG_E','DG_S','DG_W','DG_STEP','DG_SET_BARE','DG_MISSIONS','DG_PARTY','DG_MAX_PARTY','dgVariants','dgRotArt','dgRotMask','dgOpp','dgLayout','dgBake','dgSolid','dgFree','dgSlide','dgLos','dgFlow','dgStep','dgParty','dgFightRatio','mulberry32','DG_THEMES','DG_LANDS','DG_LV','DG_ENTRY_LV','dgUnlocked','dgLevel','dgTierOf','ZTIER_STEP','ZTIER_MAX','DG_ENTRANCES','DG_APRON','DG_ENT_CLEAR','DG_ENT_TALK','dgApron','dgEntranceNear','dgGateOpen','rawHeight','zoneAt','vDist','VR','roadDist','arenaDist','inTunnelCut','zoneRidge','NODES','STORY_SPOTS','LAKES','FROST_LAKES','bareGround','ROADS','ROAD_W','WATER','DG_BOSSES','dgOffer','dgOfferLeft','DG_OFFER_HOUR','FAM','ELEMS','ALL_MON_DEFS','MON_DEFS','BOSS_DEFS','ZONES',
+const X=loadShared(['NODE_KEEPOUT','DG_CELL','DG_TC','DG_BOSS_R','ARENAS','DG_N','DG_E','DG_S','DG_W','DG_STEP','DG_SET_BARE','DG_MISSIONS','DG_PARTY','DG_MAX_PARTY','dgVariants','dgRotArt','dgRotMask','dgOpp','dgLayout','dgBake','dgSolid','dgFree','dgSlide','dgLos','dgFlow','dgStep','dgParty','dgFightRatio','mulberry32','DG_THEMES','DG_LANDS','DG_LV','DG_ENTRY_LV','dgUnlocked','dgLevel','DG_TIERS','ZTIER_STEP','ZTIER_MAX','DG_ENTRANCES','DG_APRON','DG_ENT_CLEAR','DG_ENT_TALK','dgApron','dgEntranceNear','dgGateOpen','rawHeight','zoneAt','vDist','VR','roadDist','arenaDist','inTunnelCut','zoneRidge','NODES','STORY_SPOTS','LAKES','FROST_LAKES','bareGround','ROADS','ROAD_W','WATER','DG_BOSSES','dgOffer','dgOfferLeft','DG_OFFER_HOUR','FAM','ELEMS','ALL_MON_DEFS','MON_DEFS','BOSS_DEFS','ZONES',
   'DG_BAD','waLand','inAmber','defineDungeonTheme','dgTileProblems','dgCarve','DG_SHAPES','DG_MARKS','DG_TAGS','DG_HALL_PILLARS','DG_HALL_PILLAR_HALF','DG_HALL_MOUTHS','DG_BOSS_DEFS','DG_HALL_LAMPS','dgVentAt','dgHallArena']);
 const {DG_TC,DG_CELL}=X;
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
@@ -220,10 +220,10 @@ ok('a dungeon with guardians gives them posts (G) in its rooms or sites; one wit
     while(todo.length){ todo.sort((p,q)=>q[0]-p[0]); const [d,i,j]=todo.pop(); if(d>dist[j*W+i]) continue; if(i===ai&&j===aj) break;
       for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++){ const ni=i+di,nj=j+dj; if((!di&&!dj)||ni<0||nj<0||ni>=W||nj>=Hh||!dry[nj*W+ni]) continue; const nd=d+Math.hypot(di,dj)*cs; if(nd<dist[nj*W+ni]){ dist[nj*W+ni]=nd; todo.push([nd,ni,nj]); } } }
     return dist[aj*W+ai]<1.4*Math.hypot(sg.x-A.x,sg.z-A.z)+8; }),E.map(e=>e.sign.road).join(', '));
-  { const g=(h,v,r,x)=>Object.assign({zt:{home:{on:h[0],max:h[1]},vale:{on:v[0],max:v[1]},hoar:{on:r[0],max:r[1]}}},x||{}), Z=[0,0], go=X.dgGateOpen, T=X.DG_THEMES;
-    ok('the door\'s look: Wildwood\'s roots are knotted shut at +0 and open at +1; the Vale\'s door needs Hanami (gear.east 2) and the Reach\'s Rimehold (gear.north 2); for a high-level hiker it says what the entry check says',
-      !go(g(Z,Z,Z),T.hollowroots)&&!go(g([0,1],Z,Z),T.hollowroots)&&go(g([1,1],Z,Z),T.hollowroots)&&!go(g(Z,Z,Z,{east:1}),T.jadesprings)&&go(g(Z,Z,Z,{east:2}),T.jadesprings)&&!go(g(Z,Z,Z,{north:1}),T.bonefrostbarrow)&&go(g(Z,Z,Z,{north:2}),T.bonefrostbarrow)&&
-      [g(Z,Z,Z),g([1,1],Z,Z),g(Z,Z,Z,{east:2}),g(Z,[1,1],Z,{east:2}),g(Z,Z,Z,{north:2}),g([0,3],Z,Z)].every(gear=>['hollowroots','jadesprings','bonefrostbarrow'].every(id=>go(gear,T[id])===X.dgUnlocked(gear,60,T[id]).ok))); }
+  { const g=x=>Object.assign({},x||{}), go=X.dgGateOpen, T=X.DG_THEMES;
+    ok('the door\'s look: Wildwood\'s roots are open from the start (no +1 lock: dgrev D1); the Vale\'s door needs Hanami (gear.east 2) and the Reach\'s Rimehold (gear.north 2); for a high-level hiker it says what the entry check says',
+      go(g(),T.hollowroots)&&!go(g({east:1}),T.jadesprings)&&go(g({east:2}),T.jadesprings)&&!go(g({north:1}),T.bonefrostbarrow)&&go(g({north:2}),T.bonefrostbarrow)&&
+      [g(),g({east:2}),g({north:2})].every(gear=>['hollowroots','jadesprings','bonefrostbarrow'].every(id=>go(gear,T[id])===X.dgUnlocked(gear,60,T[id]).ok))); }
   ok('the talk key works within '+X.DG_ENT_TALK+' m of a door only, and the apron is '+X.DG_APRON+' m in front of it',E.every(e=>{ const A=X.dgApron(e); return X.dgEntranceNear(e.x+0.5,e.z)===e&&X.dgEntranceNear(e.x,e.z+X.DG_ENT_TALK-0.1)===e&&X.dgEntranceNear(e.x+X.DG_ENT_TALK+1.5,e.z)===null&&X.dgEntranceNear(e.x,e.z,X.DG_APRON+1)===e&&Math.abs(Math.hypot(A.x-e.x,A.z-e.z)-X.DG_APRON)<1e-9; })); }
 
 // the primitives a move may be made of: the telegraph kinds (the circle kinds include the dungeon bosses' own looks: spore puff pulse vent wail snuff, drawn by game/combat/boss.js,
@@ -261,22 +261,14 @@ ok('the eight are different: five model families (Garrick is a troll of the gobl
   ok('the board can show a countdown: 3,600 s at the top of the hour, 1 s a millisecond before the next',X.dgOfferLeft(T0+5*H)===3600&&X.dgOfferLeft(T0+5*H+H-1)===1&&X.dgOfferLeft(T0+5*H+1800000)===1800);
   ok('a pool of fewer types still works (the missions built so far): 2 types are always offered together',key(X.dgOffer('x',T0,['purge','defense']))==='purge+defense'&&X.dgOffer('x',T0,['purge','defense','survival']).length===2); }
 { const home=TH.filter(t=>t.land==='home'), vale=TH.filter(t=>t.land==='vale'), hoar=TH.filter(t=>t.land==='hoar'), un=(g,lv,t,tier)=>X.dgUnlocked(g,lv,t,tier);
-  const gear=(h,v,r,extra)=>Object.assign({zt:{home:{on:h[0],max:h[1]},vale:{on:v[0],max:v[1]},hoar:{on:r[0],max:r[1]}}},extra||{}), Z=[0,0];
-  ok('Wildwood\'s dungeons are locked at +0 (even with +1 unlocked, whatever the level) and open at +1, level '+X.DG_LV+', the difficulty being the one you play Wildwood at',home.every(t=>
-    !un(gear(Z,Z,Z),50,t).ok&&!un(gear([0,1],Z,Z),50,t).ok&&!un(gear([0,3],Z,Z),50,t).ok&&/\+1 difficulty/.test(un(gear([0,1],Z,Z),50,t).why)&&
-    un(gear([1,1],Z,Z),25,t).ok&&un(gear([1,1],Z,Z),25,t).level===30&&un(gear([1,1],Z,Z),25,t).tier===1&&X.dgTierOf(gear([1,1],Z,Z),'home')===1));
-  ok('the Vale\'s and the Reach\'s dungeons are level '+X.DG_LV+' at their base, +0 (no tier needed)',[...vale,...hoar].every(t=>{ const g=gear(Z,Z,Z,{east:2,north:2}), r=un(g,25,t); return r.ok&&r.level===30&&r.tier===0; }));
-  ok('each tier above the base adds '+X.ZTIER_STEP+' levels, up to tier V: Wildwood +1 ... +5 = 30/40/50/60/70, the Vale and the Reach +0 ... +5 = 30/40/50/60/70/80',
-    X.ZTIER_MAX===7&&home.every(t=>[1,2,3,4,5,6,7].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60,70,80,90')&&[...vale,...hoar].every(t=>[0,1,2,3,4,5,6,7].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60,70,80,90,100'));
-  ok('the way in is level '+X.DG_ENTRY_LV+' at every difficulty, whatever the dungeon\'s own level: Wildwood +1 ... +5 (levels 30-70) and the Vale and the Reach +0 ... +5 (30-80) all open at 25 and not at 24',
-    home.every(t=>[1,2,3,4,5].every(k=>!un(gear([k,k],Z,Z),24,t).ok&&un(gear([k,k],Z,Z),25,t).ok&&un(gear([k,k],Z,Z),25,t).level===X.dgLevel(t,k)&&/level 25/.test(un(gear([k,k],Z,Z),10,t).why)))&&
-    vale.every(t=>[0,1,2,3,4,5].every(k=>!un(gear(Z,[k,k],Z,{east:2}),24,t).ok&&un(gear(Z,[k,k],Z,{east:2}),25,t).ok&&un(gear(Z,[k,k],Z,{east:2}),25,t).level===X.dgLevel(t,k)))&&
-    hoar.every(t=>[0,3,5].every(k=>!un(gear(Z,Z,[k,k],{north:2}),24,t).ok&&un(gear(Z,Z,[k,k],{north:2}),25,t).ok&&un(gear(Z,Z,[k,k],{north:2}),25,t).level===X.dgLevel(t,k))));
-  ok('the Vale\'s dungeons need Hanami walked into (gear.east 2) and the Reach\'s Rimehold (gear.north 2); each land uses its own tier, not Wildwood\'s',
-    vale.every(t=>!un(gear(Z,Z,Z,{east:1}),30,t).ok&&un(gear(Z,Z,Z,{east:2}),30,t).ok&&un(gear([3,3],Z,Z,{east:2}),30,t).tier===0)&&
-    hoar.every(t=>!un(gear(Z,Z,Z,{north:1}),30,t).ok&&un(gear(Z,Z,Z,{north:2}),30,t).ok&&!un(gear(Z,Z,Z,{east:2}),30,t).ok));
-  ok('a party plays at its leader\'s tier: a member needs that tier unlocked (not played) and level 25',vale.every(t=>{ const m=gear(Z,[1,1],Z,{east:2}); return un(m,25,t,1).ok&&!un(gear(Z,Z,Z,{east:2}),60,t,1).ok&&/not unlocked \+1/.test(un(gear(Z,Z,Z,{east:2}),60,t,1).why)&&!un(m,24,t,1).ok; })&&
-    home.every(t=>un(gear([0,2],Z,Z),40,t,2).ok&&!un(gear([0,2],Z,Z),40,t,0).ok)); }
+  // dgrev D1: a run's level is DG_TIERS[tier].lv, tier II+ needs gear.dg.top, the zone tier setting plays no part (tools/dungeon-tiers-smoke.js has the ladder itself)
+  ok('Wildwood\'s dungeon is open from the start at tier I, level 30, whatever the zone tier says',home.every(t=>un({},25,t).ok&&un({},25,t).level===30&&un({},25,t).tier===0&&un({zt:{home:{on:0,max:0}}},25,t).ok));
+  ok('the Vale\'s and the Reach\'s dungeons are level 30 at tier I',[...vale,...hoar].every(t=>{ const r=un({east:2,north:2},25,t); return r.ok&&r.level===30&&r.tier===0; }));
+  ok('a tier above I adds 8 levels each and needs gear.dg.top: top 10 opens all eleven, levels 30..110',[...home,...vale,...hoar].every(t=>[0,1,2,3,4,5,6,7,8,9,10].map(k=>X.dgLevel(t,k)).join()==='30,38,46,54,62,70,78,86,94,102,110'&&un({dg:{top:0},east:2,north:2},25,t,1).ok===false&&un({dg:{top:1},east:2,north:2},25,t,1).ok&&un({dg:{top:10},east:2,north:2},25,t,10).level===110));
+  ok('the way in is level '+X.DG_ENTRY_LV+' at every tier: open at 25, closed at 24 and the message names the level',[...home,...vale,...hoar].every(t=>[0,3,6].every(k=>{ const g={dg:{top:10},east:2,north:2}; return !un(g,24,t,k).ok&&un(g,25,t,k).ok&&/level 25/.test(un(g,10,t,k).why); })));
+  ok('the Vale\'s dungeons need Hanami walked into (gear.east 2) and the Reach\'s Rimehold (gear.north 2)',
+    vale.every(t=>!un({east:1},30,t).ok&&un({east:2},30,t).ok)&&hoar.every(t=>!un({north:1},30,t).ok&&un({north:2},30,t).ok&&!un({east:2},30,t).ok));
+  ok('a party plays at its leader\'s tier: a member needs that tier open (gear.dg.top) and level 25',vale.every(t=>{ const m={dg:{top:1},east:2}; return un(m,25,t,1).ok&&!un({east:2},60,t,1).ok&&/not open/.test(un({east:2},60,t,1).why)&&!un(m,24,t,1).ok; })); }
 
 
 // ---- party size ----

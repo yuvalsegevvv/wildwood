@@ -30,7 +30,7 @@ function sanitizeGear(g,cls){
   out.rd=rdSanitizeSave(g.rd);   // raids: the raid materials of each land
   out.pre=prSanitize(g.pre);   // presets: the ten saved loadouts (an old save has none)
   out.ss=ssSanitizeSave(g.ss);   // skillsets: the pity counts of the sources (an old save has none)
-  out.dg=dgSanitizeSave(g.dg);   // dungeons: clears and best times per '<theme>:<mission>' (an old save has none)
+  out.dg=dgSanitizeSave(g.dg,g);   // dungeons: clears and best times per '<theme>:<mission>' (an old save has none)
   rlSanitizeStones(g,out);   // rolls: the weapon / armour reroll stones (an old save has none)
   out.temper=clampInt(g.temper,0,DG_STONE_MAX,0);   // dungeons: the Tempering Stones (a count; an old save has none)
   if(out.north<1&&out.mq.s>MQ_BY_ID.V10.i) out.north=1;   // saves that already got past Akaoni: the ice wall is open for them

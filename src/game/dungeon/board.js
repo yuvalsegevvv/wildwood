@@ -9,7 +9,7 @@
    Reads:   dgPartyState (the party code's roster, if it keeps one: {lead: pid, list|members|roster: [[pid, name, ...] or {pid|id, name}]}, read-only: see dgBoardRoster). Nothing is registered for pty here.
    Rules:   the panel only shows what the server decided (ok / gate / why / lead / offer / left): it checks nothing itself. It closes when you step away from a door (a 1 s timer, which also ticks the clock).
    Hooks:   'dgBoard' in PANELS (ui/panels.js), the #dgBoard / #dgJoin block in index.html, two lines in the manifest. */
-const DG_BOARD={th:null,msg:null,want:0,until:0,sent:0,silent:false,polled:0};
+const DG_BOARD={th:null,msg:null,want:0,until:0,sent:0,silent:false,polled:0,pick:undefined,pickTh:null};   // pick: the tier (0-10) the leader has chosen on the picker
 // one sentence for each dungeon (docs/DUNGEON-THEMES.md section 3) and the accent of its card
 const DG_BOARD_INFO={
   hollowroots:{color:'#8fd06a',text:'A hollow under the Ancient Grove where the roots of the Heartwood go down: warm dark, sap and fungus for light, and root spikes in the floor.'},
@@ -54,6 +54,7 @@ NETH.dgboard=msg=>{
   if(!msg||typeof msg.th!=='string') return;
   const shown=!$('#dgBoard').hidden;
   if(!shown&&Date.now()-DG_BOARD.want>8000) return;   // nobody asked (or the board was closed since): a late answer must not pop a panel open
+  { const pv=DG_BOARD.msg; if(!shown||!pv||pv.th!==msg.th||pv.top!==msg.top||pv.tier!==msg.tier) DG_BOARD.pick=undefined; }   // dgrev: the leader's picked tier survives the hourly refresh, but a new board, door or unlock starts at the highest open tier
   DG_BOARD.th=msg.th; DG_BOARD.msg=msg; DG_BOARD.until=Date.now()+Math.max(0,+msg.left||0)*1000; DG_BOARD.want=0; DG_BOARD.silent=false;
   if(!shown) openPanel('dgBoard');
   dgBoardRender();
@@ -71,6 +72,9 @@ function dgBoardPartyText(m){
   if(!m.lead) return 'You are in a party: only its leader can start a run.';
   return 'You go in alone. Up to 4 can delve together: type /invite and a name in chat.';
 }
+const DG_BOARD_ROMAN=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
+// the picked tier: kept across redraws, starts at the highest open one (the server's m.tier) and never above what is open when a fresh board arrives
+function dgBoardPick(m){ if(DG_BOARD.pick===undefined||DG_BOARD.pickTh!==m.th){ DG_BOARD.pick=dgtClamp(m.tier); DG_BOARD.pickTh=m.th; } DG_BOARD.pick=dgtClamp(DG_BOARD.pick); return DG_BOARD.pick; }
 const dgBoardClock=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 
 function dgBoardRender(){
@@ -86,18 +90,23 @@ function dgBoardRender(){
     body.appendChild(dgBoardEl('p','dgb-wait',DG_BOARD.silent?'The board does not answer. Step up to the door and try again.':'Reading the board…'));
     $('#dgClock').textContent=''; $('#dgParty').textContent=''; return;
   }
+  const top=m.top|0, pick=dgBoardPick(m), open=pick<=top;   // dgrev: tier I-XI, the leader's picker; tier t is open when t <= top (tiers cleared)
   const facts=dgBoardEl('div','dgb-facts');
-  dgBoardAdd(facts,dgBoardEl('span','dgb-fact lv','Level '+m.L),dgBoardEl('span','dgb-fact',(land?land.name+' ':'')+'+'+m.tier),dgBoardEl('span','dgb-fact','Enter from level '+DG_ENTRY_LV));
+  dgBoardAdd(facts,dgBoardEl('span','dgb-fact lv','Level '+dgtLevel(pick)),dgBoardEl('span','dgb-fact','Enter from level '+DG_ENTRY_LV));
   { const sn=bdcDoorNote(th); if(sn) facts.appendChild(dgBoardEl('span','dgb-fact bdc-stirfact','\u2605 '+sn)); }   // bond: the hour's stirring dungeon
   hero.appendChild(facts); body.appendChild(hero);
-  body.appendChild(dgBoardEl('p','dgb-state '+(m.ok?'ok':'no'),m.ok?'The way is open for you.':(m.gate?'':'Sealed. ')+(m.why||'You cannot enter yet.')));
+  body.appendChild(dgBoardEl('p','dgb-state '+(m.ok&&open?'ok':'no'),!m.ok?(m.gate?'':'Sealed. ')+(m.why||'You cannot enter yet.'):open?'The way is open for you.':'Tier '+DG_BOARD_ROMAN[pick]+' opens when you clear tier '+DG_BOARD_ROMAN[pick-1]+' of any dungeon.'));
+  const tp=dgBoardEl('div','dgb-tier'), tl=dgBoardEl('button','chip dgb-tl','\u25C0'), tr=dgBoardEl('button','chip dgb-tr','\u25B6');
+  tl.type='button'; tr.type='button'; tl.disabled=pick<=0; tr.disabled=pick>=DG_TIER_MAX;
+  tl.addEventListener('click',()=>{ DG_BOARD.pick=pick-1; dgBoardRender(); }); tr.addEventListener('click',()=>{ DG_BOARD.pick=pick+1; dgBoardRender(); });
+  dgBoardAdd(tp,dgBoardEl('span',null,'Tier'),tl,dgBoardEl('b','dgb-tn',DG_BOARD_ROMAN[pick]+(open?'':' (locked)')),tr,dgBoardEl('span',null,'monster level '+dgtLevel(pick))); body.appendChild(tp);
   const offer=m.offer||[], pool=m.pool||offer, cards=dgBoardEl('div','dgb-cards');
   for(const id of offer){
     const Mi=DG_MISSIONS[id], built=pool.includes(id), card=dgBoardEl('div','dgb-card'+(built?'':' soon')), ct=dgBoardEl('div','dgb-ct'), act=dgBoardEl('div','dgb-act');
     dgBoardAdd(ct,dgBoardEl('b',null,Mi?Mi.name:id),dgBoardEl('span',null,dgBoardDesc(th,id)));
     if(!built) act.appendChild(dgBoardEl('span',null,'Soon'));
-    else if(!m.ok) act.appendChild(dgBoardEl('span',null,'Locked'));
-    else if(m.lead){ const b=dgBoardEl('button','chip buy dgb-start','Start'); b.type='button'; b.dataset.mission=id; b.addEventListener('click',()=>dgBoardStart(id)); act.appendChild(b); }
+    else if(!m.ok||!open) act.appendChild(dgBoardEl('span',null,'Locked'));
+    else if(m.lead){ const b=dgBoardEl('button','chip buy dgb-start','Start'); b.type='button'; b.dataset.mission=id; b.addEventListener('click',()=>dgBoardStart(id,pick)); act.appendChild(b); }
     else act.appendChild(dgBoardEl('span',null,'Waiting for the leader to start'));
     dgBoardAdd(card,ct,act); cards.appendChild(card);
   }
@@ -110,11 +119,11 @@ function dgBoardRender(){
 const dgBoardLeft=now=>Math.max(0,Math.ceil((DG_BOARD.until-now)/1000));
 function dgBoardClockSet(now){ const m=DG_BOARD.msg, T=m&&DG_THEMES[m.th]; $('#dgClock').textContent='The offer changes in '+dgBoardClock(dgBoardLeft(now)); }
 // the leader's Start: the panel closes at once (the run's view takes over); a refusal that sends a fresh board ("the offer changed") opens it again
-function dgBoardStart(id){
+function dgBoardStart(id,tier){
   const m=DG_BOARD.msg; if(!m||!m.ok||!m.lead||!(m.offer||[]).includes(id)) return;
   UI_SFX.click(); DG_BOARD.want=Date.now(); DG_BOARD.msg=null;
   closePanels();   // before the send: a refusal's fresh board may come back at once (solo: in the same call), and must find the panel closed to open it again
-  netSend({t:'dg',a:'start',dungeon:m.th,type:id});
+  netSend({t:'dg',a:'start',dungeon:m.th,type:id,tier:dgtClamp(tier)});
 }
 // once a second: the clock (and a fresh board when it runs out), a board nobody answered, and closing when you walk away from the door
 function dgBoardTick(){

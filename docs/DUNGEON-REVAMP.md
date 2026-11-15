@@ -1,6 +1,6 @@
-# Dungeon revamp: plan (not built)
+# Dungeon revamp: plan (D1 built)
 
-Status: **plan, version 2, with Yuval's answers.** Nothing below is built yet. It is built in the steps of section 9, and each step is merged before the next one starts.
+Status: **plan, version 2, with Yuval's answers.** Built so far: **D1** (the tier ladder, section 9; see the note under it). The rest is built in the steps of section 9, and each step is merged before the next one starts.
 
 Goal: all eight dungeons stay worth running at every stage. They stop following the land's zone tier and get **11 tiers of their own, monster level 30 to 110, 8 levels apart**. All eight dungeons use the same ladder. Each dungeon pays one kind of piece. The tier decides which **equipment level** (30 / 40 / 50 / 60) a piece is.
 
@@ -187,7 +187,7 @@ The travel window (`game/ui/travel.js`: `openTravel`, `renderTravel`, it has no 
 
 | Step | What | Test |
 |---|---|---|
-| D1 | `shared/dungeon-tiers.js`: `DG_TIERS`, run level = tier level, the board's tier picker, `gear.dg.top`, the unlock rule, zone tiers unhooked, the old entry locks removed | new `dungeon-tiers-smoke`, `dungeon-runs-smoke`, `dungeon-board-client-smoke`, `dungeons-smoke`, `tiers-smoke`, `skillset-sources-smoke`, `entrances-client-smoke`, the four `<name>-dungeon-smoke` |
+| D1 **(built)** | `shared/dungeon-tiers.js`: `DG_TIERS`, run level = tier level, the board's tier picker, `gear.dg.top`, the unlock rule, zone tiers unhooked, the old entry locks removed | new `dungeon-tiers-smoke`, `dungeon-runs-smoke`, `dungeon-board-client-smoke`, `dungeons-smoke`, `tiers-smoke`, `skillset-sources-smoke`, `entrances-client-smoke`, the four `<name>-dungeon-smoke` |
 | D2 | Eq 50 / 60 ids, 1 / 2 / 3 lines, the old level-40 migration, sacrifice, the fixed rarity, the eq table and piece count in `dgWinS` (it calls `dgClearReward(theme,rnd,steps)` once and grants the one id with `dgGrantItemP`; the fixed rarity replaces `DG_REWARD_W` 70 / 25 / 4 / 0.8 / 0.2 and the per-step luck `DG_REWARD_LUCK` / `dgRewardWeights`) | `rewards-smoke`, `rolls-smoke`, `rolls-client-smoke`, `pendants-smoke`, `server-smoke`, the four `<name>-dungeon-smoke` (`sandglass`, `gloamvault`, `termite`, `cenote`: they pin `DG_REWARDS`) |
 | D3 | Rings need their kit or path | `rewards-smoke`, `skillsets-smoke`, `bond-smoke`, `testworld-smoke` (its kit wears a plain ring) |
 | D4 | Talismans at all levels from the Sandglass; Pyrrhax's list emptied; the slot at 30 | `volcano-smoke`, `rewards-smoke`, `sandglass-dungeon-smoke`, `testworld-smoke` |
@@ -200,3 +200,11 @@ The travel window (`game/ui/travel.js`: `openTravel`, `renderTravel`, it has no 
 | D9 | Full suite (every new `tools/*-smoke.js` needs its row in `tools/tests.json`, and every new source file its line in `src/manifest.json` and `python3 build.py --write-index`, or `build.py --check` fails), `npm run fuzz`, `economy-fuzz`, `world-soak`, `gen-docs`, merge | `npm test` |
 
 The main files touched: `shared/dungeon-rewards.js`, `dungeon-items.js`, `rolls.js`, `talisman.js`, `dungeons.js`, and new `shared/dungeon-tiers.js`, `capes.js`, `gloves.js`, `shields.js`; `server/dungeon-gear.js`, `rolls.js`, `players.js` (`sanitizeGear`, `recalcP`, `hurtP`), `combat.js`, `skillsets.js`, `pshop.js`, `testworld.js`, `boss-kits-volcano.js`, `dungeons/runs.js`, `lobby.js`, `instances.js`; `shared/items.js` (`newGearFor`), `shared/dungeons/themes/*.js` (`entry`); `game/economy/inventory.js`, `dungeon-gear.js`, `rolls.js`, `game/dungeon/board.js`, `hud.js`, `ui/item-icons.js`; and the docs `ROLLS.md`, `DUNGEON-THEMES.md` section 7, `VOLCANO.md`, `areas/dungeons.md`, `PROTOCOL.md`.
+
+### D1 as built (decisions)
+
+- `gear.dg.top` = number of tiers cleared in a row, 0 = none, max 11; tier index `t` is open when `t <= top` (plan section 2). Written in `dgWinS` (`top = max(top, run.tier+1)`, not for the testing runs); `dgSanitizeSave(g, rawGear)` keeps it (0-11) and migrates an old save once (a save with no `top`): for each theme with a clear, the retired level `theme.lv + 10 * max(0, zt[land].max - base)` (Wildwood's base was 1) via `dgtOldLevel`, the highest of those, then `top` = the number of `DG_TIERS` rows with `lv <=` it (a level-50 clear = tier III cleared = `top` 3, tier IV open).
+- `dgLevel(T,t)` = `DG_TIERS[t].lv`. `dgUnlocked(gear,level,T,tier)`: tier default 0; checks tier range, `dgtOpen`, the land gate, hiker level `DG_ENTRY_LV` (25). `dgGateOpen` is only the land gate. `DG_LANDS.base`, `dgTierOf`, `dgTierFor` and the theme field `entry` are removed. Ground rules: hooks marked `// dgrev:`.
+- Protocol: `dg{a:'start',dungeon,type,tier}` (tier clamped 0-10, refused with a toast when not open for the leader; every member is checked again when asked to follow); `dgboard` carries `tier` (the highest open one, the picker's starting point) and `top`, and `L` is tier I's level. The testing tool is `dev{cmd:'dg',v:'<theme>:<mission>[:seed[:tier]]'}` (tier 0-10, ignores the unlock).
+- `D2` still reads `DG_TIERS[t].eq` / `.n`; until then `dgClearReward` gets `min(5, run.tier)` as its luck steps. Boss levels follow `run.L` (`dgAdoptS`), the monster strength is unchanged (section 3).
+- `ssDungeonClearP` is unchanged: it passes `run.tier`, so a skill set piece needs tier II or above; its toast text still says "+N" (not reworded in D1).

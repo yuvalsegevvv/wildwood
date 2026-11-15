@@ -17,10 +17,10 @@ const T=x.DG_THEMES.gloamvault, E=x.DG_ENTRANCES.gloamvault, D=x.GLOAM_DG_DOOR, 
 
 // ---- the theme, the boss and the levels ----
 ok('the Gloamvault is registered (no bad theme): the Gloamhorn\'s dungeon under Vault Heath, level 40, entry level 38, boss Abbess Morrow, six Gloamhorn walkers and the Gargoyle and Storm Gargoyle keeping the vault',
-  !!T&&x.DG_BAD.length===0&&T.land==='gloam'&&T.at==='Vault Heath'&&T.lv===40&&T.entry===38&&T.boss==='abbess'&&T.mobs.walkers.length>=5&&T.mobs.guardians.join()==='gargoyle,stormgargoyle'&&x.DG_LANDS.gloam&&x.DG_ENTRY_LV===25);
-ok('the older dungeons keep entry level 25 and level 30 (the `entry` field defaults), the Sandglass 36',['hollowroots','jadesprings','bonefrostbarrow','blackseam'].every(id=>x.DG_THEMES[id].entry===25&&x.DG_THEMES[id].lv===30)&&x.DG_THEMES.sandglass.entry===36);
+  !!T&&x.DG_BAD.length===0&&T.land==='gloam'&&T.at==='Vault Heath'&&T.lv===40&&T.boss==='abbess'&&T.mobs.walkers.length>=5&&T.mobs.guardians.join()==='gargoyle,stormgargoyle'&&x.DG_LANDS.gloam&&x.DG_ENTRY_LV===25);
+ok('no dungeon has an `entry` field any more (dgrev D1: every one is entered from hiker level 25); the older four stay level 30',['hollowroots','jadesprings','bonefrostbarrow','blackseam'].every(id=>x.DG_THEMES[id].entry===undefined&&x.DG_THEMES[id].lv===30));
 { const B=x.DG_BOSSES.abbess, R=x.DG_BOSS_DEFS.abbess;
-  ok('the Abbess\'s base level is exactly 40: the design, the def makeBossS takes and the theme\'s level at +0 (her add one lower), and 40 + 10 a tier above',B.lv===40&&R.def.level===40&&R.def.boss&&R.add.level===39&&x.dgBossDefOf(T)===R&&x.dgLevel(T,0)===40&&[0,1,2,3,4,5,6,7].map(k=>x.dgLevel(T,k)).join()==='40,50,60,70,80,90,100,110'&&x.ZTIER_MAX===7);
+  ok('the Abbess\'s base level is exactly 40: the design, the def makeBossS takes and a run\'s level at tier I is 30, the ladder\'s (her add one lower), and the run level is the tier\'s, not the theme\'s',B.lv===40&&R.def.level===40&&R.def.boss&&R.add.level===39&&x.dgBossDefOf(T)===R&&x.dgLevel(T,0)===30&&x.dgLevel(T,2)===46&&x.dgLevel(T,10)===110);
   ok('the boss is registered with a kit that has start, tick and phase (kit `toll`), exactly one signature (the Drowning Toll) and at least five moves',['start','tick','phase'].every(f=>typeof x.BOSS_KITS.toll[f]==='function')&&R.kit==='toll'&&B.moves.filter(m=>m.signature).map(m=>m.id).join()==='toll'&&B.moves.length>=5); }
 ok('every monster of the dungeon is a Gloamhorn kind (zones m32-m40) walkers fit a 4 m door',[...T.mobs.walkers,...T.mobs.guardians].every(id=>{ const d=x.MON_DEFS.find(q=>q.id===id); return d&&/^m\d\d$/.test(d.zone)&&d.level>=32&&d.level<=40; })&&T.mobs.walkers.every(id=>x.MON_DEFS.find(q=>q.id===id).rad<=0.9));
 
@@ -31,26 +31,26 @@ ok('the door is the prop the Gloamhorn reserved: DG_ENTRANCES.gloamvault at GLOA
 // ---- who may enter: Wraithwick walked into (gear.gloam 2) and level 38, at every difficulty ----
 { const un=(g,lv,tier)=>x.dgUnlocked(g,lv,T,tier);
   ok('the way is shut until Wraithwick has been walked into: the gate is closed at gear.gloam 0 and 1, open at 2, and the hint says so',!x.dgGateOpen({gloam:0,zt:gzt(0,0)},T)&&!x.dgGateOpen({gloam:1,zt:gzt(0,0)},T)&&x.dgGateOpen({gloam:2,zt:gzt(0,0)},T)&&!un({gloam:1,zt:gzt(0,0)},60).ok&&/Wraithwick/.test(un({gloam:1,zt:gzt(0,0)},60).why));
-  ok('entry is level 38 (not 25) once the gate is open: 37 refused with the level in the message, 38 let in at level 40, +0 needing no tier',!un({gloam:2,zt:gzt(0,0)},37).ok&&/level 38/.test(un({gloam:2,zt:gzt(0,0)},37).why)&&un({gloam:2,zt:gzt(0,0)},38).ok&&un({gloam:2,zt:gzt(0,0)},38).level===40&&un({gloam:2,zt:gzt(0,0)},38).tier===0);
-  ok('the Gloamhorn\'s own tier sets the level (+2 = 60) and needs it unlocked (gear.zt.gloam.max), at the same entry level',un({gloam:2,zt:gzt(2,2)},38,2).level===60&&!un({gloam:2,zt:gzt(0,0)},60,2).ok&&/not unlocked \+2/.test(un({gloam:2,zt:gzt(0,0)},60,2).why)&&!un({gloam:2,zt:gzt(2,2)},37,2).ok); }
+  ok('entry is level 25 once the way is open (every tier, every dungeon): 24 refused with the level in the message, 25 let in, tier I = level 30',!un({gloam:2},24).ok&&/level 25/.test(un({gloam:2},24).why)&&un({gloam:2},25).ok&&un({gloam:2},25).level===30&&un({gloam:2},25).tier===0);
+  ok('a tier above I needs gear.dg.top and takes its level from the ladder (tier III = 46, whatever the zone tier says)',!un({gloam:2},60,2).ok&&/not open/.test(un({gloam:2},60,2).why)&&un({gloam:2,dg:{top:2}},25,2).level===46&&!un({gloam:2,dg:{top:2}},24,2).ok&&!un({gloam:2,dg:{top:2}},60,3).ok); }
 ok('the hourly offer is two different missions of the seven, like every dungeon',(()=>{ const o=x.dgOffer('gloamvault',Date.UTC(2026,9,3,5),x.dgPoolS()); return o.length===2&&o[0]!==o[1]; })());
 
 // ---- the board at the door, and a run started there ----
-const A=join('a','Ash',{level:38,gear:{gloam:2,neck:1,zt:gzt(0,0)}}), L37=join('s','Sol',{level:37,gear:{gloam:2,neck:1,zt:gzt(0,0)}}), N=join('n','Nia',{level:60,gear:{gloam:1,neck:1,zt:gzt(0,0)}}); tick(3);
+const A=join('a','Ash',{level:25,gear:{gloam:2,neck:1,zt:gzt(0,0)}}), L37=join('s','Sol',{level:24,gear:{gloam:2,neck:1,zt:gzt(0,0)}}), N=join('n','Nia',{level:60,gear:{gloam:1,neck:1,zt:gzt(0,0)}}); tick(3);
 const near={x:D.x+Math.sin(E.a)*3,z:D.z+Math.cos(E.a)*3};
 for(const p of [A,L37,N]){ p.x=near.x; p.z=near.z; }
 clear(); W.receive('a',{t:'dg',a:'open'}); W.receive('s',{t:'dg',a:'open'}); W.receive('n',{t:'dg',a:'open'}); tick(2);
 { const b=lastMsg('a','dgboard'), s=lastMsg('s','dgboard'), n=lastMsg('n','dgboard');
-  ok('at the door the board opens for level 38 (th gloamvault, level 40, open) and says no to level 37 (why: level 38) and to a hiker who has not walked into Wraithwick (gate shut)',!!b&&b.th==='gloamvault'&&b.L===40&&b.ok===1&&b.gate===1&&b.offer.length===2&&!!s&&s.ok===0&&/level 38/.test(s.why)&&s.gate===1&&!!n&&n.ok===0&&n.gate===0,JSON.stringify([b&&b.ok,s&&s.why,n&&n.gate])); }
+  ok('at the door the board opens for level 38 (th gloamvault, level 40, open) and says no to level 37 (why: level 38) and to a hiker who has not walked into Wraithwick (gate shut)',!!b&&b.th==='gloamvault'&&b.L===30&&b.ok===1&&b.gate===1&&b.offer.length===2&&!!s&&s.ok===0&&/level 25/.test(s.why)&&s.gate===1&&!!n&&n.ok===0&&n.gate===0,JSON.stringify([b&&b.ok,s&&s.why,n&&n.gate])); }
 clear(); W.receive('s',{t:'dg',a:'start',dungeon:'gloamvault',type:x.dgOffer('gloamvault',Date.now(),x.dgPoolS())[0]}); W.receive('n',{t:'dg',a:'start',dungeon:'gloamvault',type:x.dgOffer('gloamvault',Date.now(),x.dgPoolS())[0]}); tick(2);
 ok('a level-37 hiker and one who has not been to Wraithwick cannot start a run',!L37.inst&&!N.inst);
 // seven mission types start (the offer is two an hour: the testing tool starts any)
 { const started=[]; for(const mi of ['purge','defense','survival','sabotage','siege','hunt','escort']){ W.receive('a',{t:'dev',cmd:'dg',v:'gloamvault:'+mi+':3'}); tick(3); const r=A.inst?x.DG_RUNS.get(A.inst):null;
-    started.push(!!r&&r.th==='gloamvault'&&r.mission===mi&&r.L===40&&(mi!=='purge'||r.mons.size>0)); W.receive('a',{t:'dg',a:'leave'}); tick(3); }
+    started.push(!!r&&r.th==='gloamvault'&&r.mission===mi&&r.L===30&&(mi!=='purge'||r.mons.size>0)); W.receive('a',{t:'dg',a:'leave'}); tick(3); }
   ok('all seven mission types start as the Gloamvault at level 40 (Purge with its monsters at once)',started.length===7&&started.every(Boolean),started.join()); }
 W.receive('a',{t:'dev',cmd:'dg',v:'gloamvault:purge:5'}); tick(3);
 const run=A.inst?x.DG_RUNS.get(A.inst):null;
-ok('a purge run: the walkers are the Gloamhorn\'s, fought at level 40 (dgK)',!!run&&[...run.mons].length>0&&[...run.mons].every(m=>T.mobs.walkers.includes(m.def.id)||T.mobs.guardians.includes(m.def.id))&&[...run.mons].every(m=>m.dgK&&m.dgK.lv===40));
+ok('a purge run: the walkers are the Gloamhorn\'s, fought at level 40 (dgK)',!!run&&[...run.mons].length>0&&[...run.mons].every(m=>T.mobs.walkers.includes(m.def.id)||T.mobs.guardians.includes(m.def.id))&&[...run.mons].every(m=>m.dgK&&m.dgK.lv===30));
 W.receive('a',{t:'dg',a:'leave'}); tick(3);
 { W.receive('a',{t:'dev',cmd:'dg',v:'gloamvault:hunt:5'}); tick(3); const r=A.inst?x.DG_RUNS.get(A.inst):null;
   ok('a hunt run\'s quarry is the Grave Hound (a Gloamhorn kind slipping between the tombs)',!!r&&!!r.k&&!!r.k.q&&r.k.q.def.id==='gravehound'); W.receive('a',{t:'dg',a:'leave'}); tick(3); }
@@ -71,7 +71,7 @@ W.receive('k',{t:'dg',a:'open'}); tick(1);
 const wantType=x.dgOffer('gloamvault',Date.now(),x.dgPoolS())[0];
 W.receive('k',{t:'dg',a:'start',dungeon:'gloamvault',type:wantType}); tick(2); W.receive('l',{t:'dg',a:'accept'}); tick(3);
 const runK=K.inst?x.DG_RUNS.get(K.inst):null;
-ok('the leader starts from the door board and the member follows: one run, the Gloamvault, level 40, two inside',!!runK&&runK.th==='gloamvault'&&runK.L===40&&L2.inst===K.inst&&runK.mission===wantType,toasts('k')+' | '+toasts('l'));
+ok('the leader starts from the door board and the member follows: one run, the Gloamvault, level 40, two inside',!!runK&&runK.th==='gloamvault'&&runK.L===30&&L2.inst===K.inst&&runK.mission===wantType,toasts('k')+' | '+toasts('l'));
 W.receive('k',{t:'dg',a:'leave'}); W.receive('l',{t:'dg',a:'leave'}); tick(3);
 { const W2=join('w','Wen',{level:40,gear:{gloam:2,neck:1,zt:gzt(0,0)}}), W3=join('v','Vik',{level:40,gear:{gloam:2,neck:1,zt:gzt(0,0)}}); tick(2);
   W.receive('w',{t:'party',a:'invite',name:'Vik'}); tick(2); W.receive('v',{t:'party',a:'accept'}); tick(2);
@@ -79,7 +79,7 @@ W.receive('k',{t:'dg',a:'leave'}); W.receive('l',{t:'dg',a:'leave'}); tick(3);
   const r=W2.inst?x.DG_RUNS.get(W2.inst):null;
   ok('a testing run of the Gloamvault with a party of two: both in it',!!r&&r.th==='gloamvault'&&W3.inst===W2.inst);
   if(r){ for(const m of [...r.mons]) if(m.dgRole==='purge'&&!m.dead) x.killMonsterS(m,W2); tick(3);
-    ok('Purge: killing them brings the Abbess into the round hall at level 40, with the kit `toll`',!!r.boss&&r.phase==='boss'&&r.boss.bd.def.id==='abbess'&&r.boss.m.dgK.lv===40&&r.boss.bd.kit==='toll');
+    ok('Purge: killing them brings the Abbess into the round hall at level 40, with the kit `toll`',!!r.boss&&r.phase==='boss'&&r.boss.bd.def.id==='abbess'&&r.boss.m.dgK.lv===30&&r.boss.bd.kit==='toll');
     const B=r.boss, A3=B.A, m=B.m, at=(p,d,a)=>{ p.x=m.x+Math.sin(a)*d; p.z=m.z+Math.cos(a)*d; p.dgX=p.x; p.dgZ=p.z; };
     W2.x=A3.x+3; W2.z=A3.z+3; W2.dgX=W2.x; W2.dgZ=W2.z; secs(1);
     ok('she engages when a member steps into the hall and the kit ticks through the first moves without a fault',B.engaged&&(secs(8),true));

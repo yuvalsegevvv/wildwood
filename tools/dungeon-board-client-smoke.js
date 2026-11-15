@@ -17,7 +17,7 @@ const find=(e,cls)=>{ const out=[]; walk(e,k=>{ if(typeof k.className==='string'
   G.NET.onReady=()=>G.beginPlay(); G.startSolo(); await wait(1500); G=c.G();
   const sent=[]; let swallow=false; const send0=G.NET.send; G.NET.send=m=>{ sent.push(JSON.parse(JSON.stringify(m))); if(!swallow) send0(m); };
   const mine=()=>sent.filter(m=>m.t==='dg'), last=()=>mine().slice(-1)[0], board=()=>c.el('#dgBoard'), body=()=>c.el('#dgBody'), hidden=()=>board().hidden;
-  const MSG=(o)=>Object.assign({t:'dgboard',th:'hollowroots',name:'The Hollow Roots',door:'The Hollowed Elder',offer:['purge','defense'],pool:['purge','defense'],left:125,L:40,tier:2,gate:1,ok:1,why:'',lead:1},o||{});
+  const MSG=(o)=>Object.assign({t:'dgboard',th:'hollowroots',name:'The Hollow Roots',door:'The Hollowed Elder',offer:['purge','defense'],pool:['purge','defense'],left:125,L:30,tier:2,top:2,gate:1,ok:1,why:'',lead:1},o||{});
   const deliver=m=>{ c.G().netHandle(m); };
   const place=(x,z)=>{ const g=c.G(); g.P.x=x; g.P.z=z; };
   const near=()=>{ const E=G.DG_ENTRANCES.hollowroots; place(E.x+3,E.z); };   // the client's own position is what the 1 s timer reads
@@ -30,18 +30,27 @@ const find=(e,cls)=>{ const out=[]; walk(e,k=>{ if(typeof k.className==='string'
   // ---- an open door, the leader ----
   swallow=true; sent.length=0; G.dgBoardOpen('hollowroots'); deliver(MSG());
   { const t=tx(body()), cards=find(body(),'dgb-card'), btns=find(body(),'dgb-start');
-    ok('the board for an open door: name, door and land, level at your tier, entry level 25 (the same at every difficulty), "the way is open"',/The Hollow Roots/.test(t)&&/The Hollowed Elder · Wildwood/.test(t)&&/Level 40/.test(t)&&/Wildwood \+2/.test(t)&&/Enter from level 25/.test(t)&&/The way is open for you/.test(t)&&find(body(),'ok').length===1,t.slice(0,260));
+    ok('the board for an open door: name, door and land, the picked tier (the highest open: III, level 46), entry level 25, "the way is open"',/The Hollow Roots/.test(t)&&/The Hollowed Elder · Wildwood/.test(t)&&/Level 46/.test(t)&&/\bIII\b/.test(t)&&/Enter from level 25/.test(t)&&/The way is open for you/.test(t)&&find(body(),'ok').length===1,t.slice(0,260));
     ok('it tells the dungeon in a sentence and each mission in a line (with the dungeon\'s own name for the objective)',/Heartwood go down/.test(t)&&cards.length===2&&/Purge/.test(tx(cards[0]))&&/round hall/.test(tx(cards[0]))&&/Defense/.test(tx(cards[1]))&&/Hold the Heartwood Knot/.test(tx(cards[1])),tx(cards[1]));
     ok('the leader gets a Start button on each mission on offer, naming its id',btns.length===2&&btns[0].dataset.mission==='purge'&&btns[1].dataset.mission==='defense');
     ok('the footer: the countdown to the next offer and the party line (alone: how to invite)',/The offer changes in 2:0[45]/.test(tx(c.el('#dgClock')))&&/You go in alone/.test(tx(c.el('#dgParty')))&&/\/invite/.test(tx(c.el('#dgParty'))),tx(c.el('#dgClock'))+' | '+tx(c.el('#dgParty')));
     sent.length=0; btns[1].click();
-    ok('Start sends dg{a:"start",dungeon,type} for that mission and closes the panel',mine().length===1&&JSON.stringify(last())===JSON.stringify({t:'dg',a:'start',dungeon:'hollowroots',type:'defense'})&&hidden()&&!G.uiOpen(),JSON.stringify(last())); }
+    ok('Start sends dg{a:"start",dungeon,type,tier} (the picked tier) for that mission and closes the panel',mine().length===1&&JSON.stringify(last())===JSON.stringify({t:'dg',a:'start',dungeon:'hollowroots',type:'defense',tier:2})&&hidden()&&!G.uiOpen(),JSON.stringify(last())); }
   // ---- the other texts ----
-  swallow=true; G.dgBoardOpen('hollowroots'); deliver(MSG({gate:0,ok:0,why:'Wildwood opens its dungeon at +1 difficulty: once Carapax, the Tide King, has fallen, set Wildwood to +1 on the map in a village.',tier:0,L:30,lead:1}));
+  swallow=true; G.dgBoardOpen('hollowroots'); deliver(MSG({gate:0,ok:0,why:'Walk to Hanami, on the far side of the bridge, first.',tier:0,top:0,L:30,lead:1}));
   { const t=tx(body());
-    ok('a sealed door (Wildwood at +0): "Sealed" and what unlocks it, level 30, no Start button on any mission, they say Locked',/Sealed\. Wildwood opens its dungeon at \+1 difficulty/.test(t)&&find(body(),'no').length===1&&find(body(),'ok').length===0&&/Level 30/.test(t)&&/Wildwood \+0/.test(t)&&!find(body(),'dgb-start').length&&(t.match(/Locked/g)||[]).length===2,t.slice(0,300)); }
+    ok('a sealed door (the land not reached): "Sealed" and what unlocks it, level 30, no Start button on any mission, they say Locked',/Sealed\. Walk to Hanami/.test(t)&&find(body(),'no').length===1&&find(body(),'ok').length===0&&/Level 30/.test(t)&&!find(body(),'dgb-start').length&&(t.match(/Locked/g)||[]).length===2,t.slice(0,300)); }
   deliver(MSG({gate:1,ok:0,why:'Reach level 35 first.'}));
   ok('an open door with too low a level: the reason, not "Sealed", and still no Start',/Reach level 35 first/.test(tx(body()))&&!/Sealed/.test(tx(body()))&&!find(body(),'dgb-start').length);
+  // the tier picker: arrows move it, a tier above `top` is locked (no Start, the way to open it), the highest open tier is where it starts, and a fresh board for another dungeon resets it
+  deliver(MSG({top:1,tier:1,why:'',ok:1}));
+  { const pick=()=>G.DG_BOARD.pick, r=find(body(),'dgb-tr')[0];
+    ok('the picker starts at the highest open tier (II when one tier is cleared) and shows level 38',pick()===1&&/Level 38/.test(tx(body()))&&find(body(),'dgb-start').length===2);
+    find(body(),'dgb-tr')[0].click(); const t2=tx(body());
+    ok('an arrow to a locked tier (III): level 46, "(locked)", Locked on both missions, no Start, and what opens it',pick()===2&&/Level 46/.test(t2)&&/\(locked\)/.test(t2)&&!find(body(),'dgb-start').length&&/clear tier II of any dungeon/.test(t2)&&(t2.match(/Locked/g)||[]).length===2);
+    find(body(),'dgb-tl')[0].click(); find(body(),'dgb-tl')[0].click(); find(body(),'dgb-tl')[0]&&find(body(),'dgb-tl')[0].click();
+    ok('the left arrow stops at tier I (disabled there) and the right one at tier XI',pick()===0&&find(body(),'dgb-tl')[0].disabled===true&&(()=>{ for(let i=0;i<14;i++){ const b=find(body(),'dgb-tr')[0]; if(b&&!b.disabled) b.click(); } return pick()===10&&/\bXI\b/.test(tx(body()))&&/Level 110/.test(tx(body())); })());
+    G.DG_BOARD.pick=undefined; }
   deliver(MSG({lead:0}));
   ok('a party member: no Start, "Waiting for the leader to start" on each mission, and the party line says only the leader starts',!find(body(),'dgb-start').length&&(tx(body()).match(/Waiting for the leader to start/g)||[]).length===2&&/only its leader can start a run/.test(tx(c.el('#dgParty'))),tx(c.el('#dgParty')));
   G.applyEvent(['pty',G.NET.pid,99,[[99,'Ana',20,20,30,0,0],[G.NET.pid,'Me',20,20,30,0,0],[98,'Bo',20,20,30,0,0]]]); deliver(MSG({lead:0}));
@@ -83,16 +92,15 @@ const find=(e,cls)=>{ const out=[]; walk(e,k=>{ if(typeof k.className==='string'
     G.dgJoinShow(['dgi',123456,7,0,'hollowroots','purge',40,15,'Ana']); ok('a prompt meant for another player is ignored',c.el('#dgJoin').hidden); }
   // ---- the real server ----
   swallow=false;
-  G.NET.send({t:'dev',cmd:'level',v:30}); G.NET.send({t:'dev',cmd:'zt',v:1}); G.NET.send({t:'dev',cmd:'vale',v:2}); await wait(300);
+  G.NET.send({t:'dev',cmd:'level',v:30}); G.NET.send({t:'dev',cmd:'vale',v:2}); await wait(300);
   const tp=async(x,z)=>{ const x0=c.G().P.x; G.NET.send({t:'dev',cmd:'tunnel',v:Math.round(x)+','+Math.round(z)}); for(let i=0;i<60;i++){ await wait(50); if(Math.hypot(c.G().P.x-x,c.G().P.z-z)<2) break; } await wait(250); };
   const E1=G.DG_ENTRANCES.hollowroots, E2=G.DG_ENTRANCES.jadesprings;
-  G.NET.send({t:'zt',land:'home',n:0}); await wait(300); G=c.G();
   await tp(E1.x+3,E1.z); G=c.G(); sent.length=0; G.closePanels(); G.dgBoardOpen('hollowroots'); await wait(500); G=c.G();
-  { const m=G.DG_BOARD.msg, t=tx(body()); ok('the real server at the Elder with Wildwood at +0: gate 0, ok 0, its own reason; the panel shows it sealed with no Start',!!m&&m.th==='hollowroots'&&m.gate===0&&m.ok===0&&m.lead===1&&/Sealed\. Wildwood opens its dungeon at \+1 difficulty/.test(t)&&!find(body(),'dgb-start').length&&!hidden(),m?JSON.stringify(m).slice(0,200):'no answer'); }
-  G.closePanels(); await tp(G.VIL.x,G.VIL.z); G.NET.send({t:'zt',land:'home',n:1}); await wait(300); await tp(E1.x+3,E1.z); G=c.G();
+  { const m=G.DG_BOARD.msg, t=tx(body()); ok('the real server at the Elder (no +1 needed any more, nothing cleared): gate 1, ok 1, tier I, top 0, level 30, a Start on each mission',!!m&&m.th==='hollowroots'&&m.gate===1&&m.ok===1&&m.lead===1&&m.tier===0&&m.top===0&&m.L===30&&/Level 30/.test(t)&&find(body(),'dgb-start').length===2&&!hidden(),m?JSON.stringify(m).slice(0,200):'no answer'); }
+  G.closePanels(); await tp(E1.x+3,E1.z); G=c.G();
   sent.length=0; c.fireWin('keydown',{code:'Escape'}); G.updateTalkUI();
   { const toasts0=c.el('#toasts')._kids.length; c.fireWin('keydown',{code:'KeyE'}); await wait(500); G=c.G(); const m=G.DG_BOARD.msg, offer=m&&m.offer, t=tx(body());
-    ok('the talk key at the open Elder (Wildwood at +1, level 30) sends dg open and shows the real board, not the "not ready" toast',mine().some(q=>q.a==='open')&&!hidden()&&!!m&&m.ok===1&&m.gate===1&&m.lead===1&&m.L===30&&m.tier===1&&/Level 30/.test(t)&&/Wildwood \+1/.test(t)&&!c.el('#toasts')._kids.slice(toasts0).some(k=>/not ready/.test(k.textContent)),m?JSON.stringify(m).slice(0,220):'no answer');
+    ok('the talk key at the open Elder (level 30) sends dg open and shows the real board, not the "not ready" toast',mine().some(q=>q.a==='open')&&!hidden()&&!!m&&m.ok===1&&m.gate===1&&m.lead===1&&m.L===30&&m.tier===0&&/Level 30/.test(t)&&!c.el('#toasts')._kids.slice(toasts0).some(k=>/not ready/.test(k.textContent)),m?JSON.stringify(m).slice(0,220):'no answer');
     const want=G.dgOffer('hollowroots',Date.now(),m.pool), names=want.map(k=>G.DG_MISSIONS[k].name);
     ok('the offer on the board is the offer the shared rule gives for this hour and the missions built (dgOffer), each with its name, and a Start for each',JSON.stringify(m.offer)===JSON.stringify(want)&&names.every(n=>t.includes(n))&&find(body(),'dgb-start').length===want.length&&m.left>0&&m.left<=3600,JSON.stringify(m.offer)+' vs '+JSON.stringify(want)+' left '+m.left);
     const real=JSON.stringify(m.offer), wrong=Object.keys(G.DG_MISSIONS).find(k=>!m.offer.includes(k)), here=[G.P.x,G.P.z];   // (a copy of the real offer: the message object itself is changed next)
@@ -100,7 +108,7 @@ const find=(e,cls)=>{ const out=[]; walk(e,k=>{ if(typeof k.className==='string'
     find(body(),'dgb-start')[0].click(); await wait(500); G=c.G();
     ok('a Start for a type that is no longer on offer is refused by the server (no run, no move), and its fresh dgboard reopens the board with the real offer',mine().length===1&&last().a==='start'&&last().type===wrong&&!hidden()&&JSON.stringify(G.DG_BOARD.msg.offer)===real&&Math.hypot(G.P.x-here[0],G.P.z-here[1])<1,JSON.stringify(last())+' offer now '+JSON.stringify(G.DG_BOARD.msg&&G.DG_BOARD.msg.offer)); }
   G.closePanels(); await tp(E2.x,E2.z-3); G=c.G(); G.closePanels(); G.dgBoardOpen('jadesprings'); await wait(500); G=c.G();
-  { const m=G.DG_BOARD.msg, t=tx(body()); ok('the real server at the Falls Door (Hanami walked into, level 30, Sakura Vale +0): open, level 30, "Sakura Vale +0", Jade Spring Grottoes',!!m&&m.th==='jadesprings'&&m.ok===1&&m.L===30&&m.tier===0&&/Jade Spring Grottoes/.test(t)&&/Sakura Vale \+0/.test(t)&&/Level 30/.test(t)&&/Jade Falls|Falls/.test(t),m?JSON.stringify(m).slice(0,200):'no answer'); }
+  { const m=G.DG_BOARD.msg, t=tx(body()); ok('the real server at the Falls Door (Hanami walked into, level 30): open, level 30, tier I, Jade Spring Grottoes',!!m&&m.th==='jadesprings'&&m.ok===1&&m.L===30&&m.tier===0&&/Jade Spring Grottoes/.test(t)&&/Sakura Vale/.test(t)&&/Level 30/.test(t)&&/Jade Falls|Falls/.test(t),m?JSON.stringify(m).slice(0,200):'no answer'); }
   G.closePanels();
   // ---- the door's talk key goes through the board now ----
   { const orig=G.dgBoardSwap(undefined); await tp(E1.x+3,E1.z); G=c.G(); G.updateTalkUI(); const n0=c.el('#toasts')._kids.length; c.fireWin('keydown',{code:'KeyE'});

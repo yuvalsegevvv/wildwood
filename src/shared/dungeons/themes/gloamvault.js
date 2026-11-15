@@ -5,7 +5,7 @@
      s brine grate (floor; hazard 'steam': the grate warns, then a surge of scalding brine comes up and slows)    G guardian post (floor: the Gargoyle or Storm Gargoyle that keeps the Wreckers' Vault).
    The Abbess's own props (none) are not drawn here. The monsters are the Gloamhorn's (undead and drowned kinds, `res` / `acc` on their defs), scaled to the dungeon's level (40 at +0) by dgKOf. */
 defineDungeonTheme({
-  id:'gloamvault', name:'The Gloamvault', land:'gloam', at:'Vault Heath', lv:40, entry:38,
+  id:'gloamvault', name:'The Gloamvault', land:'gloam', at:'Vault Heath', lv:40,
   mobs:{walkers:['hollowknight','weepingwidow','blackrevenant','drownedsailor','deepsiren','gravehound'], guardians:['gargoyle','stormgargoyle']},   // the Gloamhorn's level 32-40 kinds that fit a 4 m door (the Tide Horror, 1.6 m, is too big even for a guardian post)
   boss:'abbess', music:'gloam2',
   pal:{wall:0x4a4858, floor:0x2e2c38, fog:0x07060c, light:0xb8a0f0},

@@ -18,9 +18,9 @@ const T=x.DG_THEMES.cenote, E=x.DG_ENTRANCES.cenote, D=x.EW_DOOR, AG={isles:2,am
 
 // ---- the theme, the boss and the levels ----
 ok('the Cenote is registered (no bad theme): the isles\' dungeon under the Jungle Edge, level 48, entry level 45, boss Ahmetl, five walkers and two guardians of the isles',
-  !!T&&x.DG_BAD.length===0&&T.land==='isles'&&T.at==='The Jungle Edge'&&T.lv===48&&T.entry===45&&T.boss==='ahmetl'&&T.mobs.walkers.length>=5&&T.mobs.guardians.join()==='terracemason,roadsentinel'&&!!x.DG_LANDS.isles);
+  !!T&&x.DG_BAD.length===0&&T.land==='isles'&&T.at==='The Jungle Edge'&&T.lv===48&&T.boss==='ahmetl'&&T.mobs.walkers.length>=5&&T.mobs.guardians.join()==='terracemason,roadsentinel'&&!!x.DG_LANDS.isles);
 { const B=x.DG_BOSSES.ahmetl, R=x.DG_BOSS_DEFS.ahmetl;
-  ok('Ahmetl\'s base level is exactly 48: the design, the def makeBossS takes and the theme\'s level at +0 (his add one lower), and 48 + 10 a tier above',B.lv===48&&R.def.level===48&&R.def.boss&&R.add.level===47&&x.dgBossDefOf(T)===R&&x.dgLevel(T,0)===48&&x.dgLevel(T,2)===68);
+  ok('Ahmetl\'s base level is exactly 48: the design, the def makeBossS takes and a run\'s level at tier I is 30, the ladder\'s (his add one lower), and the run level is the tier\'s, not the theme\'s',B.lv===48&&R.def.level===48&&R.def.boss&&R.add.level===47&&x.dgBossDefOf(T)===R&&x.dgLevel(T,0)===30&&x.dgLevel(T,2)===46&&x.dgLevel(T,10)===110);
   ok('the boss is registered with a kit that has start, tick and phase (kit `stars`), exactly one signature (Hollow Stars), at least five moves, and the need it names exists',['start','tick','phase'].every(f=>typeof x.BOSS_KITS.stars[f]==='function')&&R.kit==='stars'&&B.moves.length>=5&&B.moves.filter(m=>m.signature).length===1&&B.moves.find(m=>m.signature).id==='hollow'); }
 ok('every monster of the dungeon is an isles kind (zones e42-e48); walkers fit a 4 m door',[...T.mobs.walkers,...T.mobs.guardians].every(id=>{ const d=x.MON_DEFS.find(q=>q.id===id); return d&&/^e4[2-8]$/.test(d.zone)&&d.level>=42; })&&T.mobs.walkers.every(id=>x.MON_DEFS.find(q=>q.id===id).rad<=0.9));
 
@@ -31,24 +31,25 @@ ok('the door is the atlas\'s isles door: DG_ENTRANCES.cenote at EW_DOOR, no road
 // ---- who may enter: Coralhaven reached (gear.isles 2) and level 45 ----
 { const un=(g,lv,tier)=>x.dgUnlocked(g,lv,T,tier);
   ok('the way is shut until Coralhaven has been reached: gear.isles 0 or 1 is closed, 2 is open, and the hint says so',!x.dgGateOpen({isles:0},T)&&!x.dgGateOpen({isles:1},T)&&x.dgGateOpen({isles:2},T)&&!un({isles:1},60).ok&&/Coralhaven/.test(un({isles:1},60).why));
-  ok('entry is level 45 once the way is open: 44 refused with the level in the message, 45 let in at level 48, +0 needing no tier',!un({isles:2},44).ok&&/level 45/.test(un({isles:2},44).why)&&un({isles:2},45).ok&&un({isles:2},45).level===48&&un({isles:2},45).tier===0); }
+  ok('entry is level 25 once the way is open (every tier, every dungeon): 24 refused with the level in the message, 25 let in, tier I = level 30',!un({isles:2},24).ok&&/level 25/.test(un({isles:2},24).why)&&un({isles:2},25).ok&&un({isles:2},25).level===30&&un({isles:2},25).tier===0);
+  ok('a tier above I needs gear.dg.top and takes its level from the ladder (tier III = 46)',!un({isles:2},60,2).ok&&/not open/.test(un({isles:2},60,2).why)&&un({isles:2,dg:{top:2}},25,2).level===46); }
 ok('the hourly offer is two different missions of the seven, like every dungeon',(()=>{ const o=x.dgOffer('cenote',Date.UTC(2026,9,3,5),x.dgPoolS()); return o.length===2&&o[0]!==o[1]; })());
 
 // ---- the board at the door, and a run started there ----
-const A=join('a','Ash',{level:45,gear:Object.assign({},AG)}), L44=join('s','Sol',{level:44,gear:Object.assign({},AG)}), N=join('n','Nia',{level:60,gear:{isles:1}}); tick(3);
+const A=join('a','Ash',{level:25,gear:Object.assign({},AG)}), L44=join('s','Sol',{level:24,gear:Object.assign({},AG)}), N=join('n','Nia',{level:60,gear:{isles:1}}); tick(3);
 const near={x:D.x+Math.sin(E.a)*3,z:D.z+Math.cos(E.a)*3};
 for(const p of [A,L44,N]){ p.x=near.x; p.z=near.z; }
 clear(); W.receive('a',{t:'dg',a:'open'}); W.receive('s',{t:'dg',a:'open'}); W.receive('n',{t:'dg',a:'open'}); tick(2);
 { const b=lastMsg('a','dgboard'), s=lastMsg('s','dgboard'), n=lastMsg('n','dgboard');
-  ok('at the door the board opens for level 45 (th cenote, level 48, open) and says no to level 44 (why: level 45) and to a hiker who has not reached Coralhaven',!!b&&b.th==='cenote'&&b.L===48&&b.ok===1&&b.gate===1&&b.offer.length===2&&!!s&&s.ok===0&&/level 45/.test(s.why)&&s.gate===1&&!!n&&n.ok===0&&n.gate===0,JSON.stringify(b&&{th:b.th,L:b.L,ok:b.ok}));
+  ok('at the door the board opens for level 45 (th cenote, level 48, open) and says no to level 44 (why: level 45) and to a hiker who has not reached Coralhaven',!!b&&b.th==='cenote'&&b.L===30&&b.ok===1&&b.gate===1&&b.offer.length===2&&!!s&&s.ok===0&&/level 25/.test(s.why)&&s.gate===1&&!!n&&n.ok===0&&n.gate===0,JSON.stringify(b&&{th:b.th,L:b.L,ok:b.ok}));
 clear(); W.receive('s',{t:'dg',a:'start',dungeon:'cenote',type:x.dgOffer('cenote',Date.now(),x.dgPoolS())[0]}); W.receive('n',{t:'dg',a:'start',dungeon:'cenote',type:x.dgOffer('cenote',Date.now(),x.dgPoolS())[0]}); tick(2);
 ok('a level-44 hiker and one who has not reached Coralhaven cannot start a run',!L44.inst&&!N.inst);
 { const started=[]; for(const mi of ['purge','defense','survival','sabotage','siege','hunt','escort']){ W.receive('a',{t:'dev',cmd:'dg',v:'cenote:'+mi+':3'}); tick(3); const r=A.inst?x.DG_RUNS.get(A.inst):null;
-    started.push(!!r&&r.th==='cenote'&&r.mission===mi&&r.L===48&&(mi!=='purge'||r.mons.size>0)); W.receive('a',{t:'dg',a:'leave'}); tick(3); }
+    started.push(!!r&&r.th==='cenote'&&r.mission===mi&&r.L===30&&(mi!=='purge'||r.mons.size>0)); W.receive('a',{t:'dg',a:'leave'}); tick(3); }
   ok('all seven mission types start as the Cenote at level 48 (Purge with its monsters at once)',started.length===7&&started.every(Boolean),started.join()); }
 W.receive('a',{t:'dev',cmd:'dg',v:'cenote:purge:5'}); tick(3);
 const run=A.inst?x.DG_RUNS.get(A.inst):null;
-ok('a purge run: the walkers are the isles\', fought at level 48 (dgK)',!!run&&[...run.mons].length>0&&[...run.mons].every(m=>T.mobs.walkers.includes(m.def.id)||T.mobs.guardians.includes(m.def.id))&&[...run.mons].every(m=>m.dgK&&m.dgK.lv===48));
+ok('a purge run: the walkers are the isles\', fought at level 48 (dgK)',!!run&&[...run.mons].length>0&&[...run.mons].every(m=>T.mobs.walkers.includes(m.def.id)||T.mobs.guardians.includes(m.def.id))&&[...run.mons].every(m=>m.dgK&&m.dgK.lv===30));
 W.receive('a',{t:'dg',a:'leave'}); tick(3);
 { W.receive('a',{t:'dev',cmd:'dg',v:'cenote:hunt:5'}); tick(3); const r=A.inst?x.DG_RUNS.get(A.inst):null;
   ok('a hunt run\'s quarry is the Cenote Eel (an isles kind slipping through the flooded halls)',!!r&&!!r.k&&!!r.k.q&&r.k.q.def.id==='cenoteeel'); W.receive('a',{t:'dg',a:'leave'}); tick(3); }
@@ -72,7 +73,7 @@ W.receive('k',{t:'dg',a:'open'}); tick(1);
 const wantType=x.dgOffer('cenote',Date.now(),x.dgPoolS())[0];
 W.receive('k',{t:'dg',a:'start',dungeon:'cenote',type:wantType}); tick(2); W.receive('l',{t:'dg',a:'accept'}); tick(3);
 const runK=K.inst?x.DG_RUNS.get(K.inst):null;
-ok('the leader starts from the door board and the member follows: one run, the Cenote, level 48, two inside',!!runK&&runK.th==='cenote'&&runK.L===48&&L2.inst===K.inst&&runK.mission===wantType,toasts('k')+' | '+toasts('l'));
+ok('the leader starts from the door board and the member follows: one run, the Cenote, level 48, two inside',!!runK&&runK.th==='cenote'&&runK.L===30&&L2.inst===K.inst&&runK.mission===wantType,toasts('k')+' | '+toasts('l'));
 W.receive('k',{t:'dg',a:'leave'}); W.receive('l',{t:'dg',a:'leave'}); tick(3);
 { const W2=join('w','Wen',{level:48,gear:Object.assign({},AG)}), W3=join('v','Vik',{level:48,gear:Object.assign({},AG)}); tick(2);
   W.receive('w',{t:'party',a:'invite',name:'Vik'}); tick(2); W.receive('v',{t:'party',a:'accept'}); tick(2);
@@ -80,7 +81,7 @@ W.receive('k',{t:'dg',a:'leave'}); W.receive('l',{t:'dg',a:'leave'}); tick(3);
   const r=W2.inst?x.DG_RUNS.get(W2.inst):null;
   ok('a testing run of the Cenote with a party of two: both in it',!!r&&r.th==='cenote'&&W3.inst===W2.inst);
   if(r){ for(const m of [...r.mons]) if(m.dgRole==='purge'&&!m.dead) x.killMonsterS(m,W2); tick(3);
-    ok('Purge: killing them brings Ahmetl into the round hall at level 48, with the kit `stars`',!!r.boss&&r.phase==='boss'&&r.boss.bd.def.id==='ahmetl'&&r.boss.m.dgK.lv===48&&r.boss.bd.kit==='stars');
+    ok('Purge: killing them brings Ahmetl into the round hall at level 48, with the kit `stars`',!!r.boss&&r.phase==='boss'&&r.boss.bd.def.id==='ahmetl'&&r.boss.m.dgK.lv===30&&r.boss.bd.kit==='stars');
     const B=r.boss, A3=B.A, m=B.m;
     W2.x=A3.x+3; W2.z=A3.z+3; W2.dgX=W2.x; W2.dgZ=W2.z; secs(1);
     ok('he engages when a member steps into the hall and the kit ticks through the first moves without a fault',B.engaged&&(secs(8),true));

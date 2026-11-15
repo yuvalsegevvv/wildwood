@@ -44,25 +44,24 @@ const DG_SET_BARE=[
   ...dgKind('site',['site'],1,[10,10],[['O',0,0]],null,DG_ALL_SHAPES),
   ...dgKind('cache',['cache'],1,[8,8],[['C',0,0]],null,['dead'])];
 /* THE THREE DUNGEONS, one for each built land (docs/DUNGEON-THEMES.md has the designs: feel, tile kit, hazard, objective skins, bosses), one file each in shared/dungeons/themes/,
-   entered through defineDungeonTheme below. Each is level DG_LV at its land's base difficulty (see DG_LANDS for the difficulty). Which two mission types a dungeon offers changes
+   entered through defineDungeonTheme below. Its level comes from the run's tier (DG_TIERS). Which two mission types a dungeon offers changes
    every hour (dgOffer); what a clear pays is shared/dungeon-rewards.js. */
-const DG_LV=30, DG_ENTRY_LV=25;   // a dungeon is level 30 at its land's base difficulty; you may enter from level 25 at EVERY difficulty (+0 to +V): the tiers make the monsters harder, not the way in
-/* The difficulty a dungeon is played at is its land's own zone tier setting (gear.zt[land].on: the +N chosen under the map in a village, shared/tiers.js). Each land has a
-   `base`, the lowest +N its dungeons open at, where they are level DG_LV; every tier above adds ZTIER_STEP (10) levels, as everywhere. Wildwood's base is +1 (its dungeon
-   is locked at +0, level 30 at +1, 40 at +2, 50 at +3, 60 at +4, 70 at +5); the Vale's and the Reach's are +0 (level 30, 40, 50, 60, 70, 80). `unlock` is the land's progress gate. */
+const DG_LV=30, DG_ENTRY_LV=25;   // DG_LV: a theme's default `lv` (no longer a run's level); you may enter every dungeon at every tier from hiker level 25
+/* A dungeon's difficulty is its tier (shared/dungeon-tiers.js, 11 tiers, monster level 30-110), picked on the Delve board: the land's zone tier setting no longer matters.
+   `unlock` is the land's progress gate (you still have to reach the land). */
 const DG_LANDS={
-  home:{name:'Wildwood',    base:1,unlock:{},          hint:'Wildwood opens its dungeon at +1 difficulty: once Carapax, the Tide King, has fallen, set Wildwood to +1 on the map in a village.'},
-  vale:{name:'Sakura Vale', base:0,unlock:{east:2},    hint:'Walk to Hanami, on the far side of the bridge, first.'},
-  hoar:{name:'Hoarfrost Reach',base:0,unlock:{north:2},hint:'Walk into Rimehold, through Frostgate Pass, first.'},
-  grey:{name:'The Greyspine',base:0,unlock:{west:2},   hint:'Walk into Highmark, through the glacier valley west of the Reach, first (its ice fall opens when Ymrik falls).'},
-  sun: {name:'The Sunscar',   base:0,unlock:{sun:2},    hint:'Walk into Glasswell, the desert city, first (the River Pass or Redgate Canyon leads there).'},   // (version 3: the Sandglass, level 40 at +0, enter from level 36: theme field `entry`)
-  gloam:{name:'The Gloamhorn', base:0,unlock:{gloam:2}, hint:'Walk into Wraithwick, the village on the Gloamhorn, first (the neck past the Greyspine leads there).'},   // (version 3: the Gloamvault, level 40 at +0, enter from level 38)
-  amber:{name:'The Amber Reach', base:0,unlock:{amber:1}, hint:'Open the Ashbed Gate first (the Sand Wyrm\'s fall opens the way south from the Sunscar), then walk into the Reach.'},
-  isles:{name:'The Emberwake Isles', base:0,unlock:{isles:2}, hint:'Oldhorn\'s fall opens the Tide Bridge: cross to Coralhaven and walk into the village first.'}};   // (the Termite Cathedral, level 45 at +0, enter from level 42; gear.amber is 1 once the gate is open)
+  home:{name:'Wildwood',    unlock:{},          hint:''},
+  vale:{name:'Sakura Vale', unlock:{east:2},    hint:'Walk to Hanami, on the far side of the bridge, first.'},
+  hoar:{name:'Hoarfrost Reach',unlock:{north:2},hint:'Walk into Rimehold, through Frostgate Pass, first.'},
+  grey:{name:'The Greyspine',unlock:{west:2},   hint:'Walk into Highmark, through the glacier valley west of the Reach, first (its ice fall opens when Ymrik falls).'},
+  sun: {name:'The Sunscar',   unlock:{sun:2},    hint:'Walk into Glasswell, the desert city, first (the River Pass or Redgate Canyon leads there).'},   //
+  gloam:{name:'The Gloamhorn', unlock:{gloam:2}, hint:'Walk into Wraithwick, the village on the Gloamhorn, first (the neck past the Greyspine leads there).'},   // (version 3: the Gloamvault, level 40 at +0, enter from level 38)
+  amber:{name:'The Amber Reach', unlock:{amber:1}, hint:'Open the Ashbed Gate first (the Sand Wyrm\'s fall opens the way south from the Sunscar), then walk into the Reach.'},
+  isles:{name:'The Emberwake Isles', unlock:{isles:2}, hint:'Oldhorn\'s fall opens the Tide Bridge: cross to Coralhaven and walk into the village first.'}};   // (the Termite Cathedral, level 45 at +0, enter from level 42; gear.amber is 1 once the gate is open)
 /* THE THEME REGISTRY. A dungeon theme is one file, shared/dungeons/themes/<id>.js, holding a single defineDungeonTheme({...}) call and no top-level names, plus its line in
    src/manifest.json (after shared/dungeons/bosses.js). defineDungeonTheme checks the theme; a bad one is LEFT OUT (the game still boots), warned about (console.warn) and listed in
    DG_BAD as {id, field, why}: tools/dungeons-smoke.js fails naming them. Fields:
-     id ('hollowroots': a lowercase word), name, land (a DG_LANDS key), at (the ZONES name of the zone it lies under), lv (default DG_LV), entry (the level you need to enter, default DG_ENTRY_LV; the Sandglass: 36, the Gloamvault: 38),
+     id ('hollowroots': a lowercase word), name, land (a DG_LANDS key), at (the ZONES name of the zone it lies under), lv (default DG_LV), 
      mobs:{walkers, guardians} (MON_DEFS ids; walkers fit the 4 m doors: radius <= 0.9 m, at least 4 kinds; guardians are the big ones that stay in their room),
      boss (a DG_BOSS_DEFS id), music (a music theme), pal:{wall, floor, fog, light} (colours for the client builder),
      legend:{char:{solid, prop, hazard?, light?, post?}}: the theme's own characters (one character each, not # . S O C P B). solid: blocks like '#' (collision, line of sight,
@@ -153,8 +152,7 @@ function defineDungeonTheme(T){
     for(const v of made){ if(!v) return bad('tiles',t.id+': unknown shape in '+JSON.stringify(t.shapes)); const p=dgTileProblems(v,lg); if(p.length) return bad('tiles',v.id+': '+p.join('; ')); tiles.push(v); }
   }
   const cover=dgCoverProblems(tiles); if(cover.length) return bad('tiles',cover.join('; '));
-  if(T.entry!==undefined&&(!Number.isInteger(T.entry)||T.entry<1||T.entry>99)) return bad('entry',String(T.entry));
-  const th={id,name:T.name,land:T.land,at:T.at,lv,entry:T.entry||DG_ENTRY_LV,mobs:{walkers:mobs.walkers.slice(),guardians:(mobs.guardians||[]).slice()},boss:T.boss,music:T.music,pal:Object.assign({},T.pal),legend:lg,tiles,art:true};
+  const th={id,name:T.name,land:T.land,at:T.at,lv,mobs:{walkers:mobs.walkers.slice(),guardians:(mobs.guardians||[]).slice()},boss:T.boss,music:T.music,pal:Object.assign({},T.pal),legend:lg,tiles,art:true};
   DG_THEMES[id]=th; return th;
 }
 /* A VARIANT of a registered theme: the same tiles, legend, roster, boss, music and palette (so the same gameplay), with fields changed (id and name are required). */
@@ -207,15 +205,14 @@ function dgOffer(id,nowMs,pool){
   return a[h-c*P].slice();
 }
 const dgOfferLeft=nowMs=>Math.ceil((DG_OFFER_HOUR-((nowMs%DG_OFFER_HOUR)+DG_OFFER_HOUR)%DG_OFFER_HOUR)/1000);   // seconds until the offer changes
-const dgTierOf=(gear,land)=>{ const z=gear&&gear.zt&&gear.zt[land]; return z?z.on|0:0; };   // the +N you play the land at
-const dgLevel=(T,tier)=>(T.lv||DG_LV)+ZTIER_STEP*Math.max(0,(tier|0)-DG_LANDS[T.land].base);   // a dungeon's level at +tier
-const dgTierFor=(gear,T)=>dgTierOf(gear,T.land);   // the +N a dungeon is played at: the land's
-/* can this hiker (gear as the server keeps it, level) enter the theme at +tier (default: the land's tier they play at)? {ok, why, tier, level}. A party plays at its leader's
-   tier, so a member is checked at that tier: they need it unlocked (gear.zt[land].max) and level DG_ENTRY_LV, whatever tier they play at themselves. A theme may carry its own `unlock`. */
+// dgrev: a run's level is its tier's (dgt..., shared/dungeon-tiers.js); the land's zone tier setting no longer touches dungeons
+const dgLevel=(T,tier)=>dgtLevel(tier);
+/* can this hiker (gear as the server keeps it, level) enter the theme at tier (0-based, default 0 = tier I)? {ok, why, tier, level}. A party plays at its leader's tier, so a member is
+   checked at that tier: it must be open for them (gear.dg.top) and they need hiker level DG_ENTRY_LV. A theme may carry its own `unlock`. */
 function dgUnlocked(gear,level,T,tier){
-  const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}, z=g.zt&&g.zt[T.land], t=tier===undefined?dgTierOf(g,T.land):tier|0;
-  if(t<L.base) return {ok:false,why:L.hint};
-  if(t>((z?z.max:0)|0)) return {ok:false,why:'You have not unlocked +'+t+' in '+L.name+' yet.'};
+  const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}, t=tier===undefined?0:tier;
+  if(!Number.isInteger(t)||t<0||t>DG_TIER_MAX) return {ok:false,why:'That tier does not exist.'};
+  if(!dgtOpen(g,t)) return {ok:false,why:'Tier '+(t+1)+' is not open for you yet: clear tier '+t+' of any dungeon first.'};
   if(U.east!==undefined&&(g.east|0)<U.east) return {ok:false,why:L.hint};
   if(U.north!==undefined&&(g.north|0)<U.north) return {ok:false,why:L.hint};
   if(U.west!==undefined&&(g.west|0)<U.west) return {ok:false,why:L.hint};
@@ -223,11 +220,11 @@ function dgUnlocked(gear,level,T,tier){
   if(U.gloam!==undefined&&(g.gloam|0)<U.gloam) return {ok:false,why:L.hint};
   if(U.amber!==undefined&&(g.amber|0)<U.amber) return {ok:false,why:L.hint};
   if(U.isles!==undefined&&(g.isles|0)<U.isles) return {ok:false,why:L.hint};
-  const need=T.entry||DG_ENTRY_LV, lv=dgLevel(T,t); if((level|0)<need) return {ok:false,why:'Reach level '+need+' first.'};   // (the same at every tier: a level-60 dungeon used to ask for 55, which nobody can have)
-  return {ok:true,why:'',tier:t,level:lv};
+  if((level|0)<DG_ENTRY_LV) return {ok:false,why:'Reach level '+DG_ENTRY_LV+' first.'};
+  return {ok:true,why:'',tier:t,level:dgLevel(T,t)};
 }
-// the door's look and what pressing the talk key says: open at the tier you play (Wildwood's roots are knotted shut at +0) and the land's progress; the level is not part of it
-const dgGateOpen=(gear,T)=>{ const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}; return dgTierOf(g,T.land)>=L.base&&(U.east===undefined||(g.east|0)>=U.east)&&(U.north===undefined||(g.north|0)>=U.north)&&(U.west===undefined||(g.west|0)>=U.west)&&(U.sun===undefined||(g.sun|0)>=U.sun)&&(U.gloam===undefined||(g.gloam|0)>=U.gloam)&&(U.amber===undefined||(g.amber|0)>=U.amber)&&(U.isles===undefined||(g.isles|0)>=U.isles); };
+// the door's look and what pressing the talk key says: open when the land's progress gate is; the level and the tier are not part of it
+const dgGateOpen=(gear,T)=>{ const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}; return (U.east===undefined||(g.east|0)>=U.east)&&(U.north===undefined||(g.north|0)>=U.north)&&(U.west===undefined||(g.west|0)>=U.west)&&(U.sun===undefined||(g.sun|0)>=U.sun)&&(U.gloam===undefined||(g.gloam|0)>=U.gloam)&&(U.amber===undefined||(g.amber|0)>=U.amber)&&(U.isles===undefined||(g.isles|0)>=U.isles); };
 // every tile in every quarter turn (turns that come out the same are kept once)
 function dgVariants(set){
   const out=[], seen=new Set();

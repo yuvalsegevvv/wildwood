@@ -142,7 +142,7 @@
     "cave/method-g-mole.js",
     "cave/method-h-crafting.js",
     "dungeon-hud.js",
-    "dungeons.js", "dungeons/bosses.js", "dungeons/themes/hollowroots.js", "dungeons/themes/jadesprings.js", "dungeons/themes/bonefrostbarrow.js", "dungeons/themes/blackseam.js", "dungeons/themes/sandglass.js", "dungeons/themes/gloamvault.js", "dungeons/themes/termitecathedral.js", "dungeons/themes/cenote.js", "rolls.js", "dungeon-rewards.js", "dungeon-items.js",
+    "dungeon-tiers.js", "dungeons.js", "dungeons/bosses.js", "dungeons/themes/hollowroots.js", "dungeons/themes/jadesprings.js", "dungeons/themes/bonefrostbarrow.js", "dungeons/themes/blackseam.js", "dungeons/themes/sandglass.js", "dungeons/themes/gloamvault.js", "dungeons/themes/termitecathedral.js", "dungeons/themes/cenote.js", "rolls.js", "dungeon-rewards.js", "dungeon-items.js",
     "character.js",
     "skillsets/tansy.js",
     "skillsets/torgeir.js",

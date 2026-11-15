@@ -18,9 +18,9 @@ const T=x.DG_THEMES.termitecathedral, E=x.DG_ENTRANCES.termitecathedral, D=x.SAV
 
 // ---- the theme, the boss and the levels ----
 ok('the Termite Cathedral is registered (no bad theme): the Amber Reach\'s dungeon under the Termite Cathedrals, level 45, entry level 42, boss Queen Ortha, five Reach walkers and two guardians',
-  !!T&&x.DG_BAD.length===0&&T.land==='amber'&&T.at==='The Termite Cathedrals'&&T.lv===45&&T.entry===42&&T.boss==='ortha'&&T.mobs.walkers.length>=5&&T.mobs.guardians.join()==='baobabtreant,greyrhino'&&!!x.DG_LANDS.amber&&x.DG_ENTRY_LV===25);
+  !!T&&x.DG_BAD.length===0&&T.land==='amber'&&T.at==='The Termite Cathedrals'&&T.lv===45&&T.boss==='ortha'&&T.mobs.walkers.length>=5&&T.mobs.guardians.join()==='baobabtreant,greyrhino'&&!!x.DG_LANDS.amber&&x.DG_ENTRY_LV===25);
 { const B=x.DG_BOSSES.ortha, R=x.DG_BOSS_DEFS.ortha;
-  ok('Ortha\'s base level is exactly 45: the design, the def makeBossS takes and the theme\'s level at +0 (her add one lower), and 45 + 10 a tier above',B.lv===45&&R.def.level===45&&R.def.boss&&R.add.level===44&&x.dgBossDefOf(T)===R&&x.dgLevel(T,0)===45&&x.dgLevel(T,2)===65);
+  ok('Ortha\'s base level is exactly 45: the design, the def makeBossS takes and a run\'s level at tier I is 30, the ladder\'s (her add one lower), and the run level is the tier\'s, not the theme\'s',B.lv===45&&R.def.level===45&&R.def.boss&&R.add.level===44&&x.dgBossDefOf(T)===R&&x.dgLevel(T,0)===30&&x.dgLevel(T,2)===46&&x.dgLevel(T,10)===110);
   ok('the boss is registered with a kit that has start, tick and phase (kit `brood`), exactly one signature (the Egg Clusters), at least five moves, one-hit eggs for a prop, and she barely moves',['start','tick','phase'].every(f=>typeof x.BOSS_KITS.brood[f]==='function')&&R.kit==='brood'&&B.moves.length>=5&&B.moves.filter(m=>m.signature).length===1&&B.moves.find(m=>m.signature).id==='eggs'&&R.prop.hits===1&&R.prop.noAttack&&R.prop.speed===0&&R.def.speed<1); }
 ok('every monster of the dungeon is an Amber Reach kind (zones a37-a45); walkers fit a 4 m door',[...T.mobs.walkers,...T.mobs.guardians].every(id=>{ const d=x.MON_DEFS.find(q=>q.id===id); return d&&/^a(3[7-9]|4[0-5])$/.test(d.zone)&&d.level>=37; })&&T.mobs.walkers.every(id=>x.MON_DEFS.find(q=>q.id===id).rad<=0.9));
 
@@ -31,25 +31,25 @@ ok('the door is the atlas\'s amber door: DG_ENTRANCES.termitecathedral at SAV_DO
 // ---- who may enter: the Ashbed Gate open (gear.amber 1) and level 42, at every difficulty ----
 { const un=(g,lv,tier)=>x.dgUnlocked(g,lv,T,tier);
   ok('the way is shut until the Ashbed Gate is open: the gate is closed at gear.amber 0, open at 1, and the hint says so',!x.dgGateOpen({amber:0},T)&&x.dgGateOpen({amber:1},T)&&!un({amber:0},60).ok&&/Ashbed Gate/.test(un({amber:0},60).why));
-  ok('entry is level 42 (not 25) once the gate is open: 41 refused with the level in the message, 42 let in at level 45, +0 needing no tier',!un({amber:1},41).ok&&/level 42/.test(un({amber:1},41).why)&&un({amber:1},42).ok&&un({amber:1},42).level===45&&un({amber:1},42).tier===0);
-  ok('a tier the Reach has not unlocked is refused (the Reach has no zone tiers of its own yet), at the same entry level',!un({amber:1,zt:{amber:{on:0,max:0}}},60,1).ok&&un({amber:1,zt:{amber:{on:2,max:2}}},42,2).level===65); }
+  ok('entry is level 25 once the way is open (every tier, every dungeon): 24 refused with the level in the message, 25 let in, tier I = level 30',!un({amber:1},24).ok&&/level 25/.test(un({amber:1},24).why)&&un({amber:1},25).ok&&un({amber:1},25).level===30&&un({amber:1},25).tier===0);
+  ok('a tier above I needs gear.dg.top and takes its level from the ladder (tier III = 46, whatever the zone tier says)',!un({amber:1},60,2).ok&&/not open/.test(un({amber:1},60,2).why)&&un({amber:1,dg:{top:2}},25,2).level===46&&!un({amber:1,dg:{top:2}},24,2).ok&&!un({amber:1,dg:{top:2}},60,3).ok); }
 ok('the hourly offer is two different missions of the seven, like every dungeon',(()=>{ const o=x.dgOffer('termitecathedral',Date.UTC(2026,9,3,5),x.dgPoolS()); return o.length===2&&o[0]!==o[1]; })());
 
 // ---- the board at the door, and a run started there ----
-const A=join('a','Ash',{level:42,gear:Object.assign({},AG)}), L41=join('s','Sol',{level:41,gear:Object.assign({},AG)}), N=join('n','Nia',{level:60,gear:{amber:0}}); tick(3);
+const A=join('a','Ash',{level:25,gear:Object.assign({},AG)}), L41=join('s','Sol',{level:24,gear:Object.assign({},AG)}), N=join('n','Nia',{level:60,gear:{amber:0}}); tick(3);
 const near={x:D.x+Math.sin(E.a)*3,z:D.z+Math.cos(E.a)*3};
 for(const p of [A,L41,N]){ p.x=near.x; p.z=near.z; }
 clear(); W.receive('a',{t:'dg',a:'open'}); W.receive('s',{t:'dg',a:'open'}); W.receive('n',{t:'dg',a:'open'}); tick(2);
 { const b=lastMsg('a','dgboard'), s=lastMsg('s','dgboard'), n=lastMsg('n','dgboard');
-  ok('at the door the board opens for level 42 (th termitecathedral, level 45, open) and says no to level 41 (why: level 42) and to a hiker whose gate is shut',!!b&&b.th==='termitecathedral'&&b.L===45&&b.ok===1&&b.gate===1&&b.offer.length===2&&!!s&&s.ok===0&&/level 42/.test(s.why)&&s.gate===1&&!!n&&n.ok===0&&n.gate===0,JSON.stringify([b&&b.ok,s&&s.why,n&&n.gate])); }
+  ok('at the door the board opens for level 42 (th termitecathedral, level 45, open) and says no to level 41 (why: level 42) and to a hiker whose gate is shut',!!b&&b.th==='termitecathedral'&&b.L===30&&b.ok===1&&b.gate===1&&b.offer.length===2&&!!s&&s.ok===0&&/level 25/.test(s.why)&&s.gate===1&&!!n&&n.ok===0&&n.gate===0,JSON.stringify([b&&b.ok,s&&s.why,n&&n.gate])); }
 clear(); W.receive('s',{t:'dg',a:'start',dungeon:'termitecathedral',type:x.dgOffer('termitecathedral',Date.now(),x.dgPoolS())[0]}); W.receive('n',{t:'dg',a:'start',dungeon:'termitecathedral',type:x.dgOffer('termitecathedral',Date.now(),x.dgPoolS())[0]}); tick(2);
 ok('a level-41 hiker and one whose gate is shut cannot start a run',!L41.inst&&!N.inst);
 { const started=[]; for(const mi of ['purge','defense','survival','sabotage','siege','hunt','escort']){ W.receive('a',{t:'dev',cmd:'dg',v:'termitecathedral:'+mi+':3'}); tick(3); const r=A.inst?x.DG_RUNS.get(A.inst):null;
-    started.push(!!r&&r.th==='termitecathedral'&&r.mission===mi&&r.L===45&&(mi!=='purge'||r.mons.size>0)); W.receive('a',{t:'dg',a:'leave'}); tick(3); }
+    started.push(!!r&&r.th==='termitecathedral'&&r.mission===mi&&r.L===30&&(mi!=='purge'||r.mons.size>0)); W.receive('a',{t:'dg',a:'leave'}); tick(3); }
   ok('all seven mission types start as the Termite Cathedral at level 45 (Purge with its monsters at once)',started.length===7&&started.every(Boolean),started.join()); }
 W.receive('a',{t:'dev',cmd:'dg',v:'termitecathedral:purge:5'}); tick(3);
 const run=A.inst?x.DG_RUNS.get(A.inst):null;
-ok('a purge run: the walkers are the Reach\'s, fought at level 45 (dgK)',!!run&&[...run.mons].length>0&&[...run.mons].every(m=>T.mobs.walkers.includes(m.def.id)||T.mobs.guardians.includes(m.def.id))&&[...run.mons].every(m=>m.dgK&&m.dgK.lv===45));
+ok('a purge run: the walkers are the Reach\'s, fought at level 45 (dgK)',!!run&&[...run.mons].length>0&&[...run.mons].every(m=>T.mobs.walkers.includes(m.def.id)||T.mobs.guardians.includes(m.def.id))&&[...run.mons].every(m=>m.dgK&&m.dgK.lv===30));
 W.receive('a',{t:'dg',a:'leave'}); tick(3);
 { W.receive('a',{t:'dev',cmd:'dg',v:'termitecathedral:hunt:5'}); tick(3); const r=A.inst?x.DG_RUNS.get(A.inst):null;
   ok('a hunt run\'s quarry is the Locust Cloud (a Reach kind slipping through the galleries)',!!r&&!!r.k&&!!r.k.q&&r.k.q.def.id==='locusts'); W.receive('a',{t:'dg',a:'leave'}); tick(3); }
@@ -70,7 +70,7 @@ W.receive('k',{t:'dg',a:'open'}); tick(1);
 const wantType=x.dgOffer('termitecathedral',Date.now(),x.dgPoolS())[0];
 W.receive('k',{t:'dg',a:'start',dungeon:'termitecathedral',type:wantType}); tick(2); W.receive('l',{t:'dg',a:'accept'}); tick(3);
 const runK=K.inst?x.DG_RUNS.get(K.inst):null;
-ok('the leader starts from the door board and the member follows: one run, the Termite Cathedral, level 45, two inside',!!runK&&runK.th==='termitecathedral'&&runK.L===45&&L2.inst===K.inst&&runK.mission===wantType,toasts('k')+' | '+toasts('l'));
+ok('the leader starts from the door board and the member follows: one run, the Termite Cathedral, level 45, two inside',!!runK&&runK.th==='termitecathedral'&&runK.L===30&&L2.inst===K.inst&&runK.mission===wantType,toasts('k')+' | '+toasts('l'));
 W.receive('k',{t:'dg',a:'leave'}); W.receive('l',{t:'dg',a:'leave'}); tick(3);
 { const W2=join('w','Wen',{level:45,gear:Object.assign({},AG)}), W3=join('v','Vik',{level:45,gear:Object.assign({},AG)}); tick(2);
   W.receive('w',{t:'party',a:'invite',name:'Vik'}); tick(2); W.receive('v',{t:'party',a:'accept'}); tick(2);
@@ -78,7 +78,7 @@ W.receive('k',{t:'dg',a:'leave'}); W.receive('l',{t:'dg',a:'leave'}); tick(3);
   const r=W2.inst?x.DG_RUNS.get(W2.inst):null;
   ok('a testing run of the Termite Cathedral with a party of two: both in it',!!r&&r.th==='termitecathedral'&&W3.inst===W2.inst);
   if(r){ for(const m of [...r.mons]) if(m.dgRole==='purge'&&!m.dead) x.killMonsterS(m,W2); tick(3);
-    ok('Purge: killing them brings Queen Ortha into the round hall at level 45, with the kit `brood`',!!r.boss&&r.phase==='boss'&&r.boss.bd.def.id==='ortha'&&r.boss.m.dgK.lv===45&&r.boss.bd.kit==='brood');
+    ok('Purge: killing them brings Queen Ortha into the round hall at level 45, with the kit `brood`',!!r.boss&&r.phase==='boss'&&r.boss.bd.def.id==='ortha'&&r.boss.m.dgK.lv===30&&r.boss.bd.kit==='brood');
     const B=r.boss, A3=B.A, m=B.m, at=(p,d,a)=>{ p.x=m.x+Math.sin(a)*d; p.z=m.z+Math.cos(a)*d; p.dgX=p.x; p.dgZ=p.z; };
     W2.x=A3.x+3; W2.z=A3.z+3; W2.dgX=W2.x; W2.dgZ=W2.z; secs(1);
     ok('she engages when a member steps into the hall and the kit ticks through the first moves without a fault',B.engaged&&(secs(8),true));
