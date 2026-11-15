@@ -1,13 +1,13 @@
 //@ The Abyss's Event and Shrine cards (B8): the pick screen shows an encounter (its text and 2-3 choices) or a shrine (heal, lift a curse, copy an artifact); a choice is abyss{a:'pick',i}, the server answers with a toast and the next tiles
 /* agent map (docs/ABYSS.md section 3g; the server side: server/abyss/events.js)
-   exports: abEncShow(kind,data,extra) ('event': data = the event id, extra = [ok per choice]; 'shrine': data = [[t,id],...]), abEncAgain() (the bar's Next brings the screen back after Later), abKindChip(kind,mode) (colour, name and a line for a tile card), AB_ENC
+   exports: abEncShow(kind,data,extra) ('event': data = the event id, extra = [ok per choice]; 'shrine': data = [[t,id],...]), abEncAgain() (the bar's Next brings the screen back after Later), abKindChip(kind,mode,boss) (colour, name and a line for a tile card), AB_ENC
    markup: the #abPick screen of choice.js (cards in #abPickCards, the button below is "Later"); styles 42-abyss.css (.ab-enc-text, .ab-k-*). Test: tools/client-smoke.js (the Abyss artifacts case: event and shrine cards render and send pick)
    A choice the server cannot take (a curse past the cap, a loss of what you do not hold, a full bar) is greyed out here from the flags the server sent; the server checks again on the pick. */
 const AB_ENC={last:null};
-function abKindChip(kind,mode){
-  const K=AB_KIND_INFO[kind]||AB_KIND_INFO.fight, M=kind==='trial'&&mode&&RIFT_MODES[mode]?RIFT_MODES[mode]:null, pk=AB_KIND_PICKS[kind]|0;
-  const line=kind==='elite'?'Fewer monsters, tougher: elites and champions.':M?M.name+': '+M.how:kind==='event'?'No fight: an encounter with choices.':kind==='shrine'?'No fight: heal, lift a curse or copy an artifact.':'Three waves of the tile\'s monsters.';
-  return {col:K.col,icon:K.icon,name:K.name+(M?' · '+M.name:''),line,pays:pk?'Pays '+pk+(pk>1?' artifact picks':' artifact pick'):'Pays what the card offers'};
+function abKindChip(kind,mode,boss){
+  const K=AB_KIND_INFO[kind]||AB_KIND_INFO.fight, BR=kind==='boss'&&abBossRowOf(boss), M=kind==='trial'&&mode&&RIFT_MODES[mode]?RIFT_MODES[mode]:null, pk=AB_KIND_PICKS[kind]|0;
+  const line=BR?BR.short+' waits on a disc of the land, level of the round.':kind==='elite'?'Fewer monsters, tougher: elites and champions.':M?M.name+': '+M.how:kind==='event'?'No fight: an encounter with choices.':kind==='shrine'?'No fight: heal, lift a curse or copy an artifact.':'Three waves of the tile\'s monsters.';
+  return {col:K.col,icon:K.icon,name:K.name+(M?' · '+M.name:'')+(BR?' · '+BR.short:''),line,pays:pk?'Pays '+pk+(pk>1?' artifact picks':' artifact pick'):'Pays what the card offers'};
 }
 function abEncCard(box,title,text,note,on,btn){
   const c=abMk('div','ab-card'); c.append(abMk('b','ab-nm',title),abMk('p','ab-tx',text)); if(note) c.append(abMk('p','ab-minus',note));

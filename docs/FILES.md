@@ -280,6 +280,7 @@ shared
   abyss/artifacts-wild.js            The Abyss's wildcards (B6): eight artifacts with a real plus and a real minus (damage for health, health for damage, crits for healing...); fam 'wild', the minus is shown in red
   abyss/curses.js                    The Abyss's curses (B6): ten burdens a run can carry beside its 20 artifacts (stronger monsters, less healing, fewer offered cards); one defineAbCurse row each; Events (B8) hand them out
   abyss/tiles.js                     The Abyss's map tiles (B7): eight land patches and six cave chunks, each a registry row (pool of monster kinds, tint, props, island shape), and abTileLayout, the pure solid island a Fight round is played on
+  abyss/boss.js                      The Abyss's bosses (B9): the pool (the world's bosses but Pyrrhax and the dungeons' eight), the whitelist of the ones that pass the headless check, and the land each boss's disc is dressed as
   abyss/events.js                    The Abyss's Events (B8): eight encounter cards of 2-3 choices (a rare artifact for a curse, a trade, a gamble, a wildcard, a heal for a curse); one defineAbEvent row each; the Event rounds draw one
 
 server
@@ -388,6 +389,7 @@ server
   abyss/tiles.js                     The Abyss's next-tile choice (B7, kinds B8): after a won round and its artifact offers, 3 cards are drawn (a tile and a round kind each), stored in gear.ab.run.offer and sent; next,i picks one against the stored offer
   abyss/events.js                    The Abyss's Events and Shrines (B8): a round with no fight; the encounter card is drawn, STORED in gear.ab.run.offer and sent, and abyss{a:'pick',i} resolves it against the stored offer
   abyss/trial.js                     The Abyss's Trial rounds (B8): one of the rift modes (heart, gale, beacons, thaw, lanterns, quarry, gauntlet) on its rift's platforms, the tile's monsters at the round's level, plain numbers; a win ends the ROUND, not a rift run
+  abyss/boss.js                      The Abyss's boss rounds (B9): the draw over the whitelist, abBossS (the run's boss, made as dgBossS makes a dungeon's), the keeper that holds it on its disc, and the end of a run boss (no world reward)
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 

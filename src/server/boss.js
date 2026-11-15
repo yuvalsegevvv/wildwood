@@ -28,6 +28,7 @@ function resetBossS(B){
 }
 function bossDefeatedS(m){
   if(m.rd){ rdBossDownS(m); return; }   // raids: its own end (server/raids.js)
+  if(m.abBoss){ abBossDownS(m); return; }   // abyss: a run's boss opens nothing, toasts only the hiker (server/abyss/boss.js)
   const B=m.B; m.respawnT=120; clearBossFxS(B); [...B.totems,...B.adds].forEach(x=>{ if(!x.dead) removeMonS(x); }); B.totems=[]; B.adds=[];
   B.engaged=false; m.immune=false; B.mode=0; toastTo(null,B.bd.short+' has fallen!','good');
 }

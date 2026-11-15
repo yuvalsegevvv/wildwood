@@ -26,9 +26,9 @@ const AB_PROP_DRAW={
   ice(A,x,z,r,T){ for(let i=0;i<3;i++){ const h=1.2+r()*2; dgvPut(A.glow,new THREE.ConeGeometry(0.3+r()*0.25,h,5),x+(r()-0.5)*1.2,h/2,z+(r()-0.5)*1.2,{rx:(r()-0.5)*0.3,rz:(r()-0.5)*0.3,col:abpC(T.chip,0.8),va:0.15}); } },
 };
 function abTileViewBuild(R){
-  const TL=abTileOf(R.tile), B=R.B; if(!TL||!B) return riftViewBuild(R);   // (no tile: the rift's plain platforms)
+  const TL=abTileOf(abTileBase(R.tile)), B=R.B; if(!TL||!B) return riftViewBuild(R);   // (B9: 'boss:<tile>' is the land's boss disc)   // (no tile: the rift's plain platforms)
   dgViewClear();
-  const T=R.T, au=T.aura.map(h=>new THREE.Color(h)), W=B.w, H=B.h, tn=TL.tint, lay=R.lay||abLayout(TL.id,R.seed), mid=lay.mid;
+  const T=R.T, au=T.aura.map(h=>new THREE.Color(h)), W=B.w, H=B.h, tn=TL.tint, lay=R.lay||abLayout(R.tile,R.seed), mid=lay.mid;
   const g=new THREE.Group(); g.position.set(R.ox,R.y,R.oz); g.name='abtile'; scene.add(g); DG_VIEW.g=g;
   const open=(gx,gz)=>gx>=0&&gz>=0&&gx<W&&gz<H&&!!B.cells[gz*W+gx], rng=mulberry32((R.seed|0)^0x7a11), A={lit:dgvAcc(),glow:dgvAcc()};
   const c1=new THREE.Color(tn.ground), c2=new THREE.Color(tn.ground2), rim=new THREE.Color(tn.rim), cT=new THREE.Color();
@@ -85,7 +85,7 @@ function abTileViewBuild(R){
 }
 // the light of a tile: the rift's, leaned toward the tile's own fog and ground colour (dgLookEnter, after riftLookTune)
 function abTileLookTune(L,R){
-  const TL=abTileOf(R.tile); if(!TL) return; const cave=TL.kind==='cave';
+  const TL=abTileOf(abTileBase(R.tile)); if(!TL) return; const cave=TL.kind==='cave';
   L.fog.lerp(new THREE.Color(TL.tint.fog),cave?0.55:0.35); L.hg.lerp(new THREE.Color(TL.tint.ground),0.3);
   if(cave){ L.hi=0.8; L.sunI=0.3; L.hs.multiplyScalar(0.8); }
 }

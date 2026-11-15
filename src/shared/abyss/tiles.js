@@ -1,7 +1,8 @@
 //@ The Abyss's map tiles (B7): eight land patches and six cave chunks, each a registry row (pool of monster kinds, tint, props, island shape), and abTileLayout, the pure solid island a Fight round is played on
 /* agent map (docs/ABYSS.md section 3f; the plan: abyss-plan/PLAN.md section 3 item 4)
    exports: AB_TILES (Object.create(null), the registry), AB_TILE_IDS (in definition order), AB_TILE_BAD (a bad row is left out and listed), defineAbTile(row), abTileOf(id) (the row or null; own-property only),
-            AB_PROP_KINDS (the prop names game/abyss/view.js draws), abTileLayout(T,seed) (a layout dgBake takes: abLayout in shared/abyss.js calls it)
+            AB_PROP_KINDS (the prop names game/abyss/view.js draws), abTileLayout(T,seed,boss) (a layout dgBake takes: abLayout in shared/abyss.js calls it),
+            B9: AB_BOSS_CELLS (the boss disc's radius in cells), abTileBase(tile) (a tile string without its 'boss:' prefix: 'boss:forest' is the forest's boss disc, abLayout / abyss/boss.js)
    users: shared/abyss.js (abLayout), server/abyss/tiles.js (the offer), server/abyss/rounds.js (the run's pool), game/abyss/view.js (the look), game/abyss/choice.js (the cards); test: tools/abyss-smoke.js, tools/client-smoke.js
    A row: {id, kind:'land'|'cave', land:<land name> | floor:<cave floor n>, name, pool:[monster ids, 4-10, none a boss], tint:{ground, ground2 (two greens / sands blended over the floor), rim (the rock face under the edge), fog (blended into the void's), chip (the card's colour)},
    props:[AB_PROP_KINDS names, 2-5], shape:{r (the island's radius in 2 m cells, 15-21), wob (how much the rim wanders, 0-0.2), pillars (solid rocks standing on it, 0-6)}}.
@@ -29,10 +30,11 @@ function defineAbTile(r){
   AB_TILE_IDS.push(r.id); return true;
 }
 const abTileOf=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(AB_TILES,id)?AB_TILES[id]:null;
+const AB_BOSS_CELLS=15, abTileBase=t=>typeof t==='string'&&t.startsWith('boss:')?t.slice(5):t;   // B9: a boss tile is a plain solid disc of 15 cells = 30 m (the boss's circle is 20 m, the rift hub only 16 m), the land's look; no pillars, no wobble, no tears
 /* THE LAYOUT. 2 x 2 map tiles = 48 x 48 cells; the island is centred, its rim at angle a is r (1 + wob (0.6 sin(2a+p1) + 0.4 sin(3a+p2))) cells out; pillars are solid discs between 7 cells from the middle and 6 cells inside the rim,
    so they never touch the rim and never cut the island; 'P' (the hiker's landing, the layout's start) in the middle, six tears 'S' just inside the rim, evenly round it. Pure: the same (tile, seed) is the same layout on both sides. */
-function abTileLayout(T,seed){
-  const N=2*DG_TC, c=N/2, sh=T.shape, rnd=mulberry32((seed|0)^(T.id.length*7919)^(T.shape.r*104729));
+function abTileLayout(T,seed,boss){
+  const N=2*DG_TC, c=N/2, sh=boss?{r:AB_BOSS_CELLS,wob:0,pillars:0}:T.shape, rnd=mulberry32((seed|0)^(T.id.length*7919)^(T.shape.r*104729));   // B9: boss = the boss disc: the landing is 13 cells south of the middle (outside the boss's 10-cell circle), no tears
   const p1=rnd()*TAU, p2=rnd()*TAU, rimAt=a=>sh.r*(1+sh.wob*(0.6*Math.sin(2*a+p1)+0.4*Math.sin(3*a+p2)));
   const g=Array.from({length:N},()=>Array(N).fill('#'));
   for(let z=0;z<N;z++) for(let x=0;x<N;x++){ const dx=x+0.5-c, dz=z+0.5-c; if(Math.hypot(dx,dz)<=rimAt(Math.atan2(dz,dx))) g[z][x]='.'; }
@@ -40,9 +42,9 @@ function abTileLayout(T,seed){
     const a=rnd()*TAU, rr=1.1+rnd()*1.1, rim=rimAt(a), lo=7+rr, hi=rim-6-rr; if(hi<=lo) continue; const d=lo+rnd()*(hi-lo), px=c+Math.cos(a)*d, pz=c+Math.sin(a)*d;
     for(let z=0;z<N;z++) for(let x=0;x<N;x++) if(Math.hypot(x+0.5-px,z+0.5-pz)<=rr) g[z][x]='#';
   }
-  g[c][c]='P';
+  g[boss?c+13:c][c]='P';
   const jit=rnd()*TAU/6;
-  for(let i=0;i<6;i++){
+  for(let i=0;i<(boss?0:6);i++){
     const a=jit+i*TAU/6; let d=rimAt(a)-3, x, z;
     for(;d>8;d--){ x=Math.floor(c+Math.cos(a)*d); z=Math.floor(c+Math.sin(a)*d); if(g[z][x]==='.') break; }
     if(d>8) g[z][x]='S';
@@ -54,7 +56,7 @@ function abTileLayout(T,seed){
     const start=tx===1&&tz===1;
     cells.push({x:tx,z:tz,mask,id:'ab-tile',rot:0,role:start?'start':'room',dist:Math.abs(tx-1)+Math.abs(tz-1),art});
   }
-  return {gw:2,gh:2,start:[1,1],cells,isles:[{x:c*DG_CELL,z:c*DG_CELL,r:sh.r*DG_CELL}],mid:{x:c*DG_CELL,z:c*DG_CELL},seed:seed|0,mission:'abyss',tries:1,theme:T.id,legend:{},rift:null,tile:T.id};
+  return {gw:2,gh:2,start:[1,1],cells,isles:[{x:c*DG_CELL,z:c*DG_CELL,r:sh.r*DG_CELL}],mid:{x:c*DG_CELL,z:c*DG_CELL},seed:seed|0,mission:'abyss',tries:1,theme:T.id,legend:{},rift:null,tile:(boss?'boss:':'')+T.id};
 }
 /* ---- the eight lands: each a varied set of kinds from its own zones (a mix of small, big, flying and caster kinds) ---- */
 defineAbTile({id:'forest',kind:'land',land:'forest',name:'The Home Forest',pool:['slime','shroom','beetle','boar','goblin','treant','deathcap','direboar'],

@@ -45,7 +45,7 @@ function abRender(){
   el.append(list);
 }
 // a round begins: abr [pid, round, of, lv, tile] (of 0 = Infinite; tile: the tile's id, B7)
-EVH.abr=e=>{ if(e[1]!==NET.pid) return; AB_UI.won=false; abBar(false); abPickHide(); abArtsRender(); const r=e[2]|0, n=e[3]|0, lv=e[4]|0, T=abTileOf(e[5]), kc=abKindChip(abIsKind(e[6])?e[6]:'fight',e[7]), tn=(T?' · '+T.name:'')+(abIsKind(e[6])&&e[6]!=='fight'?' · '+kc.name:''); toast(abIsEncKind(e[6])?'Round '+r+(n?' of '+n:'')+' · '+kc.name:n?'Round '+r+' of '+n+' · level '+lv+tn:'Round '+r+' · level '+lv+tn,''); };   // B8: e[6] the kind, e[7] a Trial's mode
+EVH.abr=e=>{ if(e[1]!==NET.pid) return; AB_UI.won=false; abBar(false); abPickHide(); abArtsRender(); const r=e[2]|0, n=e[3]|0, lv=e[4]|0, T=abTileOf(abTileBase(e[5])), kc=abKindChip(abIsKind(e[6])?e[6]:'fight',e[7]), tn=(T?' · '+T.name:'')+(abIsKind(e[6])&&e[6]!=='fight'?' · '+kc.name:''); toast(abIsEncKind(e[6])?'Round '+r+(n?' of '+n:'')+' · '+kc.name:n?'Round '+r+' of '+n+' · level '+lv+tn:'Round '+r+' · level '+lv+tn,''); };   // B8: e[6] the kind, e[7] a Trial's mode
 // a round is won (not the last of a finite difficulty): abw [pid, round]; the bar offers Next round or Leave
 EVH.abw=e=>{ if(e[1]!==NET.pid) return; AB_UI.won=true; abBar(true,e[2]|0,e[3]); };   // e[3]: the kind (B8)
 function abBar(on,r,kind){

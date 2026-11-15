@@ -1,11 +1,12 @@
 //@ The Abyss's run (B2, kinds B8): a round is a fresh run object in an Abyss slot: a Fight / Elite (three waves through the void's tears), a Trial (a rift mode on its platforms), an Event or a Shrine (no fight); go, next, out, death, leaving; no world rewards
 /* agent map (docs/ABYSS.md; numbers: shared/abyss.js)
-   exports: abRunOf(p), abRunNewS(p,d,r,dropRun,tileId,kind,mode), abStartRoundS(p,run), abGoP(p,d), abNextP(p), abOutP(p), abSpawnS(run,defId,lx,lz), abWaveStepS(run), abRoundWonS(run), abDownTickS(run,p,dt) (dgDownTickS hook),
+   exports: abRunOf(p), abRunNewS(p,d,r,dropRun,tileId,kind,mode,bossId), abStartRoundS(p,run), abGoP(p,d), abNextP(p), abOutP(p), abSpawnS(run,defId,lx,lz), abWaveStepS(run), abRoundWonS(run), abDownTickS(run,p,dt) (dgDownTickS hook),
             abLeaveP(run,p) (dgLeaveP hook), abCloseS(run) (dgCloseS hook), abDevP(p,msg) (devP 'abyss'), DG_KITS.abyss
    artifacts: abyss/arts.js (offers after a won round: abOfferP; the bar travels in gear.ab.run).
    hooks marked `// abyss:` (docs/ABYSS.md section 3): dungeons/runs.js dgSetupS, dgDownTickS, dgCloseS; dungeons/lobby.js dgLeaveP; dungeons/mobs.js rewardAllS; economy.js devP; game/dungeon/run.js (the client's layout)
    save: gear.ab.run = {d, r, at (ms)} while a run is on (cleared at its end; a saved run with no live instance is cleaned up by the next abyss message, never resumed)
    events: abr [pid, round, of, lv] when a round starts, abw [pid, round] when a (not the last) round is won, plus the dungeons' tp (dg {m:'abyss', th:AB_THEME, seed}), spawn, dge at the end; the snapshot's dg tuple: run.hud (shared/abyss.js DG_HUD.abyss)
+   B9: run.abKind 'boss' (abyss/boss.js: run.abBoss = the boss's id, run.abTile 'boss:<land tile>', run.B.boss = the disc's circle)
    B8: run.abKind ('fight' | 'elite' | 'trial' | 'event' | 'shrine'), run.abMode (a Trial's mode), run.rdef (a Trial's rift def: the mode's rift with the tile's kinds and reward 'abyss', read by riftDefOf), run.abTile = the string the client rebuilds the layout from
    ('' plain platforms, a tile id, 'rift:<id>'), run.tile = the tile row whose kinds the monsters are; the Trial's kit and hooks: abyss/trial.js, the Event / Shrine: abyss/events.js.
    test: tools/abyss-smoke.js.   A run: run.ab=true, run.mission='abyss', run.abD (difficulty index), run.abR (round), run.L = abRoundLv, run.back = where the hiker entered; run.abWon between rounds (the hiker waits in it for next / out). */
@@ -16,14 +17,15 @@ const abSaveOf=p=>p.gear.ab||(p.gear.ab={top:0,best:0,clears:[0,0,0,0,0,0],as:0,
 // a run left over in the save (a restart, a pulled plug that closed the run) with no live instance ends cleanly: nothing is resumed in B2
 function abStaleP(p){ const g=abSaveOf(p); if(g.run&&!abRunOf(p)){ g.run=null; p.dirty=true; } }
 // a run object of the dungeons' shape in the first free Abyss slot (dropRun: a run of this hiker's whose slot counts as free), the layout abLayout, one member, no party
-function abRunNewS(p,d,r,dropRun,tileId,kind,mode){
+function abRunNewS(p,d,r,dropRun,tileId,kind,mode,bossId){
   let slot=-1; for(let i=AB_SLOT0;i<DG_MAX_INST;i++) if(!DG_SLOT_RUN[i]||(dropRun&&DG_SLOT_RUN[i]===dropRun.id)){ slot=i; break; }
   if(slot<0) return null;
-  kind=abIsKind(kind)&&AB_KIND_W[kind]>0?kind:'fight'; const enc=abIsEncKind(kind), trial=kind==='trial'&&AB_TRIAL_MODES[mode]&&RIFT_DEFS[AB_TRIAL_MODES[mode]]?RIFT_DEFS[AB_TRIAL_MODES[mode]]:null; if(kind==='trial'&&!trial) kind='fight';
-  const T=trial||RIFT_DEFS[AB_THEME], TL=enc?null:abTileOf(tileId), tl=trial?'rift:'+trial.id:TL?TL.id:'', seed=Math.floor(Math.random()*1e9), L=abLayout(tl,seed), B=dgBake(L); B.open=true;   // B7: the tile's island (no tile: the rift's plain platforms); B8: a Trial plays on its mode's rift platforms
+  kind=abIsKind(kind)&&AB_KIND_W[kind]>0?kind:'fight'; if(kind==='boss'){ if(!abBossOk(bossId)) bossId=abBossDrawS(); if(!bossId) kind='fight'; }   // B9: a boss card names its boss; a bad name is a random one of the whitelist
+  const boss=kind==='boss', enc=abIsEncKind(kind), trial=kind==='trial'&&AB_TRIAL_MODES[mode]&&RIFT_DEFS[AB_TRIAL_MODES[mode]]?RIFT_DEFS[AB_TRIAL_MODES[mode]]:null; if(kind==='trial'&&!trial) kind='fight';
+  const T=trial||RIFT_DEFS[AB_THEME], TL=enc?null:abTileOf(boss?AB_BOSS_LAND[bossId]:tileId), tl=trial?'rift:'+trial.id:boss?'boss:'+TL.id:TL?TL.id:'', seed=Math.floor(Math.random()*1e9), L=abLayout(tl,seed), B=dgBake(L); B.open=true; if(boss) B.boss={x:L.mid.x,z:L.mid.z,r:DG_BOSS_R};   // B9: the boss disc's circle (r = 20) at its middle   // B7: the tile's island (no tile: the rift's plain platforms); B8: a Trial plays on its mode's rift platforms
   const O=dgSlotOrigin(slot), run={id:dgNextRun++,slot,ox:O.x,oz:O.z,theme:T,th:T.id,mission:'abyss',seed,L:abRoundLv(d,r),tier:0,lay:L,B,
     phase:'objectives',ready:false,t:0,endT:0,members:new Map(),mons:new Set(),objs:[],boss:null,k:{},hud:[],party:0,lead:p.id,dev:false,back:dropRun&&dropRun.back?{x:dropRun.back.x,z:dropRun.back.z}:{x:p.x,z:p.z},
-    inv:new Map(),asked:new Set(),emptyT:0,flow:new Map(),nextObj:0,ab:true,abD:d,abR:r,abWon:false,abTile:tl,tile:TL,abKind:kind,abMode:trial?mode:''};
+    inv:new Map(),asked:new Set(),emptyT:0,flow:new Map(),nextObj:0,ab:true,abD:d,abR:r,abWon:false,abTile:tl,tile:TL,abKind:kind,abMode:trial?mode:'',abBoss:boss?bossId:''};
   if(trial) abTrialDefS(run,trial,TL);   // abyss/trial.js: the rift def the mode kit reads
   DG_SLOT_RUN[slot]=run.id; DG_RUNS.set(run.id,run); return run;
 }
@@ -33,7 +35,7 @@ function abStartRoundS(p,run){
   dgEnterS(run,p); abArtsDirtyP(p); recalcP(p); dgSetupS(run);   // abyss: the bar's health counts from the moment the hiker is in the run
   run.abCK=abCurseKS(p); abShieldS(p);   // abyss: the curses' monster factors for this round and the bar's round-start shield (abyss/combat.js)
   dgEvTo('abr',p.id,run.abR,abRounds(run.abD),run.L,run.abTile,run.abKind,run.abMode);
-  toastTo(p.id,'Round '+run.abR+(abRounds(run.abD)?' of '+abRounds(run.abD):'')+': '+AB_KIND_INFO[run.abKind].name+(abIsEncKind(run.abKind)?'':', level '+run.L+(run.tile?', '+run.tile.name:''))+'.','');
+  toastTo(p.id,'Round '+run.abR+(abRounds(run.abD)?' of '+abRounds(run.abD):'')+': '+AB_KIND_INFO[run.abKind].name+(abIsEncKind(run.abKind)?'':', level '+run.L+(run.tile?', '+run.tile.name:'')+(run.abBoss?': '+abBossRowOf(run.abBoss).short:''))+'.','');
 }
 function abGoP(p,d){
   if(io.broadcastSnaps){ toastTo(p.id,AB_TXT_SHARED,'bad'); return; }
@@ -51,9 +53,10 @@ function abNextP(p,i){
   const card=abTilePickP(p,i); if(card===null) return;   // B7: a pending tile offer is answered by next,i (a pending artifact offer or a bad i is refused); no offer pending: a random tile as before
   const d=old.abD, r=old.abR+1; if(abRounds(d)&&r>abRounds(d)) return;
   const c0=S.ctx; S.ctx=old.id;
+  if(old.boss) clearBossFxS(old.boss);   // B9: a boss's telegraphs and zones go with its round
   for(const m of [...old.mons]) dgRemoveS(old,m);
   DG_SLOT_RUN[old.slot]=0; DG_RUNS.delete(old.id); S.ctx=c0;
-  const run=card?abRunNewS(p,d,r,old,card.tile,card.kind,card.mode):abRunNewS(p,d,r,old,abRandTileS(old.tile?old.tile.id:''),abKindDev.force||'fight',abKindDev.mode||'heart'); abStartRoundS(p,run);   // B8: the card's kind; no offer: a Fight (dev: abKindDev.force)
+  const run=card?abRunNewS(p,d,r,old,card.tile,card.kind,card.mode,card.boss):abRunNewS(p,d,r,old,abRandTileS(old.tile?old.tile.id:''),abKindDev.force||(abIsBossRound(d,r)&&AB_BOSS_OK.length?'boss':'fight'),abKindDev.mode||'heart',abKindDev.boss); abStartRoundS(p,run);   // B8: the card's kind; no offer: a Fight (dev: abKindDev.force), B9: or the boss of a boss round
 }
 // leave between rounds: everything is kept
 function abOutP(p){
@@ -121,10 +124,12 @@ function abRoundWonS(run){
 DG_KITS.abyss={
   setup(run){
     if(run.abKind==='trial') return abTrialSetupS(run);   // abyss/trial.js: the rift mode's kit
+    if(run.abKind==='boss') return abBossSetupS(run);   // abyss/boss.js: the boss waits on its disc
     run.k={q:[],kills:0,ti:0,w:0,start:0,size:0,dead:0}; abHudS(run); if(abIsEncKind(run.abKind)) abEncounterS(run);   // abyss/events.js: no fight, a card
   },
-  tick(run,dt){ if(run.endT||run.abWon) return; if(run.abKind==='trial') return abTrialTickS(run,dt); if(abWaveStepS(run)==='won'){ abRoundWonS(run); return; } abHudS(run); },
-  onKill(run,m){ if(run.abKind==='trial') return abTrialKillS(run,m); run.k.kills++; if(m.abW===run.k.w) run.k.dead++; },
+  tick(run,dt){ if(run.endT||run.abWon) return; if(run.abKind==='trial') return abTrialTickS(run,dt); if(run.abKind==='boss') return abBossTickS(run,dt); if(abWaveStepS(run)==='won'){ abRoundWonS(run); return; } abHudS(run); },
+  onKill(run,m){ if(run.abKind==='trial') return abTrialKillS(run,m); if(run.abKind==='boss') return; run.k.kills++; if(m.abW===run.k.w) run.k.dead++; },
+  onBossDead(run){ abRoundWonS(run); },   // B9: the boss's death wins the round (3 picks; a finite difficulty's last round wins the run)
   onUse(run,p,ob){ if(run.abKind==='trial') abTrialUseS(run,p,ob); },
   hud(run){ if(run.abKind==='trial') abTrialHudS(run); else abHudS(run); },
 };
@@ -134,6 +139,6 @@ function abDevP(p,msg){
   if(msg.v!==undefined){ g.top=clampInt(msg.v,0,5,0); p.dirty=true; toastTo(p.id,'Abyss: difficulty '+g.top+' open.','good'); }
   if(typeof msg.art==='string'&&abGiveArtP(p,msg.art)) toastTo(p.id,'Abyss: '+AB_ARTS[msg.art].name+' on the bar.','good');   // abyss/combat.js
   if(typeof msg.curse==='string') abCurseAddP(p,msg.curse);
-  if(msg.kind!==undefined){ abKindDev.force=abIsKind(msg.kind)&&AB_KIND_W[msg.kind]>0?msg.kind:''; abKindDev.mode=typeof msg.mode==='string'&&AB_TRIAL_MODES[msg.mode]?msg.mode:''; toastTo(p.id,'Abyss: every offered round is a '+(abKindDev.force||'random kind')+'.','good'); }   // B8: pin the kind of every offered round (dev)
+  if(msg.kind!==undefined){ abKindDev.force=abIsKind(msg.kind)&&AB_KIND_W[msg.kind]>0?msg.kind:''; abKindDev.mode=typeof msg.mode==='string'&&AB_TRIAL_MODES[msg.mode]?msg.mode:''; abKindDev.boss=abBossOk(msg.boss)?msg.boss:''; toastTo(p.id,'Abyss: every offered round is a '+(abKindDev.force||'random kind')+'.','good'); }   // B8: pin the kind of every offered round (dev)
   if(msg.r!==undefined&&abRunOf(p)){ const old=abRunOf(p); if(g.run) g.run.offer=null; old.abR=clampInt(msg.r,1,Math.max(1,abRounds(old.abD)||99),1)-1; old.abWon=true; old.endT=0; abNextP(p); }
 }

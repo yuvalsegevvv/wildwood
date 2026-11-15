@@ -6,7 +6,7 @@
    messages in: abyss{a:'go',d} (a run, round 1), abyss{a:'next'} (after a won round), abyss{a:'out'} (between rounds; rounds.js), abyss{a:'pick',i} / {a:'skip'} / {a:'drop',i} (artifacts: abyss/arts.js), abyss{a:'open'} -> {t:'abyss',a:'info',on:1,top,best,diffs:[{id,name,lo,hi,rounds}],lv} (flag off: silence; below level AB_ENTRY_LV: a toast)
    test: tools/abyss-smoke.js */
 const AB_SH_KEYS=64;   // at most this many ids in gear.ab.sh.n (the ids themselves are checked against the shop's rows in B10)
-// the stored offer, rebuilt field by field: {k:'art',o:[ids]} | {k:'tile',o:[{tile,kind,mode?}]} (B8: an Event / Shrine card has tile '', a Trial one a mode) | {k:'event',o:{id}} | {k:'shrine',o:[{t:'heal'|'curse'|'copy',id?}]}; null when nothing valid is left
+// the stored offer, rebuilt field by field: {k:'art',o:[ids]} | {k:'tile',o:[{tile,kind,mode?,boss?}]} (B8: an Event / Shrine card has tile '', a Trial one a mode; B9: a boss card its boss id) | {k:'event',o:{id}} | {k:'shrine',o:[{t:'heal'|'curse'|'copy',id?}]}; null when nothing valid is left
 function abOfferSanitize(o){
   if(!o||typeof o!=='object'||Array.isArray(o)) return null;
   if(o.k==='art'&&Array.isArray(o.o)){ const ids=[]; for(const id of o.o) if(ids.length<AB_OFFER_N&&abIsArt(id)&&!ids.includes(id)) ids.push(id); return ids.length?{k:'art',o:ids}:null; }
@@ -14,6 +14,7 @@ function abOfferSanitize(o){
     for(const t of o.o){ if(ts.length>=AB_TILE_OFFER_N||!t||typeof t!=='object') continue; const kind=t.kind; if(!abIsKind(kind)||!(AB_KIND_W[kind]>0)) continue;
       if(abIsEncKind(kind)){ ts.push({tile:'',kind}); continue; }
       if(!abTileOf(t.tile)||(kind==='trial'&&!(typeof t.mode==='string'&&Object.prototype.hasOwnProperty.call(AB_TRIAL_MODES,t.mode)))) continue;
+      if(kind==='boss'){ if(abBossOk(t.boss)) ts.push({tile:t.tile,kind,boss:t.boss}); continue; }   // B9
       ts.push(kind==='trial'?{tile:t.tile,kind,mode:t.mode}:{tile:t.tile,kind}); }
     return ts.length?{k:'tile',o:ts}:null; }
   if(o.k==='event'&&o.o&&typeof o.o==='object'&&abIsEvent(o.o.id)) return {k:'event',o:{id:o.o.id}};   // B8

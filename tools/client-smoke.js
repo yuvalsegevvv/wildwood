@@ -537,6 +537,19 @@ const el=s=>document.querySelector(s);
       { const t0=G.AB_TILES.forest; G.dgRunEnter({id:91000,m:'abyss',th:'shardmere',tile:'forest',seed:9,L:60,tier:0,ox:20000,oz:20000,y:10,ph:0,t:0}); let g1=0; G.scene.traverse(o=>{ if(o.name==='abtile') g1++; }); const lay=G.DG_RUN().lay; G.dgRunLeave();
         G.dgRunEnter({id:91001,m:'abyss',th:'shardmere',seed:9,L:60,tier:0,ox:20000,oz:20000,y:10,ph:0,t:0}); let g2=0, g3=0; G.scene.traverse(o=>{ if(o.name==='abtile') g2++; if(o.name==='rift') g3++; }); const gw=G.DG_RUN().lay.gw; G.dgRunLeave();
         ok('abyss: a run with a tile gets its island (2 x 2 map tiles, the tile\'s name); a run with no tile (Event, Shrine of B8) keeps the rift\'s plain platforms',g1===1&&lay.tile==='forest'&&lay.gw===2&&t0.name==='The Home Forest'&&g2===0&&g3===1&&gw===3); }
+      // B9: a boss round's tile ('boss:<land>'): the land's disc builds (a mesh of its own, the sky, no tears), the layout is the pure disc, a boss card shows the boss's name and sends next, and the boss HUD line differs
+      { const cards3=()=>el('#abPickCards')._kids, kids3=n=>n._kids||[], txt=n=>kids3(n).map(k=>k.textContent||'').join(' '), bad=[]; for(const land of ['forest','vale','hoar','grey','sun','gloam','amber','isles']){
+          try{ G.dgRunEnter({id:92000,m:'abyss',th:'shardmere',tile:'boss:'+land,seed:77,L:100,tier:0,ox:20000,oz:20000,y:10,ph:0,t:0});
+            const R=G.DG_RUN(); let grp=null; G.scene.traverse(o=>{ if(o.name==='abtile') grp=o; }); let inst=0; if(grp) grp.traverse(o=>{ if(o.isInstancedMesh) inst++; });
+            if(!R||R.tile!=='boss:'+land||!R.B||!R.B.open||!grp||inst||G.DG_VIEW.meshes<2||R.lay.tile!=='boss:'+land||R.B.marks.S.length||!R.B.start||R.lay.isles[0].r<24) bad.push(land+' '+(grp?'meshes '+G.DG_VIEW.meshes:'no group'));
+            G.dgRunLeave(); let left=0; G.scene.traverse(o=>{ if(o.name==='abtile') left++; }); if(left||G.DG_VIEW.g) bad.push(land+' left behind'); }
+          catch(e){ bad.push(land+' threw '+e.message); try{ G.dgRunLeave(); }catch(_){} } }
+        ok('abyss: a boss round\'s disc builds for every land (a disc of 30 m, no tears, merged meshes) and leaving clears it',bad.length===0,bad.join('; '));
+        G.applyEvent(['abo',G.NET.pid,'tile',[['forest','boss','','boss'],['sun','boss','','sandwyrm'],['vale','boss','','nope']]]);
+        ok('abyss: boss cards name their boss and pay 3 picks (a card with an unknown boss still shows as a Boss)',!el('#abPick').hidden&&cards3().length===3&&/Rootwarden/.test(txt(cards3()[0]))&&/Sand Wyrm/.test(txt(cards3()[1]))&&/3 artifact picks/.test(txt(cards3()[0])),cards3().map(txt).join(' | '));
+        out.length=0; G.AB_UI.won=true; kids3(cards3()[1]).find(k=>k.className&&/ab-pick/.test(k.className)).onclick(); ok('abyss: a boss card sends next with its index',out.length===1&&out[0].a==='next'&&out[0].i===1); G.abPickHide();
+        G.applyEvent(['abr',G.NET.pid,7,19,100,'boss:forest','boss','']); ok('abyss: abr of a boss round (tile string with its prefix) names the land and the kind',tk().some(t=>/Round 7 of 19 · level 100 · The Home Forest · Boss/.test(t)),tk().join(' | '));
+        const bh=G.DG_HUD.abyss([1,0,0,7,19,0,0,3,0,5],'shardmere'); ok('abyss: the boss round\'s HUD says Boss',/Boss/.test(bh.title)&&/Defeat the boss/.test(bh.lines.join(' ')),JSON.stringify(bh)); }
     G.NET.ab=0; G.closePanels(); out.length=0; ok('abyss: flag off: the talk key finds no gate, the window stays shut',!G.abHere()&&(G.abOpenNear(),el('#abyss').hidden)&&!out.length);
     G.NET.ab=1; G.NET.send=real; }
   // the main quest's Act IV on the client: Odran moves to Highmark, the marks over its people, the log line and the map target of each new kind of part

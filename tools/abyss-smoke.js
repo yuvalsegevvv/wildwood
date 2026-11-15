@@ -7,7 +7,7 @@
 // Usage: node tools/abyss-smoke.js
 const {loadServer}=require('./load');
 const sent=[];
-const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['getH','recalcP','AB_ELITE_HP','AB_CHAMP_HP','RIFT_HERALD_HP','RIFT_GAUNT_S','RIFT_THAW_S','abKindDev','abDrawKindsS','abTileOfferP','abTileSendP','AB_CURSE_MAX','AB_KIND_W','AB_KIND_IDS','AB_KIND_PICKS','AB_TRIAL_MODES','AB_EVENTS','AB_EVENT_BAD','AB_CURSES','abEncWindow','abIsEvent','abEvWhyP','abShrineOfferS','abRoundWonS','abRunNewS','RIFT_DEFS','riftDefOf',  'AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K','abP','AB_ARTS','AB_ART_BAD','defineAbArt','abArtStat','AB_CAPS','rollDmgS','hurtP','healP','damageMonsterS','abDrawOfferS','AB_CURSES','AB_CURSE_BAD','defineAbCurse','abCurseStat','abIsCurse','abHitS','abKillP','abThornsS','abShieldS','abCurseAddP','abGiveArtP','abSpawnS','DEF_BY_ID','AB_NTH','monK','AB_TILES','AB_TILE_IDS','AB_TILE_BAD','defineAbTile','abTileOf','abLayout','dgBake','dgFlow','CAVE_FLOOR_DEFS','abRandTileS','AB_TILE_OFFER_N']);
+const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['getH','recalcP','AB_ELITE_HP','AB_CHAMP_HP','RIFT_HERALD_HP','RIFT_GAUNT_S','RIFT_THAW_S','abKindDev','abDrawKindsS','abTileOfferP','abTileSendP','AB_CURSE_MAX','AB_KIND_W','AB_KIND_IDS','AB_KIND_PICKS','AB_TRIAL_MODES','AB_EVENTS','AB_EVENT_BAD','AB_CURSES','abEncWindow','abIsEvent','abEvWhyP','abShrineOfferS','abRoundWonS','abRunNewS','RIFT_DEFS','riftDefOf',  'AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K','abP','AB_ARTS','AB_ART_BAD','defineAbArt','abArtStat','AB_CAPS','rollDmgS','hurtP','healP','damageMonsterS','abDrawOfferS','AB_CURSES','AB_CURSE_BAD','defineAbCurse','abCurseStat','abIsCurse','abHitS','abKillP','abThornsS','abShieldS','abCurseAddP','abGiveArtP','abSpawnS','DEF_BY_ID','AB_NTH','monK','AB_TILES','AB_TILE_IDS','AB_TILE_BAD','defineAbTile','abTileOf','abLayout','dgBake','dgFlow','CAVE_FLOOR_DEFS','abRandTileS','AB_TILE_OFFER_N','AB_BOSS_ALL','AB_BOSS_OK','AB_BOSS_OUT','AB_BOSS_LAND','abBossOk','abBossRowOf','abBossDrawS','AB_BOSS_CELLS','abStartRoundS','dgSolid','MONS','abIsBossRound','abTileBase','abTileLayout','DG_BOSS_R','DG_BOSS_DEFS','BOSS_DEFS','clearBossFxS']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefined?'  ('+i+')':'')); if(!c) fails++; };
 const K=(id,s)=>x.AB_ARTS[id].k[s];   // the numbers are tuned by tools/abyss-sim.js: the tests read them from the rows
 // a hit of a size where rounding cannot matter: the damage a plain 50 does depends on the monster's kind (a weak kind made 7 -> 12 and a 5% rounding error), so the size is calibrated to about 800 taken (at most a fifth of max health) with no artifact on the bar
@@ -319,14 +319,14 @@ W.receive('d',{t:'abyss',a:'go',d:0}); tick(Math.ceil(5/0.05)); rD=runOf(Dq); co
 // ---- B8: round kinds (Elite, Trial, Event, Shrine); the kinds were pinned to Fights above, they are freed here
 x.abKindDev.force=''; x.abKindDev.mode='';
 { const KW=x.AB_KIND_W, draws=Array.from({length:3000},()=>x.abDrawKindsS(5,2,0,3)).flat(), cnt={}; for(const k of draws) cnt[k]=(cnt[k]|0)+1;
-  ok('kinds: weights are fight 45, elite 15, trial 10, event 15, shrine 10, boss 0 (B9)',J(KW)===J({fight:45,elite:15,trial:10,event:15,shrine:10,boss:0}));
-  ok('every kind comes over many draws, never a boss; the shares follow the weights (+-4 points)',['fight','elite','trial','event','shrine'].every(k=>cnt[k]>0&&Math.abs(cnt[k]/draws.length*100-KW[k]/95*100)<4)&&!cnt.boss,J(cnt));
-  ok('a kind the weights do not name is never drawn; the offer slot of a boss has weight 0',x.AB_KIND_IDS.includes('boss')&&KW.boss===0);
+  ok('kinds: weights are fight 45, elite 15, trial 10, event 15, shrine 10, boss 5 (B9)',J(KW)===J({fight:45,elite:15,trial:10,event:15,shrine:10,boss:5}));
+  ok('every kind comes over many draws; the shares follow the weights (+-4 points, the boss of round 2 included)',['fight','elite','trial','event','shrine','boss'].every(k=>cnt[k]>0&&Math.abs(cnt[k]/draws.length*100-KW[k]/100*100)<4),J(cnt));
+  ok('the offer slot of a boss has weight 5 and pays 3 picks',x.AB_KIND_IDS.includes('boss')&&KW.boss===5&&x.AB_KIND_PICKS.boss===3);
   ok('the guarantee windows are rounds 4-6, 10-12, 16-18: abEncWindow gives the first round of a window',J([1,2,3,4,5,6,7,9,10,11,12,13,16,18,19].map(x.abEncWindow))==='[0,0,0,4,4,4,0,0,10,10,10,0,16,16,0]');
   const hasEnc=o=>o.some(k=>k==='event'||k==='shrine'), many=(d,r,es)=>Array.from({length:400},()=>x.abDrawKindsS(d,r,es,3));
   ok('window rounds 4, 5: an Event or a Shrine is always among the cards while none was played in the window; round 6: every card is one',[[4,0],[5,3],[10,0],[11,9],[16,0],[17,5]].every(([r,es])=>many(5,r,es).every(hasEnc))&&[[6,0],[12,4],[18,0]].every(([r,es])=>many(5,r,es).every(o=>o.every(k=>k==='event'||k==='shrine'))));
   ok('...but not once one was played in the window (es inside it), and outside the windows the draw is free',many(5,6,5).some(o=>!hasEnc(o))&&many(5,5,4).some(o=>!hasEnc(o))&&many(5,3,0).some(o=>!hasEnc(o))&&many(5,8,0).some(o=>!hasEnc(o)));
-  ok('the last round of a finite difficulty is never an Event or a Shrine (it wins the run); Infinite has no last round',[[0,7],[1,10],[4,19]].every(([d,r])=>many(d,r,0).every(o=>!hasEnc(o)))&&many(5,6,0).every(hasEnc)&&many(5,7,0).some(hasEnc)); }
+  ok('the last round of a finite difficulty is never an Event or a Shrine (it wins the run); Infinite has no last round',[[0,7],[1,10],[4,19]].every(([d,r])=>many(d,r,0).every(o=>!hasEnc(o)))&&many(5,6,0).every(hasEnc)&&many(5,8,0).some(hasEnc)); }   // (round 7 of Infinite is a forced boss round: B9)
 const Dk=mk('k',60), kRun=()=>runOf(Dk), tilesOf=()=>Dk.gear.ab.run&&Dk.gear.ab.run.offer;
 const rift0=()=>J(Dk.gear.rift), seen=new Set(); let kcount=0;
 const finish=run=>{ for(let i=0;i<600&&!run.abWon&&!run.endT;i++){ for(const m of live(run)){ seen.add(m); m.hp=0; x.killMonsterS(m,Dk); } tick(10); Dk.hp=Dk.maxHp; Dk.dead=false; } };
@@ -447,5 +447,72 @@ x.abKindDev.force='event'; x.abKindDev.mode='';
     &&J(san({k:'shrine',o:[{t:'heal'},{t:'curse',id:'ab_c_hides'},{t:'curse',id:'nope'},{t:'copy',id:'ab_edge'},{t:'copy',id:'__proto__'},{t:'x'},7,null]}))===J({k:'shrine',o:[{t:'heal'},{t:'curse',id:'ab_c_hides'},{t:'copy',id:'ab_edge'}]})&&san({k:'shrine',o:[]})===null);
   ok('es and pk are clamped integers (a bad value is 0)',(()=>{ const q=clean({run:{d:0,r:3,at:now,es:-4,pk:99}}).run, q2=clean({run:{d:0,r:3,at:now,es:'x',pk:NaN}}).run; return q.es===0&&q.pk===3&&q2.es===0&&q2.pk===0; })()); }
 x.abKindDev.force=''; x.abKindDev.mode='';
+// ---- B9: bosses (shared/abyss/boss.js, server/abyss/boss.js): the pool, the whitelist, the forced and the offered boss rounds, the disc, the kill pays 3 picks and nothing in the world
+for(const id of [...W.players.keys()]) W.leave(id); tick(5);   // (the earlier players only slow the ticks of the 24 boss fights)
+{ const world15=x.BOSS_DEFS.map(b=>b.def.id).filter(id=>id!=='sinkwarden'), dg8=Object.keys(x.DG_BOSS_DEFS);
+  ok('the pool is the 16 world bosses but Pyrrhax (sinkwarden) plus the 8 dungeon bosses: 24, all known',x.AB_BOSS_ALL.length===24&&world15.length===16&&dg8.length===8&&!x.AB_BOSS_ALL.includes('sinkwarden')&&[...world15,...dg8].every(id=>x.AB_BOSS_ALL.includes(id)&&x.abBossRowOf(id)&&x.AB_BOSS_LAND[id]&&x.abTileOf(x.AB_BOSS_LAND[id])),x.AB_BOSS_ALL.length);
+  ok('the whitelist is a subset of the pool; every exclusion has a reason; garbage ids are no boss (prototype names too)',x.AB_BOSS_OK.every(id=>x.AB_BOSS_ALL.includes(id))&&x.AB_BOSS_ALL.every(id=>x.AB_BOSS_OK.includes(id)||typeof x.AB_BOSS_OUT[id]==='string'&&x.AB_BOSS_OUT[id])&&['constructor','__proto__','sinkwarden','x',7,null,undefined,{}].every(id=>!x.abBossOk(id)&&!x.abBossRowOf(id)));
+  const cnt={}; for(let i=0;i<4800;i++){ const id=x.abBossDrawS(); cnt[id]=(cnt[id]|0)+1; }
+  ok('the draw is uniform over the whitelist (every boss comes, none more than twice its share)',x.AB_BOSS_OK.every(id=>cnt[id]>0&&cnt[id]<2*4800/x.AB_BOSS_OK.length)&&Object.keys(cnt).every(id=>x.AB_BOSS_OK.includes(id)),J(cnt));
+  ok('abBossDrawS avoids the ids it is given while another is left',(()=>{ const av=x.AB_BOSS_OK.slice(0,x.AB_BOSS_OK.length-1); for(let i=0;i<50;i++) if(x.abBossDrawS(av)!==x.AB_BOSS_OK[x.AB_BOSS_OK.length-1]) return false; return true; })()); }
+// the forced and the offered boss rounds
+{ const many=(d,r,prev)=>Array.from({length:600},()=>x.abDrawKindsS(d,r,0,3,prev)), allBoss=o=>o.every(k=>k==='boss');
+  ok('forced: difficulty I round 7; II 7 and 10; V 7, 13 and 19: every card is a boss there, and in no other round of these',[[0,[7]],[1,[7,10]],[2,[7,13]],[3,[7,13,16]],[4,[7,13,19]]].every(([d,rs])=>{ for(let r=2;r<=x.abRounds(d);r++){ const m=many(d,r,'fight'); if(rs.includes(r)?!m.every(allBoss):m.every(allBoss)) return false; } return true; })&&many(5,25,'fight').every(allBoss));
+  const off=Array.from({length:4000},()=>x.abDrawKindsS(5,2,0,3,'fight')).flat(), o1=Array.from({length:4000},()=>x.abDrawKindsS(5,1,0,3)).flat(), op=Array.from({length:4000},()=>x.abDrawKindsS(5,8,0,3,'boss')).flat(), o8=Array.from({length:4000},()=>x.abDrawKindsS(5,8,0,3,'fight')).flat();
+  ok('offered: a boss card turns up between the forced rounds (round 2, 8 ...), about its 5% share',off.includes('boss')&&o8.includes('boss')&&Math.abs(off.filter(k=>k==='boss').length/off.length*100-5)<2.5);
+  ok('offered: never for round 1, never right after a boss round',!o1.includes('boss')&&!op.includes('boss'));
+  ok('the finite last round of a finite difficulty is a boss round even when it is not on the 6-step (II round 10, IV round 16)',x.abIsBossRound(1,10)&&x.abIsBossRound(3,16)&&many(1,10,'fight').every(allBoss)); }
+// the disc
+{ const lay=x.abLayout('boss:forest',4242), Bk=x.dgBake(lay), mid=lay.mid, cell=2; let hole=0, far=0, nearest=1e9;
+  for(let gz=0;gz<Bk.h;gz++) for(let gx=0;gx<Bk.w;gx++){ const d=Math.hypot((gx+0.5)*cell-mid.x,(gz+0.5)*cell-mid.z), open=!!Bk.cells[gz*Bk.w+gx]; if(d<=24&&!open) hole++; if(d>x.AB_BOSS_CELLS*cell+2&&open) far++; }
+  ok('a boss tile is a solid disc of at least 24 m radius (no hole inside, nothing past 32 m) with its own tile id and the landing outside the boss circle',hole===0&&far===0&&x.AB_BOSS_CELLS*cell>=24&&lay.tile==='boss:forest'&&Math.hypot(Bk.start.x-mid.x,Bk.start.z-mid.z)>x.DG_BOSS_R+2&&Bk.marks.S.length===0&&!x.dgSolid(Bk,Bk.start.x,Bk.start.z),J([hole,far,Bk.start]));
+  ok('the land tile is unchanged (its own id, six tears) and the disc differs from it; abTileBase strips only the prefix',x.abLayout('forest',4242).tile==='forest'&&x.dgBake(x.abLayout('forest',4242)).marks.S.length>0&&x.abTileBase('boss:vale')==='vale'&&x.abTileBase('vale')==='vale'&&x.abTileBase('rift:taproot')==='rift:taproot'&&J(x.abLayout('boss:forest',4242).cells.map(c=>c.art))===J(lay.cells.map(c=>c.art)));
+  ok('every whitelisted boss has a land disc that bakes',x.AB_BOSS_OK.every(id=>{ const l=x.abLayout('boss:'+x.AB_BOSS_LAND[id],7), b=x.dgBake(l); return b.start&&!x.dgSolid(b,l.mid.x,l.mid.z); })); }
+// a forced boss round in a real run: round 6 won -> three boss cards, different bosses; next -> the round
+const Bs=mk('bs',60), bsRun=()=>runOf(Bs), bsLive=run=>[...run.mons].filter(m=>!m.dead&&!m.remove);
+x.abKindDev.force=''; x.abKindDev.mode=''; x.abKindDev.boss='';
+{ Bs.gear.ab.top=0; W.receive('bs',{t:'abyss',a:'go',d:0}); tick(2); const r1=bsRun(); r1.abWon=true; r1.endT=0; r1.abR=6; Bs.gear.ab.run.offer=null; x.abTileOfferP(Bs); const to=Bs.gear.ab.run.offer;
+  ok('round 6 of difficulty I won: the offer holds three boss cards (a boss each, all different, the land of the boss)',to&&to.k==='tile'&&to.o.length===3&&to.o.every(c=>c.kind==='boss'&&x.abBossOk(c.boss)&&c.tile===x.AB_BOSS_LAND[c.boss])&&new Set(to.o.map(c=>c.boss)).size===3,J(to));
+  tick(6); const abo=evs('bs','abo').filter(e=>e[2]==='tile').pop(); ok('abo carries [tile, kind, mode, boss id] for a boss card',abo&&abo[3].every((c,i)=>c[1]==='boss'&&c[3]===to.o[i].boss&&c[0]===to.o[i].tile),J(abo));
+  ok('the stored offer survives sanitizing; a boss card with no valid boss is dropped',J(clean({run:{d:0,r:6,at:Date.now(),offer:to}}).run.offer)===J(to)&&clean({run:{d:0,r:6,at:Date.now(),offer:{k:'tile',o:[{tile:'forest',kind:'boss'},{tile:'forest',kind:'boss',boss:'constructor'},{tile:'forest',kind:'boss',boss:'sinkwarden'},{tile:'sun',kind:'boss',boss:'sandwyrm'}]}}}).run.offer.o.length===1);
+  const pick=1; W.receive('bs',{t:'abyss',a:'next',i:pick}); tick(3); const r=bsRun();
+  ok('next: the boss round 7, level 60, the chosen boss on its land disc, a bake circle r = 20 at the disc\'s middle',r&&r.abKind==='boss'&&r.abR===7&&r.L===60&&r.abBoss===to.o[pick].boss&&r.abTile==='boss:'+to.o[pick].tile&&r.B.boss&&r.B.boss.r===20&&r.B.boss.x===r.lay.mid.x&&r.tile&&r.tile.id===to.o[pick].tile,r&&[r.abKind,r.abBoss,r.abTile]);
+  ok('abr tells the client the round: the tile string and the kind',evs('bs','abr').some(e=>e[2]===7&&e[4]===60&&e[5]==='boss:'+to.o[pick].tile&&e[6]==='boss'));
+  ok('the boss is there at once, belongs to the run (m.inst), at the round level with plain numbers, and no monster but its own adds are in the run',r.boss&&r.boss.m.inst===r.id&&r.boss.m.abBoss&&r.boss.m.boss&&r.boss.m.dgK.lv===60&&Math.abs(r.boss.m.dgK.dmg-x.dgKOf(r.boss.m.def,60).dmg)<1e-9&&r.boss.m.def.id===r.abBoss&&[...r.mons].every(m=>m.inst===r.id)&&r.phase==='boss',r.boss&&r.boss.m.def.id);
+  ok('the HUD tuple is the boss round\'s (kind code 5)',r.hud[6]===5,J(r.hud));
+  W.receive('bs',{t:'dg',a:'leave'}); tick(2); ok('(a fall in the boss round ends the run)',!Bs.inst&&Bs.gear.ab.run===null); }
+// the kill: a boss of a non-final round pays 3 picks and nothing in the world; the last round's boss wins the run
+const worldOf=q=>J(Object.assign({},q.gear,{ab:0}))+'|'+q.exp+'|'+q.level+'|'+q.gear.coins;
+{ x.abSwitch(true); const w0=worldOf(Bs), mid=bossId=>{ const run=x.abRunNewS(Bs,5,7,undefined,'vale','boss','',bossId); x.abStartRoundS(Bs,run); return run; }, ids=x.AB_BOSS_OK.slice(0,3);
+  for(const id of [ids[0],x.AB_BOSS_OK.find(i=>x.AB_BOSS_LAND[i]!=='vale')]){
+    const run=mid(id); tick(3); const m=run.boss.m; Bs.x=m.x+4; Bs.z=m.z; for(let i=0;i<40;i++){ Bs.hp=Bs.maxHp; Bs.dead=false; tick(1); }
+    const w1=worldOf(Bs); m.hp=0; sent.length=0; x.killMonsterS(m,Bs); tick(3);
+    const g=Bs.gear.ab.run;
+    ok(id+': the boss\'s death wins the round and pays 3 artifact picks: an offer now, two more owed (pk 2)',run.abWon&&run.phase==='won'&&!run.endT&&g&&g.offer&&g.offer.k==='art'&&g.pk===2,J(g&&[g.offer&&g.offer.k,g.pk]));
+    ok(id+': nothing in the world: gear (but gear.ab), XP, level and coins as before; no trophy, zone tier or set roll',worldOf(Bs)===w1&&w1===w0&&!evs('bs','coins').length,'');
+    W.receive('bs',{t:'abyss',a:'pick',i:0}); tick(1); const o2=Bs.gear.ab.run.offer; W.receive('bs',{t:'abyss',a:'pick',i:0}); tick(1); const o3=Bs.gear.ab.run.offer;
+    ok(id+': three artifact offers in a row, then the tiles',o2&&o2.k==='art'&&o3&&o3.k==='art'&&(W.receive('bs',{t:'abyss',a:'pick',i:0}),tick(1),Bs.gear.ab.run.offer&&Bs.gear.ab.run.offer.k==='tile'));
+    W.receive('bs',{t:'dg',a:'leave'}); tick(2); }
+  // the last round of a finite difficulty: the boss's death wins the run (no picks, the next difficulty opens)
+  Bs.gear.ab.top=0; Bs.gear.ab.clears[0]=0; const last=x.abRunNewS(Bs,0,7,undefined,'forest','boss','',x.AB_BOSS_OK[0]); x.abStartRoundS(Bs,last); tick(3); const m=last.boss.m; Bs.x=m.x+4; Bs.z=m.z; m.hp=0; x.killMonsterS(m,Bs); tick(3);
+  ok('difficulty I round 7 (a forced boss): its death wins the run, opens difficulty II and counts the clear',last.abWon&&last.endT>0&&Bs.gear.ab.top===1&&Bs.gear.ab.clears[0]===1&&evs('bs','dge').some(e=>e[2]===1));
+  tick(Math.ceil(25/0.05)); ok('...and the hiker is back in the world',!Bs.inst&&Bs.gear.ab.run===null); }
+// every whitelisted boss: spawns, engages, fights its kit for 30 s on the disc, dies (default: level 100; node tools/abyss-smoke.js --deep: 60, 100 and 140)
+{ const lvls=process.argv.includes('--deep')?[[0,7],[2,13],[4,19]]:[[2,13]], fail=[];
+  for(const [d,r] of lvls) for(const id of x.AB_BOSS_OK){
+    let why=''; try{
+      Bs.gear.ab.top=5; const run=x.abRunNewS(Bs,d,r,undefined,x.AB_BOSS_LAND[id],'boss','',id); x.abStartRoundS(Bs,run); tick(2); const B=run.boss, m=B&&B.m; if(!B){ why='no boss'; throw 0; }
+      if(m.inst!==run.id||m.dgK.lv!==x.abRoundLv(d,r)) { why='not the run\'s / not at the round level'; throw 0; }
+      for(let i=0;i<600&&!why;i++){ Bs.hp=Bs.maxHp; Bs.dead=false; Bs.x=m.x+(i%200<100?4:-4); Bs.z=m.z+2; if(i%20===0&&m.hp>m.maxHp*0.08) m.hp-=m.maxHp*0.03; tick(1);
+        if(!isFinite(m.hp)||!isFinite(m.x)||!isFinite(m.z)) why='non-finite hp / position at tick '+i; else if(x.dgSolid(run.B,m.x-run.ox,m.z-run.oz)) why='off the disc at tick '+i;
+        else for(const q of run.mons) if(q.inst!==run.id) why='an add outside the run'; }
+      if(!why&&!B.engaged&&!m.dead) why='never engaged';
+      if(!why&&x.MONS.some(q=>Math.abs(q.x-run.ox)<200&&Math.abs(q.z-run.oz)<200&&q.inst!==run.id&&!q.remove)) why='a world monster in the slot';
+      if(!why){ m.hp=0; x.killMonsterS(m,Bs); tick(3); if(!run.abWon) why='its death did not win the round'; }
+    }catch(e){ if(e) why='threw '+(e.message||e); }
+    if(why) fail.push(id+'@'+x.abRoundLv(d,r)+': '+why);
+    if(Bs.inst){ W.receive('bs',{t:'dg',a:'leave'}); tick(2); if(Bs.inst){ W.receive('bs',{t:'dg',a:'leave'}); tick(2); } } }
+  ok('every whitelisted boss ('+x.AB_BOSS_OK.length+' of 24) passes the disc check at '+lvls.map(l=>x.abRoundLv(...l)).join(' / ')+': spawn, engage, 30 s of its kit with no throw and no NaN, stays on the disc, adds in the run, dies and wins the round',fail.length===0,fail.join('; ')); }
+x.abKindDev.force=''; x.abKindDev.mode=''; x.abKindDev.boss='';
 // the Test: kill the code and the test fails (see the usage note at the top)
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

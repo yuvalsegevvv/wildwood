@@ -88,9 +88,9 @@ function abCurseStat(curses,stat){
   for(const id of curses||[]){ const c=abIsCurse(id)?AB_CURSES[id]:null, k=c&&c.k[stat]; if(k) v=stat==='offer'?v+k:v*k; }
   return v;
 }
-/* ROUND KINDS (B8, plan section 3): what an offered tile pays and does. AB_KIND_W are the draw weights (boss 0 until B9), AB_KIND_PICKS the artifact picks a won round pays (an Event or a Shrine pays none:
+/* ROUND KINDS (B8, plan section 3): what an offered tile pays and does. AB_KIND_W are the draw weights (B9: boss 5, offered between the forced boss rounds, never on round 1 or right after a boss), AB_KIND_PICKS the artifact picks a won round pays (an Event or a Shrine pays none:
    its own card is the reward), AB_TRIAL_MODES the rift each Trial mode borrows its platforms from. A guaranteed Event or Shrine lies in rounds 4-6, 10-12, 16-18... (abEncWindow(r): the window's first round or 0). */
-const AB_KIND_IDS=['fight','elite','trial','event','shrine','boss'], AB_KIND_W={fight:45,elite:15,trial:10,event:15,shrine:10,boss:0}, AB_KIND_PICKS={fight:1,elite:2,trial:2,event:0,shrine:0,boss:3};
+const AB_KIND_IDS=['fight','elite','trial','event','shrine','boss'], AB_KIND_W={fight:45,elite:15,trial:10,event:15,shrine:10,boss:5}, AB_KIND_PICKS={fight:1,elite:2,trial:2,event:0,shrine:0,boss:3};
 const AB_KIND_INFO={fight:{name:'Fight',icon:'⚔',col:'#d4694a'},elite:{name:'Elite',icon:'★',col:'#f0c040'},trial:{name:'Trial',icon:'◈',col:'#5ab4ff'},event:{name:'Event',icon:'?',col:'#c08aff'},shrine:{name:'Shrine',icon:'✚',col:'#6fd68a'},boss:{name:'Boss',icon:'☠',col:'#ff5a5a'}};
 const AB_TRIAL_MODES={heart:'taproot',gale:'petal',beacons:'sunlit',thaw:'rime',lanterns:'longnight',quarry:'stone',gauntlet:'forge'}, AB_TRIAL_IDS=Object.keys(AB_TRIAL_MODES);
 const abIsKind=k=>typeof k==='string'&&AB_KIND_IDS.indexOf(k)>=0, abIsEncKind=k=>k==='event'||k==='shrine';
@@ -120,11 +120,12 @@ function defineAbEvent(r){
 const abIsEvent=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(AB_EVENTS,id);
 // the run's layout, rebuilt by the client from the tile id and the seed (game/dungeon/run.js): a land or cave tile is a solid island (abTileLayout, shared/abyss/tiles.js); no tile (the Event and Shrine
 // rounds of B8) is the Shardmere's plain rift platforms
-const abLayout=(tile,seed)=>{ const T=abTileOf(tile), tr=!T&&typeof tile==='string'&&tile.startsWith('rift:')?RIFT_DEFS[tile.slice(5)]:null; return T?abTileLayout(T,seed):riftLayout(tr||RIFT_DEFS[AB_THEME]); };   // B8: 'rift:<id>' = a Trial's platforms (the mode's own rift shape)
+const abLayout=(tile,seed)=>{ const bt=typeof tile==='string'&&tile.startsWith('boss:'), T=abTileOf(abTileBase(tile)), tr=!T&&typeof tile==='string'&&tile.startsWith('rift:')?RIFT_DEFS[tile.slice(5)]:null; return T?abTileLayout(T,seed,bt):riftLayout(tr||RIFT_DEFS[AB_THEME]); };   // B9: 'boss:<tile>' = that land's boss disc   // B8: 'rift:<id>' = a Trial's platforms (the mode's own rift shape)
 // the snapshot's numbers (run.hud): [round, rounds (0 = Infinite), monsters alive or on their way, wave, waves, seconds to the next wave, kind code (AB_KIND_IDS index)]  (dg[3]...dg[9]);
 // a Trial's HUD is the rift mode's own tuple (dg[3]...dg[10], shared/rift.js DG_HUD.rift) with 1, the round and the rounds after it (dg[11]...dg[13])
 DG_HUD.abyss=(dg,th)=>{ const r=dg[3]|0, n=dg[4]|0, left=dg[5]|0, w=dg[6]|0, ws=Math.max(1,dg[7]|0), clk=dg[8]|0, kc=dg[9]|0, rl='Round '+r+(n?' / '+n:'');
   if((dg[11]|0)===1){ const h=DG_HUD.rift(dg,th), rr=dg[12]|0, nn=dg[13]|0; h.lines.pop(); h.lines.unshift('Round '+rr+(nn?' / '+nn:'')); h.title='Trial: '+h.title; return h; }   // (the rift's last line is its XP count)
+  if(kc===5) return {title:'The Abyss: Boss',lines:[rl,'Defeat the boss'],bar:{v:0,max:1,col:'#ff5a5a',label:'Boss'},warn:false};   // B9 (the boss's own bar is the run's boss bar)
   if(kc===3||kc===4) return {title:'The Abyss',lines:[rl,kc===3?'An Event: choose':'A Shrine: choose'],bar:{v:0,max:1,col:'#9a5cff',label:kc===3?'Event':'Shrine'},warn:false};
   return {title:kc===1?'The Abyss: Elite':'The Abyss',lines:[rl,w?'Wave '+w+' / '+ws+(clk>0&&w<ws?' · next in '+clk+' s':''):'The tears open in '+clk+' s','Monsters: '+left],
     bar:{v:w,max:ws,col:kc===1?'#f0c040':'#9a5cff',label:'Wave '+w+' / '+ws},warn:false}; };

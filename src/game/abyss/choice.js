@@ -32,9 +32,9 @@ function abTilesShow(list){
   const tiles=(list||[]).filter(t=>Array.isArray(t)&&abIsKind(t[1])&&(abIsEncKind(t[1])||abTileOf(t[0]))); if(!tiles.length){ abPickHide(); return; }
   AB_PK.offer=null; AB_PK.tiles=tiles; AB_PK.enc=false; box.innerHTML=''; $('#abPickT').textContent='Choose the next round'; $('#abPickN').textContent=''; $('#abSkip').textContent='Later';
   tiles.forEach((t,i)=>{   // B8: a card's colour, icon and name are its kind's; an Event / Shrine card has no tile
-    const T=abTileOf(t[0]), K=abKindChip(t[1],t[2]), c=abMk('div','ab-card ab-tilec ab-k-'+t[1]), chip=abMk('div','ab-chipc'); chip.style.background=K.col;
+    const T=abTileOf(t[0]), K=abKindChip(t[1],t[2],t[3]), c=abMk('div','ab-card ab-tilec ab-k-'+t[1]), chip=abMk('div','ab-chipc'); chip.style.background=K.col;
     const names=T?T.pool.slice(0,4).map(id=>{ const d=ALL_MON_DEFS.find(m=>m.id===id); return d?d.name:id; }).join(', ')+'...':'';
-    c.append(chip,abMk('b','ab-nm',K.icon+' '+(T&&t[1]!=='trial'?T.name:K.name)),abMk('div','ab-rar',T?(T.kind==='cave'?'cave':'land')+(t[1]==='trial'?' · '+T.name:'')+' · '+K.name:K.name),abMk('p','ab-tx',K.line),abMk('p','ab-tx',names),abMk('div','ab-held',K.pays));
+    c.append(chip,abMk('b','ab-nm',K.icon+' '+(T&&t[1]!=='trial'&&t[1]!=='boss'?T.name:K.name)),abMk('div','ab-rar',T?(T.kind==='cave'?'cave':'land')+(t[1]==='trial'?' · '+T.name:'')+' · '+K.name:K.name),abMk('p','ab-tx',K.line),abMk('p','ab-tx',names),abMk('div','ab-held',K.pays));
     const b=abMk('button','chip buy ab-pick','Go here'); b.type='button'; b.onclick=()=>abTilePick(i); c.append(b); box.append(c);
   });
   el.hidden=false;
