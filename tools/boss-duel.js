@@ -9,7 +9,7 @@
 const {loadServer}=require('./load');
 const hurts=[];
 const {api:W,x}=loadServer({dev:true,log(){},send(pid,m){ if(m.t==='snap'&&m.ev) for(const e of m.ev) if(e[0]==='hurt'&&e[1]===pid) hurts.push(e[2]); }},
-  ['BOSSES','S','recalcP','monK','getH','ARMOR_SLOTS','ZTIER_LANDS','SKILL_IDS','SKILLS','PASSIVES','DG_RUNS','dgBossS','dgLos','dgSolid','MONS','awkGrantP','MQ','BD_ACT_LETTER']);
+  ['BOSSES','S','recalcP','monK','getH','ARMOR_SLOTS','ZTIER_LANDS','SKILL_IDS','SKILLS','PASSIVES','DG_RUNS','dgBossS','dgLos','dgSolid','MONS','awkGrantP','MQ','BD_ACT_LETTER','DG_THEMES','dgLaunchS']);
 const DT=0.05, tick=()=>W.tick(DT), WEAPON={warrior:'sword',archer:'bow',mage:'wand'};
 // the best loadout found for each class against these bosses (an earth ring; a skill and a burst that fit)
 const BUILD={warrior:{ring:'earth',passive:'ferocity',skill:'bash',burst:'berserk'},archer:{ring:'earth',passive:'ferocity',skill:'pierce',burst:'focus'},
@@ -33,9 +33,10 @@ function makeHero(cls,tier,level){
   return {id,p,cls};
 }
 // the boss: a zone boss in the world, or a dungeon boss in a Purge run of the theme (returns its B state and whether a fight may reset it)
+let TIER_NOW=5;
 function target(h,boss){
   const zone=x.BOSSES.find(b=>b.bd.def.id===boss); if(zone) return {B:zone,world:true};
-  W.receive(h.id,{t:'dev',cmd:'dg',v:boss+':purge:3'}); for(let i=0;i<10;i++) tick();
+  const T=x.DG_THEMES[boss]; if(T) x.dgLaunchS(h.p,T,'purge',{tier:0,L:30+10*TIER_NOW,back:{x:h.p.x,z:h.p.z},dev:true,seed:3}); for(let i=0;i<10;i++) tick();   // dgrev: the dungeon at the old level of zone tier --tier (30 + 10 a tier), which these targets were tuned at; dungeon tiers no longer follow zone tiers
   const run=x.DG_RUNS.get(h.p.inst); if(!run) throw new Error('no boss or dungeon theme called '+boss);
   for(const m of [...run.mons]) if(!m.boss) m.remove=true; x.dgBossS(run); for(let i=0;i<10;i++) tick();
   return {B:run.boss,world:false,run};
@@ -93,7 +94,7 @@ const med=a=>[...a].sort((p,q)=>p-q)[Math.floor(a.length/2)];
 function duel(boss,tier,cls,avoid,n,level,asCamp){
   // (step 20: each run draws from its own seeded generator, so --check gives the same answer every time; it used to be flaky: the mage's Kyuubi V wins 8 of 9 on average, 0-3 of 3 in a draw)
   const res=[], R0=Math.random; for(let i=0;i<n;i++){ let sd=(DUEL_SEED+i*7919)>>>0; Math.random=()=>{ sd=(sd*1664525+1013904223)>>>0; return sd/4294967296; };
-    try{ const h=makeHero(cls,tier,level); res.push(asCamp?camp(h,boss,avoid):fight(h,target(h,boss),avoid,600)); W.leave(h.id); } finally{ Math.random=R0; } }
+    try{ TIER_NOW=tier; const h=makeHero(cls,tier,level); res.push(asCamp?camp(h,boss,avoid):fight(h,target(h,boss),avoid,600)); W.leave(h.id); } finally{ Math.random=R0; } }
   const won=res.filter(r=>r.won).length;
   return {won,n,secs:med(res.map(r=>r.secs)),heals:med(res.map(r=>r.heals)),low:med(res.map(r=>r.low||0)),text:won+'/'+n+' won ~'+Math.round(med(res.map(r=>r.secs)))+'s, '+med(res.map(r=>r.heals))+' heals'+(won?'':(asCamp?', '+Math.round(med(res.map(r=>r.left))*100)+'% of the pack left':', boss '+Math.round(med(res.map(r=>r.left))*100)+'% left'))};
 }
