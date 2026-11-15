@@ -1,4 +1,4 @@
-# Dungeon revamp: plan (D1, D2 built)
+# Dungeon revamp: plan (D1, D2, D3 built)
 
 Status: **plan, version 2, with Yuval's answers.** Built so far: **D1** (the tier ladder, section 9; see the note under it). The rest is built in the steps of section 9, and each step is merged before the next one starts.
 
@@ -189,7 +189,7 @@ The travel window (`game/ui/travel.js`: `openTravel`, `renderTravel`, it has no 
 |---|---|---|
 | D1 **(built)** | `shared/dungeon-tiers.js`: `DG_TIERS`, run level = tier level, the board's tier picker, `gear.dg.top`, the unlock rule, zone tiers unhooked, the old entry locks removed | new `dungeon-tiers-smoke`, `dungeon-runs-smoke`, `dungeon-board-client-smoke`, `dungeons-smoke`, `tiers-smoke`, `skillset-sources-smoke`, `entrances-client-smoke`, the four `<name>-dungeon-smoke` |
 | D2 **(built)** | Eq 50 / 60 ids, 1 / 2 / 3 lines, the old level-40 migration, sacrifice, the fixed rarity, the eq table and piece count in `dgWinS` (it calls `dgClearReward(theme,rnd,steps)` once and grants the one id with `dgGrantItemP`; the fixed rarity replaces `DG_REWARD_W` 70 / 25 / 4 / 0.8 / 0.2 and the per-step luck `DG_REWARD_LUCK` / `dgRewardWeights`) | `rewards-smoke`, `rolls-smoke`, `rolls-client-smoke`, `pendants-smoke`, `server-smoke`, the four `<name>-dungeon-smoke` (`sandglass`, `gloamvault`, `termite`, `cenote`: they pin `DG_REWARDS`) |
-| D3 | Rings need their kit or path | `rewards-smoke`, `skillsets-smoke`, `bond-smoke`, `testworld-smoke` (its kit wears a plain ring) |
+| D3 **(built)** | Rings need their kit or path | `rewards-smoke`, `skillsets-smoke`, `bond-smoke`, `testworld-smoke` (its kit wears a plain ring) |
 | D4 | Talismans at all levels from the Sandglass; Pyrrhax's list emptied; the slot at 30 | `volcano-smoke`, `rewards-smoke`, `sandglass-dungeon-smoke`, `testworld-smoke` |
 | D5 | Capes: slot, the 8 combos, plus and minus growth, caps; the Gloamvault pays them | new `capes-smoke` |
 | D6 | Gloves: slot, the 6 kinds, combat hooks; the Termite Cathedral | new `gloves-smoke`, `skills-smoke` |
@@ -216,4 +216,10 @@ The main files touched: `shared/dungeon-rewards.js`, `dungeon-items.js`, `rolls.
 - **Sacrifice**: `rlSacFor(it)` = `RL_SAC[rar]` x `RL_SAC_LV` (1 / 1.5 / 2 / 3), rounded (a common level-40 piece pays 2).
 - **Migration** (`gear.dgv` = 1, `dgvMigrate` in `server/dungeon-gear.js`, called first in `sanitizeGear`, before `inv` is filtered through `ITEM`): walks the whole raw save and cuts every id that ends in a three-line code to its first line (bag, worn, carried weapons, `gear.psh`). A save that already has `dgv` is never walked again (a level-60 piece has three lines).
 - **Clears**: `DG_REWARD_W` = 650 / 250 / 70 / 25 / 5; `DG_REWARD_LUCK` and `dgRewardWeights` are gone; `dgClearReward(theme,rnd,eq)` makes one piece (eq index 0-3, default the theme's `t`), `dgClearRewards(theme,rnd,tier)` the whole clear; `dgWinS` grants every piece to every member present (`dgGrantItemP`, a full bag loses the piece with a toast). The results card already lists several ids (`dge` carries the last 40), so the client is unchanged. Dungeons 5-8 pay their current kinds at the rolled level.
-- Not done (later steps): rings need a kit (D3), talisman levels (D4), capes / gloves / shields.
+- Not done (later steps): talisman levels (D4), capes / gloves / shields.
+
+### D3 as built (decisions)
+
+- One decider: `bdMainOf(p)` (`server/bond.js`: the character played). `dgKitEl(gear,main)` (`shared/dungeon-items.js`) turns it into an element: `SS_SETS[main].el`, or as the Wanderer `WD_PATHS[wdPathOf(gear)].el`; both registries store `'basic'` for no element, so a basic ring matches an element-less set or path (fury, bulwark, wayfarer). `dgRingOn(ring,kitEl)` compares it with the ring's `el`; `dgRingAtkOf(gear,kitEl)` returns 0 when it differs. Levels 30, 40, 50 and 60 all follow the rule.
+- Server: `dgKitElP(p)` and `dgRingAtkP` (`server/dungeon-gear.js`); `recalcP` now adds the ring's attack after `bdRefreshP` (it used to sit with the weapon's, before the Bond step) and `rlRefreshP` leaves an inactive ring out of its sums. Every way to change set or path (`bdPlayP`, `wdPathP`, `equipSkillP`, `unequipSkillP`, `ssEquipAllP`, a ring swap) already ends in `recalcP`, so nothing else was needed. Proving Isle: unchanged (`pvpRecalcP`; rolled lines already count for nothing there).
+- Client: `dgRingUiOn(it)` (`game/economy/dungeon-gear.js`) reads `GEAR.skills.bdx.main` (unknown = active); an inactive worn ring's slot is greyed (`inventory.js`), its details line says "inactive: Needs a <element> kit or path" (`dgRingNeedText`), and `rlUiSum` skips it. Tests: `rewards-smoke` (set match / mismatch, basic ring with an element-less set, Wanderer paths incl. element-less).

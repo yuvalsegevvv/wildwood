@@ -9,7 +9,7 @@
    test:    tools/rolls-smoke.js */
 // the capped sums of the worn pieces' lines, kept on the player (recalcP runs whenever a piece or the level changes); a piece above your level counts for nothing
 function rlRefreshP(p){
-  const eq=p.gear.eq, items=[]; for(const k in eq){ const it=ITEM[eq[k]]; if(it&&(it.roll||it.kind==='talisman')) items.push(it); }   // (a talisman counts without a roll: its fixed bonus)
+  const eq=p.gear.eq, items=[], kit=eq.ring?dgKitElP(p):null; for(const k in eq){ const it=ITEM[eq[k]]; if(it&&(it.roll||it.kind==='talisman')&&(it.kind!=='ring'||dgRingOn(it,kit))) items.push(it); }   // dgrev: a ring whose element is not the kit's gives no lines   // (a talisman counts without a roll: its fixed bonus)
   const o={}; if(items.length) for(const s of RL_STATS) { const v=rlSumOf(items,s.id,p.level); if(v) o[s.id]=v; }
   p.rl=o;
 }

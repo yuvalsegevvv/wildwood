@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const io={dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }};
-const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','monK','rewardKill','dgGrantItemP','dgTemperP','VIL','getH','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','recalcP','symbolBonus','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv','defRed','RED_KNEE','RED_CAP','DEF_KNEE','DMG_TAKEN_MIN','setDef','expRed','tierFor','hurtP','DG_ATK','TIER_ATK','ENH_STEP','ARMOR_SLOTS','SKILLS','POT_BUFF','S','psP','recalcP'];
+const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','monK','rewardKill','dgGrantItemP','dgTemperP','VIL','getH','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','recalcP','symbolBonus','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv','defRed','RED_KNEE','RED_CAP','DEF_KNEE','DMG_TAKEN_MIN','setDef','expRed','tierFor','hurtP','DG_ATK','TIER_ATK','ENH_STEP','ARMOR_SLOTS','SKILLS','POT_BUFF','S','psP','recalcP','ssGrantSetP','SS_SETS','SS_ORDER','WD_PATHS','bdMainOf','dgKitEl','dgRingOn','dgRingId40'];
 const {api:W,x}=loadServer(io,NAMES);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
@@ -90,12 +90,10 @@ ok('a ring can be taken off',a.gear.eq.ring===null&&a.gear.inv.includes('ring-ba
   ok('enhancing carries the weight: the level-30 tier is a x'+stepTier.toFixed(2)+' step over the top world tier, enhancing to the limit is x'+[0,1,2,3,4].map(r=>mult(r).toFixed(1)).join(' / x')+' (common ... legendary), and from a rare up the enhancement is worth more than the tier',
     near(x.ENH_STEP,0.10,1e-9)&&stepTier<1.3&&mult(0)>=stepTier-0.06&&[1,2,3,4].every(r=>mult(r)>stepTier)&&near(mult(4),2,1e-9)&&x.ITEM['sword7-l+10'].atk===2*x.ITEM['sword7-l'].atk,'tier x'+stepTier.toFixed(2)); }
 
-// ---- the ring's attack: a flat number added to the weapon's, whatever the ring's element ----
+// ---- the ring's attack: a flat number added to the weapon's, while the ring's element is the kit's (dgrev D3; the default Wanderer path, fury, has no element: only a basic ring) ----
 { const r=join('r',30,'warrior'); r.gear.east=2; give(r,'sword7-l','sword7','ring-fire-l','ring-water','ring-basic','ring-basic-u'); send('r',{t:'equip',id:'sword7-l'}); const noRing=r.dmg;
   send('r',{t:'equip',id:'ring-fire-l'});
-  ok('a legendary fire ring adds its flat 60 attack to the weapon\'s 375, with no soul to match: the same for a water ring',near(r.dmg-noRing,60,0.5)&&near(you('r').dmg,r.dmg)&&r.gear.soul===undefined,'+'+(r.dmg-noRing).toFixed(2));
-  send('r',{t:'equip',id:'ring-water'});
-  ok('a common water ring adds the same flat +20 as a plain one (the element only names the ring)',near(r.dmg-noRing,20,0.5),'+'+(r.dmg-noRing).toFixed(2));
+  ok('a legendary fire ring adds nothing to the element-less Wanderer (fury): its element is not the kit\'s',near(r.dmg-noRing,0,0.01)&&r.gear.soul===undefined,'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'equip',id:'ring-basic'});
   ok('the plain ring: a flat +20 (a common ring)',near(r.dmg-noRing,20,0.5),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'equip',id:'ring-basic-u'});
@@ -106,6 +104,24 @@ ok('a ring can be taken off',a.gear.eq.ring===null&&a.gear.inv.includes('ring-ba
   // "weapon 90 + ring 20 = 110 before the other calculations": the ring is added to the attack before the symbol's multiplier, so +20 becomes +24 with a symbol of +20%
   send('r',{t:'unequip',slot:'ring'}); r.gear.zt.home.max=2; x.recalcP(r); const sym0=r.dmg; send('r',{t:'equip',id:'ring-basic'});
   ok('and it is added to the attack before the other calculations: with the zone-tier symbol at +20% the ring\'s +20 shows as +24',near(r.dmg-sym0,24,0.5)&&near(x.symbolBonus(r.gear),0.2,1e-9),'+'+(r.dmg-sym0).toFixed(2)); }
+
+{ const k=join('k',40,'warrior'), RW=x.dgRingId40('water',0,0,'~g50'); give(k,'sword7','ring-fire-l','ring-water','ring-basic',RW); send('k',{t:'equip',id:'sword7'});
+  const playSet=id=>{ x.ssGrantSetP(k,id,true); W.receive('k',{t:'bd',a:'play',set:id}); tick(2); }, onPath=id=>{ W.receive('k',{t:'bd',a:'play',set:'wanderer'}); W.receive('k',{t:'bd',a:'path',id}); tick(2); };
+  const pick=el=>x.SS_ORDER.find(i=>!x.SS_SETS[i].dev&&x.SS_SETS[i].el===el), FIRE=pick('fire'), NONE=pick('basic'), WAT=pick('water');
+  const base=()=>{ send('k',{t:'unequip',slot:'ring'}); return k.dmg; };   // the kit's own attack without a ring (a kit's passives and class change it)
+  const gain=id=>{ const b=base(); send('k',{t:'equip',id}); tick(1); return k.dmg-b; };
+  const lines=id=>{ base(); send('k',{t:'equip',id}); tick(1); return Object.keys(k.rl||{}).length; };
+  playSet(FIRE);
+  ok('a fire set is worn: the played kit\'s element is fire (bdMainOf, then dgKitEl)',x.bdMainOf(k)===FIRE&&x.dgKitEl(k.gear,x.bdMainOf(k))==='fire');
+  ok('a fire ring works with a fire set: its flat +60 (legendary)',near(gain('ring-fire-l'),60,0.5));
+  ok('a water ring does nothing with a fire set (0 attack)',near(gain('ring-water'),0,0.01));
+  ok('a basic ring does nothing with a fire set',near(gain('ring-basic'),0,0.01));
+  ok('a rolled water level-40 ring gives no attack and no lines with a fire set',near(gain(RW),0,0.01)&&lines(RW)===0,JSON.stringify(k.rl));
+  playSet(WAT); ok('swapping to a water set turns the same water rings on at once (play recalculates): +20 attack, and the rolled ring\'s line counts',near(gain('ring-water'),20,0.5)&&gain(RW)>20&&lines(RW)===1,JSON.stringify(k.rl));
+  playSet(NONE); ok('an element-less set takes a basic ring (+20) and refuses the water one',near(gain('ring-basic'),20,0.5)&&near(gain('ring-water'),0,0.01),NONE);
+  onPath('keeneye'); ok('as the Wanderer on the Keen Eye path (air): the kit is air, a water ring gives nothing',x.bdMainOf(k)==='wanderer'&&x.dgKitEl(k.gear,'wanderer')==='air'&&near(gain('ring-water'),0,0.01)&&lines(RW)===0);
+  onPath('stalwart'); ok('on the Stalwart path (fire) the fire ring works: +60',near(gain('ring-fire-l'),60,0.5),'+'+gain('ring-fire-l').toFixed(2));
+  onPath('bulwark'); ok('on an element-less path (bulwark; stored as basic) a basic ring works (+20) and a fire ring does not',x.dgKitEl(k.gear,'wanderer')==='basic'&&near(gain('ring-basic'),20,0.5)&&near(gain('ring-fire-l'),0,0.01)); }
 
 // ---- the Tempering Stone drop ----
 const lv30=x.MONS.find(m=>!m.def.boss&&m.def.level===30), lv29=x.MONS.find(m=>!m.def.boss&&m.def.level===29), slime=x.MONS.find(m=>m.def.id==='slime'), boss=x.MONS.find(m=>m.def.boss&&m.def.level===30);

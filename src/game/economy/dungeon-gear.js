@@ -23,9 +23,11 @@ function dgInfoHtml(it){
   const rl=rlUiInfoHtml(it); if(rl) return rl+'<br>'+dgInfoTail(it);   // rolls: a level-40 piece's lines
   return dgInfoTail(it);
 }
+// dgrev: does this ring work with what you play (the server's bdx.main, else unknown = yes)? Another kind of item: always yes
+function dgRingUiOn(it){ const X=GEAR&&GEAR.skills&&GEAR.skills.bdx; return !(it&&it.kind==='ring')||!X||dgRingOn(it,dgKitEl(GEAR,X.main)); }
 function dgInfoTail(it){
   const E=dgEnhInfo(it.id), have=dgStones(); let h='';
-  if(it.kind==='ring') h+=`<span class="up">+${it.ratk} attack</span>`;
+  if(it.kind==='ring') h+=dgRingUiOn(it)?`<span class="up">+${it.ratk} attack</span>`:`<span class="down">+${it.ratk} attack, inactive: ${dgRingNeedText(it)}</span>`;
   h+=`<span>Tempered +${E.n} of ${E.max}`+(E.next?` &middot; next: ${dgStatChange(it,E.next)} for ${dgPlural(E.stones,ENH_NAME)} <span class="${have>=E.stones?'up':'down'}">(you have ${have})</span>`:' &middot; fully tempered')+'</span>';
   return h;
 }

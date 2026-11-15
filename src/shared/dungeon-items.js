@@ -24,11 +24,18 @@ function dgRaisedId(it,r){
   if(!it||!it.dg||it.roll||!(r>=0&&r<=4)) return null; const n=it.n|0; if(n>ENH_MAX[r]) return null;
   const q=dgParse(it.id); return q?dgIdOfQ(q,r,n,null):null;
 }
-// the attack a worn ring adds to a gear: its own flat number
-function dgRingAtkOf(gear){
+// dgrev: a ring works only while its element is the kit's: the played set's element (SS_SETS[id].el, 'basic' = none) or, as the Wanderer, the active path's (WD_PATHS[id].el; 'basic' for fury, bulwark, wayfarer)
+function dgKitEl(gear,main){
+  const S=main&&main!==BD_WANDERER&&Object.prototype.hasOwnProperty.call(SS_SETS,main)?SS_SETS[main]:null; if(S) return S.el||'basic';
+  const P=WD_PATHS[wdPathOf(gear)]; return P?P.el||'basic':'basic';
+}
+const dgRingOn=(ring,kitEl)=>!!ring&&ring.kind==='ring'&&ring.el===kitEl;
+const dgRingNeedText=ring=>'Needs '+(ring.el==='basic'?'an element-less':'a '+ELEMS[ring.el].name.toLowerCase())+' kit or path';
+// the attack a worn ring adds to a gear: its own flat number, 0 while the kit's element (kitEl, from dgKitEl) is not the ring's
+function dgRingAtkOf(gear,kitEl){
   const eq=gear&&gear.eq; if(!eq) return 0;
   const ring=ITEM[eq.ring];
-  return ring&&ring.kind==='ring'?ringAtk(ring):0;
+  return ring&&ring.kind==='ring'&&dgRingOn(ring,kitEl)?ringAtk(ring):0;
 }
 const dgPct=v=>Math.round(v*1000)/10;
 // one line about a ring (items' itemStat)

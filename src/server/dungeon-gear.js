@@ -8,7 +8,8 @@
    hooks:   the lines marked `// dungeons:` in players.js (recalcP, sanitizeGear), economy.js (mergeP, buyP) and combat.js (rewardKill); listed in docs/DUNGEON-THEMES.md section 7.
    test:    tools/rewards-smoke.js */
 const talAtkP=p=>{ if(p.pv) return 0; const it=ITEM[p.gear.eq.talisman]; return it&&it.kind==='talisman'&&it.stat==='atk'&&p.level>=it.lv?it.v:0; };   // volcano: the worn talisman's flat attack (the other kinds are rolled-sum lines, rolls.js)
-const dgRingAtkP=p=>dgRingAtkOf(p.gear);   // what the worn ring adds to p's attack right now (0 without a ring)
+const dgKitElP=p=>dgKitEl(p.gear,bdMainOf(p));   // dgrev: the element of what p wears now: the character played (bdMainOf, server/bond.js: a set, or the Wanderer and his path)
+const dgRingAtkP=p=>p.gear.eq.ring?dgRingAtkOf(p.gear,dgKitElP(p)):0;   // what the worn ring adds to p's attack right now (0 without a ring, or one whose element is not the kit's)
 // stones: a count in the save, not items in the bag
 function dgAddStonesP(p,n,monId){
   const have=p.gear.temper||0, add=Math.min(n,DG_STONE_MAX-have); if(!(add>0)) return 0;

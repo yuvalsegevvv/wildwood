@@ -30,7 +30,8 @@ function renderInv(){
   h+='<div class="inv-wrap"><div class="doll" id="invDoll">'+SIL;
   for(const [s,area] of BODY_SLOTS){
     const it=ITEM[GEAR.eq[s]];
-    h+=`<div class="eqslot" data-slot="${s}" style="grid-area:${area}"><span class="eq-l">${SLOT_LABEL[s]}</span>${it?tile(it,s,1):`<div class="tile empty">${slotIcon(s)}</div>`}</div>`;
+    const off=it&&!dgRingUiOn(it);   // dgrev: an inactive ring is greyed and says what it needs
+    h+=`<div class="eqslot" data-slot="${s}" style="grid-area:${area}${off?';opacity:.45':''}"${off?` title="${dgRingNeedText(it)}"`:''}><span class="eq-l">${SLOT_LABEL[s]}</span>${it?tile(it,s,1):`<div class="tile empty">${slotIcon(s)}</div>`}</div>`;
   }
   const counts=bagCounts(), ids=Object.keys(counts).sort((a,b)=>ITEM[a].kind.localeCompare(ITEM[b].kind)||ITEM[b].tier-ITEM[a].tier||ITEM[a].slot.localeCompare(ITEM[b].slot));
   h+=`</div><div class="bag"><div class="inv-h">Bag <span>${GEAR.inv.length} / 80</span></div><div class="bag-grid" id="invBag">${ids.map(id=>tile(ITEM[id],'bag',counts[id])).join('')||'<p class="muted bag-empty">Nothing in your bag. Items you take off land here.</p>'}</div></div></div>`;

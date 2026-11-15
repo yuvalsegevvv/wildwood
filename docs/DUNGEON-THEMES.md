@@ -314,6 +314,7 @@ order: `ENH_STEP` (what a step adds), `DG_ATK` / `DG_HP` / `DG_DEF` (the tier), 
 
 **The ring.** One new equipment slot. It adds a **flat number of attack** (`RING_ATK` 20 x the rarity multiplier: **20 / 26 / 34 / 44 / 60**; the owner's rule: weapon 90 + ring 20 = 110 before every other calculation), **only if its element is your soul's**.
 `basic` (no element) is what a hiker with an unbound soul, or below level 15, has, so the plain ring is theirs; the opposite soul gets nothing (a fire ring on a water soul adds 0). It does not depend on the weapon (it used to be a
+**Since the dungeon revamp (D3)** the soul is gone: a ring (level 30 to 60, flat attack and rolled lines alike) works only while the element of the set you play (or of the Wanderer's path) is its element; `basic` rings need an element-less set or path (`dgKitEl`, `docs/DUNGEON-REVAMP.md` section 6).
 percentage of it). It stacks with the soul's own x1.5 on skills of that element. A legendary sword (375) with a legendary ring on the right soul: 435 attack; both at +10 (below): 750 and **120**, so 870 (a flat number cannot follow the weapon's
 enhancement, so the ring's top is smaller than the old percentage's +225; the maxed hero of `tools/boss-duel.js` still passes). Names: Plain, Emberbound, Tidebound, Rootbound, Windbound, Duskbound, Dawnbound Ring (placeholders). The ring has no health or defence.
 

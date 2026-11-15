@@ -10,7 +10,7 @@ const rlUiStones=kind=>(GEAR&&GEAR[kind])||0;
 function rlUiSum(stat){
   if(typeof PVC!=='undefined'&&PVC&&PVC.on) return 0;   // pvp: no gear bonus on the island
   if(!GEAR||!GEAR.eq) return 0;
-  const items=[]; for(const s in GEAR.eq){ const it=GEAR.eq[s]?ITEM[GEAR.eq[s]]:null; if(it&&it.roll) items.push(it); }
+  const items=[]; for(const s in GEAR.eq){ const it=GEAR.eq[s]?ITEM[GEAR.eq[s]]:null; if(it&&it.roll&&dgRingUiOn(it)) items.push(it); }   // dgrev: a ring of another element than your kit counts for nothing
   return items.length?rlSumOf(items,stat,PL.level):0;
 }
 function rlUiCdr(){ return rlUiSum('cdr'); }   // (the 5th argument of abilityCd)

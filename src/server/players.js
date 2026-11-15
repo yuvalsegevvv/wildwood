@@ -132,11 +132,12 @@ function newPlayer(pid,hello){
 function recalcP(p){
   if(p.pv){ pvpRecalcP(p); return; }   // pvp: on the Proving Isle everyone has the same numbers (server/pvp.js)
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
-  g.atk+=dgRingAtkP(p)+talAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else 
+  g.atk+=talAtkP(p);
   wpnSyncG(p.gear,p.level);   // wpn: eq.weapon always matches the active class, whatever changed it
   wdSyncG(p.gear);   // wanderer: the active path's passive and burst are his while pa1 / bu1 are bought
   awkRefreshP(p);   // awakening: the trees' skill levels and the played character's stat nodes (gear.skills.aw, read by passiveSum)
   bdRefreshP(p);   // bond: the active Bond (gear.skills.bdx: Bond passives, rows, level changes), before anything reads psP
+  g.atk+=dgRingAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else; dgrev: only while the ring's element is the kit's (so after bdRefreshP)
   rlRefreshP(p);   // rolls: the lines of the worn level-40 pieces (p.rl)
   p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)*(1+rlP(p,'hp'))*(1+toolBonusStat(p.gear,'hp'))); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym)*(1+rlP(p,'atk'))*(1+toolBonusStat(p.gear,'atk')); p.def=Math.round(g.def*(1+rlP(p,'def'))*(1+toolBonusStat(p.gear,'def'))); p.red=defRed(p.def);   // rolls: hp, atk and def lines   // professions: the worn tools' small bonus (shared/professions.js)
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));

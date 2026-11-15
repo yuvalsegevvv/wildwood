@@ -105,7 +105,7 @@ function dgAllIds(){
   const out=[]; for(let r=0;r<5;r++) for(let n=0;n<=ENH_MAX[r];n++){ for(const s of ALL_SLOTS) out.push(dgGearId(s,r,n)); for(const e of RING_ELS) out.push(dgRingId(e,r,n)); for(const t of PENDANT_STATS) out.push(dgPendantId(t,r,n)); }
   return out;
 }
-// the flat attack a ring adds: its own number (its element does not matter)
+// the flat attack a ring adds: its own number (dgRingAtkOf, dungeon-items.js, says whether the kit lets it count)
 function ringAtk(ring){
   const it=typeof ring==='string'?dgItem(ring):ring;
   return it&&it.kind==='ring'?it.ratk:0;
