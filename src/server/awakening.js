@@ -20,10 +20,11 @@
           branches get the nodes up to the old level (both kinds: the stat nodes below it too), the kept passive pa1..L, the charge skill ch1..L, an owned burst bu1, and the tier that covers it all
           (a level's tier, A1 for the passive, A2 the charge skill, A3 the burst). Only adds (a union, the tier a max): running it twice changes nothing, nobody loses a level.
    TESTING: awkGrantP(p, set, tier, ids?) (dev 'awk' {v: set id | 'all', n: tier}: the whole tree to that tier; testKitP: every tree full). Test: tools/awakening-server-smoke.js. Hooks: grep -rn "// awakening:" src */
-const AWK_WANDERER='wanderer', AWK_STORE_IDS=['echo'], AWK_STORE_MAX=99999;
+const AWK_WANDERER='wanderer', AWK_STORE_IDS=['echo','abyss'],   // abyss: the Abyss Heart (gear.awm.abyss, bought in the Abyss shop; Awakening 6 will spend it)
+   AWK_STORE_MAX=99999;
 const AWK_POS_LIMB=[null,'ba','sk','po'], AWK_SLOT_LIMB={basic:'ba',skill:'sk',burst:'po',passive:'pa'};
 const AWK_STAT_PS={dmg:'dmg',crit:'crit',cd:'cd',hp:'hp',red:'red',move:'move',drop:'drop',xp:'xp',heal:'heal',eff:'buffpow'};   // a stat node's stat -> the passive stat passiveSum reads
-const AWK_MAT_NAME={echo:'Echo Shards'};
+const AWK_MAT_NAME={echo:'Echo Shards',abyss:'Abyss Hearts'};   // abyss: the Abyss Heart
 const awkOwn=(o,k)=>!!o&&typeof o==='object'&&typeof k==='string'&&Object.prototype.hasOwnProperty.call(o,k);
 // a character key a save or a message may name: a set with a tree shape, or the Wanderer
 const awkKeyOk=k=>typeof k==='string'&&(k===AWK_WANDERER||(awkOwn(SS_SETS,k)&&!!awkShapeOf(k)));

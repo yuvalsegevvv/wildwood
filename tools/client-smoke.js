@@ -454,11 +454,15 @@ const el=s=>document.querySelector(s);
     G.closePanels(); G.P.x=G.AB_GATE.x+1; G.P.z=G.AB_GATE.z; G.abOpenNear();
     ok('abyss: the talk key at the gate opens the window and asks the server',!el('#abyss').hidden&&out.some(m=>m.t==='abyss'&&m.a==='open'));
     G.NETH.abyss({t:'abyss',a:'info',on:1,top:2,best:0,lv:40,diffs:[['I',40,60,7],['II',50,80,10],['III',60,100,13],['IV',70,120,16],['V',80,140,19],['Infinite',90,0,0]].map(([name,lo,hi,rounds],i)=>({id:i,name:'Difficulty '+name,lo,hi,rounds}))});
-    { const rows=el('#abBody')._kids[1]._kids, btn=r=>r._kids[1], note=r=>r._kids[0]._kids[2].textContent;
+    { const rows=el('#abBody')._kids[2]._kids, btn=r=>r._kids[1], note=r=>r._kids[0]._kids[2].textContent;
       ok('abyss: the window lists six difficulties; the open ones have a Go button, the locked ones are greyed and say what to beat first',rows.length===6&&rows.slice(0,3).every(r=>!btn(r).disabled&&!/locked/.test(r.className))&&rows.slice(3).every(r=>btn(r).disabled&&/locked/.test(r.className))&&/beat Difficulty III first/.test(note(rows[3]))&&/Cleared/.test(note(rows[0])),rows.map(r=>r.className+':'+note(r)).join(' | '));
+    { G.AB_UI.tab='shop'; G.NETH.abyss({t:'abyss',a:'shop',as:500,top:3,d:1,rows:[{id:'rsw',name:'Weapon Reroll Stone',kind:'common',price:60,left:5,open:0,ok:1},{id:'lock',name:'Void Anchor',kind:'special',price:20000,left:-1,open:4,ok:0},{id:'heart',name:'Abyss Heart',kind:'special',price:20000,left:-1,open:3,ok:1}]});
+      const kids=el('#abBody')._kids, rows=kids.filter(k=>(k.className||'').split(' ').includes('ab-sh')), btn=r=>r._kids[1];
+      ok('abyss: the Shop tab lists the rows: a common one with its stock and a Buy button, a locked special greyed and saying what to beat, a special too dear is disabled',rows.length===3&&!btn(rows[0]).disabled&&/5 left today/.test(rows[0]._kids[0]._kids[1].textContent)&&btn(rows[1]).disabled&&/beat Difficulty IV once/.test(rows[1]._kids[0]._kids[1].textContent)&&btn(rows[2]).disabled);
+      out.length=0; btn(rows[0]).onclick(); ok('abyss: Buy sends abyss{a:buy,id,n:1}',out.some(m=>m.t==='abyss'&&m.a==='buy'&&m.id==='rsw'&&m.n===1)); G.AB_UI.tab='go'; G.abRender(); }
       btn(rows[1]).onclick(); ok('abyss: Go sends abyss{a:go,d} and closes the window',out.some(m=>m.t==='abyss'&&m.a==='go'&&m.d===1)&&el('#abyss').hidden); }
     G.openPanel('abyss'); G.NETH.abyss({t:'abyss',a:'info',on:1,top:5,best:17,lv:40,diffs:[['I',40,60,7],['II',50,80,10],['III',60,100,13],['IV',70,120,16],['V',80,140,19],['Infinite',90,0,0]].map(([name,lo,hi,rounds],i)=>({id:i,name:'Difficulty '+name,lo,hi,rounds}))});
-    ok('abyss: Infinite shows the best round',/Best round: 17/.test(el('#abBody')._kids[1]._kids[5]._kids[0]._kids[2].textContent),el('#abBody')._kids[1]._kids[5]._kids[0]._kids[2].textContent); G.closePanels();
+    ok('abyss: Infinite shows the best round',/Best round: 17/.test(el('#abBody')._kids[2]._kids[5]._kids[0]._kids[2].textContent),el('#abBody')._kids[2]._kids[5]._kids[0]._kids[2].textContent); G.closePanels();
     G.applyEvent(['abr',G.NET.pid,3,7,47]); ok('abyss: the abr event shows the round banner (finite)',tk().some(t=>t==='Round 3 of 7 · level 47'));
     G.applyEvent(['abr',G.NET.pid,28,0,180]); ok('abyss: the banner of Infinite has no total',tk().some(t=>t==='Round 28 · level 180'));
     G.applyEvent(['abw',G.NET.pid,3]); ok('abyss: a won round shows the bar',!el('#abBar').hidden&&/Round 3 won/.test(el('#abBarT').textContent));

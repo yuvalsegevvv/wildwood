@@ -18,7 +18,7 @@ const AB_DIFFS=[
   {id:'IV',name:'Difficulty IV',lo:70,hi:120,rounds:16},
   {id:'V',name:'Difficulty V',lo:80,hi:140,rounds:19},
   {id:'INF',name:'Infinite',lo:90,hi:0,rounds:0}];
-const AB_INF=5, AB_ART_MAX=20, AB_RANK_MAX=5, AB_CURSE_MAX=5, AB_ENTRY_LV=40, AB_BOSS_SHOWN=8, AB_AS_MAX=999999999, AB_LOCK_MAX=9999, AB_RUN_KEEP_S=1800;
+const AB_INF=5, AB_ART_MAX=20, AB_RANK_MAX=5, AB_CURSE_MAX=5, AB_ENTRY_LV=40, AB_BOSS_SHOWN=8, AB_AS_MAX=999999999, AB_LOCK_MAX=9999, AB_PRISM_MAX=9999, AB_HEART_MAX=9999, AB_RUN_KEEP_S=1800;
 const abRoundLv=(d,r)=>AB_DIFFS[d].lo+Math.round((Math.max(1,r|0)-1)*10/3);   // d: the index in AB_DIFFS, r: the round from 1
 const abRounds=d=>AB_DIFFS[d].rounds|0;   // 0 = Infinite
 function abIsBossRound(d,r){ r=r|0; if(r<7) return false; const n=abRounds(d); if(n&&r>n) return false; return (r-7)%6===0||r===n; }

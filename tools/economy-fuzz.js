@@ -11,7 +11,7 @@ const arg=(n,d)=>{ const i=process.argv.indexOf(n); return i>0?+process.argv[i+1
 const STEPS=arg('--steps',4000), VERBOSE=process.argv.includes('--verbose');
 let seed=arg('--seed',1)>>>0; const rnd=()=>{ seed=(seed+0x6D2B79F5)>>>0; let t=seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
 const pick=a=>a[Math.floor(rnd()*a.length)];
-const {api:W,x}=loadServer({dev:true,send(){}},['VIL','getH','ITEM_LIST','BAG_MAX','ALL_SLOTS','TIERS','CRAFT_MAX_RAR','POTS','RES','MATS','SKILL_IDS','PASSIVE_IDS','PROF_IDS','CP_PIECE','ambOutfitIds','RES_MAX','sanitizeGear','SS_ORDER','SS_SETS','awkShapeOf']);
+const {api:W,x}=loadServer({dev:true,send(){}},['AB_SHOP','abSwitch','VIL','getH','ITEM_LIST','BAG_MAX','ALL_SLOTS','TIERS','CRAFT_MAX_RAR','POTS','RES','MATS','SKILL_IDS','PASSIVE_IDS','PROF_IDS','CP_PIECE','ambOutfitIds','RES_MAX','sanitizeGear','SS_ORDER','SS_SETS','awkShapeOf']);
 W.join('e',{name:'Economist',look:{cls:'warrior'},save:{level:30}}); W.tick(0.05);
 const p=W.players.get('e');
 const home=()=>{ W.setPos('e',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); };
@@ -19,6 +19,10 @@ home(); W.tick(0.05);
 W.receive('e',{t:'dev',cmd:'level',v:30}); W.receive('e',{t:'dev',cmd:'skills'}); W.receive('e',{t:'dev',cmd:'mats'});
 const shop=x.ITEM_LIST.filter(it=>it.rar===0&&!it.dg).map(it=>it.id), potions=Object.keys(x.POTS), res=Object.keys(x.RES), cos=Object.keys(x.CP_PIECE), outfits=x.ambOutfitIds();
 const skills=[...x.SKILL_IDS,...x.PASSIVE_IDS];
+const abIds=[...x.AB_SHOP.map(r=>r.id),'__proto__','constructor','nope'];   // abyss: shop ids and a few bad ones
+x.abSwitch(true);
+const abGoods=g=>(+g.coins||0)+(g.rsw|0)+(g.rsa|0)+(g.rsr|0)+(g.temper|0)+g.ab.lock+g.ab.prism+sum(g.awm);
+const J2=JSON.stringify; let abBuys=0;
 const sum=o=>Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
 // awakening: the trees (a tier and a node are goods), their characters and node ids
 const awkN=g=>Object.values(g.awk||{}).reduce((a,e)=>a+e.t+Object.keys(e.n).length,0), awkKeys=['wanderer',...x.SS_ORDER.filter(id=>x.awkShapeOf(id)).slice(0,3)], awkIds=x.awkShapeOf('wanderer').nodes.map(n=>n.id);
@@ -39,6 +43,7 @@ const MSGS=[
   ()=>({t:'buyskill',id:pick(skills)}), ()=>({t:'awk',a:pick(['tier','up','stat']),set:pick(awkKeys),id:pick(awkIds)}), ()=>({t:'awk',a:'stat',set:pick(awkKeys),id:pick(['spo2','sba2','ssk2','spa1','__proto__',7])}), ()=>({t:'learn',id:pick(x.PROF_IDS)}),
   ()=>{ const k=pick(cos).split(':'); return {t:'cosmake',type:k[0],id:k[1]}; }, ()=>({t:'gembuy',v:pick(outfits),b:rnd()<0.4?1:0}), ()=>({t:'gemtest'}), ()=>({t:'bd',a:'orb',set:pick(x.SS_ORDER),n:Math.floor(rnd()*120)-5}), ()=>({t:'bd',a:'orb',set:pick(['constructor','__proto__','pick',7,null]),n:3}),
   ()=>({t:'sellres',id:pick(res),n:Math.floor(rnd()*30)}),
+  ()=>({t:'abyss',a:'buy',id:pick(abIds),n:pick([1,1,2,5,0,-1,1.5,100,1e9,'3'])}), ()=>({t:'abyss',a:'buy',id:pick(abIds),n:1}), ()=>({t:'abyss',a:'shop'}),   // abyss: the Abyss shop (B10)
 ];
 const refill=()=>{   // purses and bags at their edges
   const r=rnd();
@@ -47,21 +52,23 @@ const refill=()=>{   // purses and bags at their edges
   if(r>0.85&&r<0.9){ p.gear.inv.length=Math.min(p.gear.inv.length,Math.floor(rnd()*20)); for(const id of [...Object.values(p.gear.eq).filter(v=>typeof v==='string'),...Object.values(p.gear.eq.wpn||{})]) if(id&&!p.gear.inv.includes(id)) p.gear.inv.push(id); }   // (what is worn is always in the bag)
   if(r>0.9) for(const id of res) p.gear.res[id]=Math.floor(rnd()*60);
   if(r>0.95) for(const id of Object.keys(x.MATS)) p.gear.mats[id]=Math.floor(rnd()*40);
+  if(r>0.4&&r<0.55){ p.gear.ab.as=Math.floor(rnd()*(rnd()<0.5?500:5e7)); p.gear.ab.top=Math.floor(rnd()*6); if(rnd()<0.3) p.gear.ab.sh.n={}; }   // abyss: shards and the difficulties beaten
   if(r>0.6&&r<0.7){ p.gear.awm.echo=Math.floor(rnd()*30); p.gear.rd.mat.home=Math.floor(rnd()*6); }   // awakening: Echo Shards and raid material
 };
 for(let step=0;step<STEPS&&bad.length<5;step++){
   refill(); if(rnd()<0.1) home();
   const g=p.gear, before={coins:g.coins,gem:g.gem,goods:goods(g),price:price(g)};
-  const m=pick(MSGS)();
-  try{ W.receive('e',m); W.tick(0.05); }catch(e){ note('step '+step+' '+JSON.stringify(m)+' threw '+e.message); continue; }
+  const m=pick(MSGS)(), ab0=m.t==='abyss'?[g.ab.as,abGoods(g)]:null, lv=p.level; if(ab0) p.level=40;   // abyss: the shop wants level 40
+  try{ W.receive('e',m); W.tick(0.05); p.level=lv; }catch(e){ note('step '+step+' '+JSON.stringify(m)+' threw '+e.message); continue; }
   const a=p.gear, after={coins:a.coins,gem:a.gem,goods:goods(a),price:price(a)};
   if(VERBOSE) console.log(step,JSON.stringify(m),'coins',before.coins,'->',after.coins,'goods',before.goods,'->',after.goods);
+  if(ab0&&m.a==='buy'){ const sp=ab0[0]-a.ab.as, gd=abGoods(a)-ab0[1]; if(sp>0&&gd<=0) note('step '+step+' '+JSON.stringify(m)+': spent '+sp+' shards and got nothing'); if(gd>0&&sp<=0) note('step '+step+' '+JSON.stringify(m)+': got goods and paid no shards'); if(sp<0) note('step '+step+' '+JSON.stringify(m)+': a buy added shards'); if(sp>0) abBuys++; }   // abyss
   if(!Number.isInteger(a.coins)||a.coins<0) note('step '+step+' '+JSON.stringify(m)+': coins = '+a.coins);
   if(a.inv.length>x.BAG_MAX) note('step '+step+' '+JSON.stringify(m)+': the bag holds '+a.inv.length);
   if(step%20===0){   // what is in memory must survive a save and a login: nothing here may be above a cap that the sanitizer cuts
     const r=x.sanitizeGear(JSON.parse(JSON.stringify(a)),'warrior'), nz=o=>JSON.stringify(Object.entries(o||{}).filter(e=>e[1]).sort());
-    const mine={coins:a.coins,inv:[...a.inv].sort(),res:nz(a.res),mats:nz(a.mats),pot:nz(a.pot),own:[...a.skills.owned].sort(),lv:nz(a.skills.lv),prof:Object.keys(a.prof).sort(),cos:[...a.cos].sort(),os:[...a.os].sort(),gem:a.gem,awk:awkCanon(a),awm:nz(a.awm)};
-    const kept={coins:r.coins,inv:[...r.inv].sort(),res:nz(r.res),mats:nz(r.mats),pot:nz(r.pot),own:[...r.skills.owned].sort(),lv:nz(r.skills.lv),prof:Object.keys(r.prof).sort(),cos:[...r.cos].sort(),os:[...r.os].sort(),gem:r.gem,awk:awkCanon(r),awm:nz(r.awm)};
+    const mine={coins:a.coins,inv:[...a.inv].sort(),res:nz(a.res),mats:nz(a.mats),pot:nz(a.pot),own:[...a.skills.owned].sort(),lv:nz(a.skills.lv),prof:Object.keys(a.prof).sort(),cos:[...a.cos].sort(),os:[...a.os].sort(),gem:a.gem,awk:awkCanon(a),awm:nz(a.awm),abs:J2([a.ab.as,a.ab.lock,a.ab.prism,nz(a.ab.sh.n)])};
+    const kept={coins:r.coins,inv:[...r.inv].sort(),res:nz(r.res),mats:nz(r.mats),pot:nz(r.pot),own:[...r.skills.owned].sort(),lv:nz(r.skills.lv),prof:Object.keys(r.prof).sort(),cos:[...r.cos].sort(),os:[...r.os].sort(),gem:r.gem,awk:awkCanon(r),awm:nz(r.awm),abs:J2([r.ab.as,r.ab.lock,r.ab.prism,nz(r.ab.sh.n)])};
     for(const k of Object.keys(mine)) if(JSON.stringify(mine[k])!==JSON.stringify(kept[k])) note('step '+step+' '+JSON.stringify(m)+': '+k+' would change on the next login: '+JSON.stringify(mine[k]).slice(0,120)+' -> '+JSON.stringify(kept[k]).slice(0,120));
   }
   const paid=after.coins<before.coins||after.gem<before.gem;
@@ -69,4 +76,4 @@ for(let step=0;step<STEPS&&bad.length<5;step++){
   if(TRADES.includes(m.t)&&after.goods>before.goods&&!took(before.price,after.price)) note('step '+step+' '+JSON.stringify(m)+': got something and paid nothing');
 }
 if(bad.length){ console.log('FAIL economy fuzz:\n  '+bad.join('\n  ')); process.exit(1); }
-console.log('PASS '+STEPS+' random shop, forge, lodge, trainer and gem shop messages: nothing paid for nothing, nothing free');
+console.log('PASS '+STEPS+' random shop, forge, lodge, trainer, gem shop and Abyss shop messages ('+abBuys+' Abyss buys): nothing paid for nothing, nothing free');

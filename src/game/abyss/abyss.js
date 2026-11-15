@@ -4,7 +4,7 @@
             abHere() / abPrompt(tk) / abOpenNear() (village/talking.js: the talk key), NETH.abyss (the window's info), EVH.abr (round banner), EVH.abw (a round won: the bar), AB_UI, AB_GATE
    markup: #abyss (a panel: its id is in PANELS) and #abBar (index.html), styles 42-abyss.css. The gate stands in front of the reserved Guildhall's door (GW_PLACE.guild; the anchor 'place:guild' of VIL5).
    Test: tools/client-smoke.js (the Abyss case). Flag off (NET.ab 0): nothing is built, the talk key finds nothing, no window. */
-const AB_UI={info:null,gate:null,won:false}, AB_TALK=3.6;
+const AB_UI={info:null,gate:null,won:false,tab:'go',shop:null,earned:0,br:0,bk:''}, AB_TALK=3.6;
 const AB_GATE=(()=>{ const a=VIL5.anchors['place:guild']; return a?{x:a.x,z:a.z}:null; })();   // the gate's world spot (Glasswell's reserved Guildhall: its door's anchor)
 function abBuildGate(){
   if(AB_UI.gate||!AB_GATE) return; const y=getH(AB_GATE.x,AB_GATE.z), G=new THREE.Group(); G.position.set(AB_GATE.x,y,AB_GATE.z); G.name='abyss-gate';
@@ -25,13 +25,15 @@ const abHere=()=>!!abNearest();
 const abPrompt=tk=>'Press '+tk+': the Abyss gate (a solo roguelike, level '+AB_ENTRY_LV+' and up)';
 function abOpenNear(){
   if(!abNearest()) return; if(PL.level<AB_ENTRY_LV){ toast('The Abyss is for hikers of level '+AB_ENTRY_LV+' and up.','bad'); return; }
-  AB_UI.info=null; openPanel('abyss'); abRender(); netSend({t:'abyss',a:'open'}); UI_SFX.click();
+  AB_UI.info=null; AB_UI.shop=null; openPanel('abyss'); abRender(); netSend({t:'abyss',a:'open'}); netSend({t:'abyss',a:'shop'}); UI_SFX.click();
 }
-NETH.abyss=m=>{ if(m.a!=='info') return; AB_UI.info=m; abRender(); };
+NETH.abyss=m=>{ if(m.a==='shop'){ AB_UI.shop=m; abRender(); return; } if(m.a!=='info') return;   // B10: the shop's rows (game/abyss/shop.js)
+  AB_UI.info=m; abRender(); };
 function abRender(){
   const el=$('#abBody'); if(!el||$('#abyss').hidden) return; const I=AB_UI.info;
   if(!I){ el.textContent='The dark hums...'; return; }
-  el.innerHTML=''; const intro=document.createElement('p'); intro.className='ab-line'; intro.textContent='One hiker, one life. Round after round of monsters at rising levels, and nothing from the world to take home: only what the Abyss itself pays. A fall ends the run.'; el.append(intro);
+  el.innerHTML=''; abTabsAdd(el); if(AB_UI.tab==='shop'){ abShopRender(el); return; }   // B10
+  const intro=document.createElement('p'); intro.className='ab-line'; intro.textContent='One hiker, one life. Round after round of monsters at rising levels, and nothing from the world to take home: only what the Abyss itself pays. A fall ends the run.'; el.append(intro);
   const list=document.createElement('div'); list.className='ab-diffs';
   I.diffs.forEach((d,i)=>{
     const open=i<=(I.top|0), inf=!d.rounds, row=document.createElement('div'); row.className='ab-row'+(open?'':' locked');
@@ -45,11 +47,11 @@ function abRender(){
   el.append(list);
 }
 // a round begins: abr [pid, round, of, lv, tile] (of 0 = Infinite; tile: the tile's id, B7)
-EVH.abr=e=>{ if(e[1]!==NET.pid) return; AB_UI.won=false; abBar(false); abPickHide(); abArtsRender(); const r=e[2]|0, n=e[3]|0, lv=e[4]|0, T=abTileOf(abTileBase(e[5])), kc=abKindChip(abIsKind(e[6])?e[6]:'fight',e[7]), tn=(T?' · '+T.name:'')+(abIsKind(e[6])&&e[6]!=='fight'?' · '+kc.name:''); toast(abIsEncKind(e[6])?'Round '+r+(n?' of '+n:'')+' · '+kc.name:n?'Round '+r+' of '+n+' · level '+lv+tn:'Round '+r+' · level '+lv+tn,''); };   // B8: e[6] the kind, e[7] a Trial's mode
+EVH.abr=e=>{ if(e[1]!==NET.pid) return; AB_UI.won=false; if((e[2]|0)===1) AB_UI.earned=0; abBar(false); abPickHide(); abArtsRender(); const r=e[2]|0, n=e[3]|0, lv=e[4]|0, T=abTileOf(abTileBase(e[5])), kc=abKindChip(abIsKind(e[6])?e[6]:'fight',e[7]), tn=(T?' · '+T.name:'')+(abIsKind(e[6])&&e[6]!=='fight'?' · '+kc.name:''); toast(abIsEncKind(e[6])?'Round '+r+(n?' of '+n:'')+' · '+kc.name:n?'Round '+r+' of '+n+' · level '+lv+tn:'Round '+r+' · level '+lv+tn,''); };   // B8: e[6] the kind, e[7] a Trial's mode
 // a round is won (not the last of a finite difficulty): abw [pid, round]; the bar offers Next round or Leave
-EVH.abw=e=>{ if(e[1]!==NET.pid) return; AB_UI.won=true; abBar(true,e[2]|0,e[3]); };   // e[3]: the kind (B8)
+EVH.abw=e=>{ if(e[1]!==NET.pid) return; AB_UI.won=true; AB_UI.br=e[2]|0; AB_UI.bk=e[3]; abBar(true,e[2]|0,e[3]); };   // e[3]: the kind (B8)
 function abBar(on,r,kind){
-  const b=$('#abBar'); if(!b) return; b.hidden=!on; if(on) $('#abBarT').textContent=abIsEncKind(kind)?'Round '+r+': '+AB_KIND_INFO[kind].name:'Round '+r+' won';
+  const b=$('#abBar'); if(!b) return; b.hidden=!on; if(on) $('#abBarT').textContent=(abIsEncKind(kind)?'Round '+r+': '+AB_KIND_INFO[kind].name:'Round '+r+' won')+(AB_UI.earned>0?' · '+fmtCoins(AB_UI.earned)+' shards so far':'');
 }
 function abBarInit(){
   const n=$('#abNext'), o=$('#abOut'); if(!n||!o||n._ab) return; n._ab=1;

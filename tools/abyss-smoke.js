@@ -7,7 +7,7 @@
 // Usage: node tools/abyss-smoke.js
 const {loadServer}=require('./load');
 const sent=[];
-const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['getH','recalcP','AB_ELITE_HP','AB_CHAMP_HP','RIFT_HERALD_HP','RIFT_GAUNT_S','RIFT_THAW_S','abKindDev','abDrawKindsS','abTileOfferP','abTileSendP','AB_CURSE_MAX','AB_KIND_W','AB_KIND_IDS','AB_KIND_PICKS','AB_TRIAL_MODES','AB_EVENTS','AB_EVENT_BAD','AB_CURSES','abEncWindow','abIsEvent','abEvWhyP','abShrineOfferS','abRoundWonS','abRunNewS','RIFT_DEFS','riftDefOf',  'AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K','abP','AB_ARTS','AB_ART_BAD','defineAbArt','abArtStat','AB_CAPS','rollDmgS','hurtP','healP','damageMonsterS','abDrawOfferS','AB_CURSES','AB_CURSE_BAD','defineAbCurse','abCurseStat','abIsCurse','abHitS','abKillP','abThornsS','abShieldS','abCurseAddP','abGiveArtP','abSpawnS','DEF_BY_ID','AB_NTH','monK','AB_TILES','AB_TILE_IDS','AB_TILE_BAD','defineAbTile','abTileOf','abLayout','dgBake','dgFlow','CAVE_FLOOR_DEFS','abRandTileS','AB_TILE_OFFER_N','AB_BOSS_ALL','AB_BOSS_OK','AB_BOSS_OUT','AB_BOSS_LAND','abBossOk','abBossRowOf','abBossDrawS','AB_BOSS_CELLS','abStartRoundS','dgSolid','MONS','abIsBossRound','abTileBase','abTileLayout','DG_BOSS_R','DG_BOSS_DEFS','BOSS_DEFS','clearBossFxS']);
+const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['getH','recalcP','abShardsOf','abClearBonus','abShopRow','abShopPrice','AB_SHOP','AB_SH_DIFF','AB_ROUND_S','AB_SPECIAL_GROWTH','AB_BUY_MAX','abDayS','abShopP','abBuyP','abPayRoundP','isGuestP','gsDayOf','essOf','RL_STONE_MAX','AB_PRISM_MAX','AB_ELITE_HP','AB_CHAMP_HP','RIFT_HERALD_HP','RIFT_GAUNT_S','RIFT_THAW_S','abKindDev','abDrawKindsS','abTileOfferP','abTileSendP','AB_CURSE_MAX','AB_KIND_W','AB_KIND_IDS','AB_KIND_PICKS','AB_TRIAL_MODES','AB_EVENTS','AB_EVENT_BAD','AB_CURSES','abEncWindow','abIsEvent','abEvWhyP','abShrineOfferS','abRoundWonS','abRunNewS','RIFT_DEFS','riftDefOf',  'AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K','abP','AB_ARTS','AB_ART_BAD','defineAbArt','abArtStat','AB_CAPS','rollDmgS','hurtP','healP','damageMonsterS','abDrawOfferS','AB_CURSES','AB_CURSE_BAD','defineAbCurse','abCurseStat','abIsCurse','abHitS','abKillP','abThornsS','abShieldS','abCurseAddP','abGiveArtP','abSpawnS','DEF_BY_ID','AB_NTH','monK','AB_TILES','AB_TILE_IDS','AB_TILE_BAD','defineAbTile','abTileOf','abLayout','dgBake','dgFlow','CAVE_FLOOR_DEFS','abRandTileS','AB_TILE_OFFER_N','AB_BOSS_ALL','AB_BOSS_OK','AB_BOSS_OUT','AB_BOSS_LAND','abBossOk','abBossRowOf','abBossDrawS','AB_BOSS_CELLS','abStartRoundS','dgSolid','MONS','abIsBossRound','abTileBase','abTileLayout','DG_BOSS_R','DG_BOSS_DEFS','BOSS_DEFS','clearBossFxS']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefined?'  ('+i+')':'')); if(!c) fails++; };
 const K=(id,s)=>x.AB_ARTS[id].k[s];   // the numbers are tuned by tools/abyss-sim.js: the tests read them from the rows
 // a hit of a size where rounding cannot matter: the damage a plain 50 does depends on the monster's kind (a weak kind made 7 -> 12 and a 5% rounding error), so the size is calibrated to about 800 taken (at most a fifth of max health) with no artifact on the bar
@@ -29,12 +29,12 @@ ok('caps: 20 artifacts, rank 5, 5 curses, entry level 40',x.AB_ART_MAX===20&&x.A
 ok('slots: the Abyss takes 32-47, the rifts 16-31',x.AB_SLOT0===32&&x.DG_MAX_INST===48&&x.RIFT_SLOT0===16);
 // the save
 const clean=(g)=>{ const o={}; x.abSanitize({ab:g},o); return o.ab; };
-const D={top:0,best:0,clears:[0,0,0,0,0,0],as:0,lock:0,sh:{d:0,n:{}},run:null};
+const D={top:0,best:0,clears:[0,0,0,0,0,0],as:0,lock:0,prism:0,sh:{d:0,n:{}},run:null};
 ok('no gear.ab (an old save): the default',J(clean(undefined))===J(D)&&J((()=>{ const o={}; x.abSanitize({},o); return o.ab; })())===J(D));
 ok('garbage values: strings, NaN, negative, arrays, null give the default',[ 'x',7,null,[],{top:'a',best:NaN,clears:'no',as:-5,lock:'z',sh:'q',run:5},{top:-3,best:-1,clears:[-1,NaN,'x'],as:Infinity,lock:-Infinity,sh:{d:-4,n:[1,2]}} ].every(g=>{ const c=clean(g); return J(c)===J(D)||(c.top===0&&c.best===0&&c.as>=0&&c.lock>=0&&c.run===null&&c.clears.length===6); }));
 { const c=clean({top:9,best:99999999,clears:[1,2,3,4,5,6,7,8],as:1e15,lock:1e15,run:{d:1,r:2}}); ok('huge numbers are capped, clears keeps 6, a run is dropped',c.top===5&&c.best===999999&&c.clears.length===6&&c.as===x.AB_AS_MAX&&c.lock===x.AB_LOCK_MAX&&c.run===null,J(c)); }
-{ const g=JSON.parse('{"sh":{"d":5,"n":{"__proto__":3,"constructor":2,"toString":1,"rsw":4,"rsa":-2,"x":"abc","y":1e9,"z":true}}}'), c=clean(g); ok('shop counts: prototype names and bad counts dropped, own ids clamped',J(c.sh)===J({d:5,n:{rsw:4,y:9999}})&&Object.getPrototypeOf(c.sh.n)===Object.prototype,J(c.sh)); }
-ok('a clean save stays as it is',(()=>{ const g={top:3,best:21,clears:[4,3,2,0,0,0],as:500,lock:2,sh:{d:20000,n:{rsw:3}},run:null}; return J(clean(g))===J(g); })());
+{ const g=JSON.parse('{"sh":{"d":5,"n":{"__proto__":3,"constructor":2,"toString":1,"rsw":4,"rsa":-2,"x":"abc","temper":1e9,"z":true}}}'), c=clean(g); ok('shop counts: prototype names and bad counts dropped, own ids clamped',J(c.sh)===J({d:5,n:{rsw:4,temper:9999}})&&Object.getPrototypeOf(c.sh.n)===Object.prototype,J(c.sh)); }
+ok('a clean save stays as it is',(()=>{ const g={top:3,best:21,clears:[4,3,2,0,0,0],as:500,lock:2,prism:1,sh:{d:20000,n:{rsw:3}},run:null}; return J(clean(g))===J(g); })());
 { const o=x.sanitizeGear({ab:{top:2,as:-1}}); ok('sanitizeGear carries gear.ab (the hook)',o&&o.ab&&o.ab.top===2&&o.ab.as===0&&o.ab.clears.length===6); }
 // the flag and the window
 W.join('a',{name:'Alice',look:{cls:'warrior'},save:{level:40}}); W.join('b',{name:'Bob',look:{cls:'warrior'},save:{level:39}}); tick(2);
@@ -513,6 +513,86 @@ const worldOf=q=>J(Object.assign({},q.gear,{ab:0}))+'|'+q.exp+'|'+q.level+'|'+q.
     if(why) fail.push(id+'@'+x.abRoundLv(d,r)+': '+why);
     if(Bs.inst){ W.receive('bs',{t:'dg',a:'leave'}); tick(2); if(Bs.inst){ W.receive('bs',{t:'dg',a:'leave'}); tick(2); } } }
   ok('every whitelisted boss ('+x.AB_BOSS_OK.length+' of 24) passes the disc check at '+lvls.map(l=>x.abRoundLv(...l)).join(' / ')+': spawn, engage, 30 s of its kit with no throw and no NaN, stays on the disc, adds in the run, dies and wins the round',fail.length===0,fail.join('; ')); }
+// ---- B10: Abyssal Shards and the Abyss shop (server/abyss/pay.js, shared/abyss/shop.js)
+{ x.abKindDev.force='fight';
+  const pay=(d,r,k)=>x.abShardsOf(d,r,k||'fight'), fl=a=>a.every((v,i)=>i===0||v>=a[i-1]);
+  ok('the pay: round 1 of difficulty I is the base, difficulty scales it, ~x1.2 a round, a boss round x2.5, an Event / Shrine nothing, a bad difficulty nothing',pay(0,1)===10&&pay(4,1)===70&&Math.abs(pay(2,10)/pay(2,9)-1.2)<0.02&&Math.abs(pay(1,7,'boss')-pay(1,7)*2.5)<=1.5&&pay(0,3,'event')===0&&pay(0,3,'shrine')===0&&pay(9,1)===0&&pay(-1,1)===0);
+  ok('the clear bonus is the last three rounds again (finite difficulties only; Infinite has none)',[0,1,2,3,4].every(d=>{ const n=x.AB_DIFFS[d].rounds; return x.abClearBonus(d)===pay(d,n-2)+pay(d,n-1)+pay(d,n); })&&x.abClearBonus(5)===0);
+  // shards a minute rise with depth: the marginal rate of every next round (a rough round time x.AB_ROUND_S) and the average of a run that stops at round R
+  const kindOf=(d,r)=>x.abIsBossRound(d,r)?'boss':'fight';
+  const rise=[0,1,2,3,4,5].every(d=>{ const n=x.AB_DIFFS[d].rounds||40; let S=0,T=0,last=0,lastM=0; for(let r=1;r<=n;r++){ const k=kindOf(d,r), p=pay(d,r,k), t=x.AB_ROUND_S(r,k); S+=p; T+=t; const avg=S/T, m=p/t; if(avg<last||m<lastM*0.999) return false; last=avg; lastM=m; } return true; });
+  ok('shards a minute never fall with depth: the marginal rate and the average of a run to round R rise at every round of every difficulty',rise);
+  ok('dying at round 15 of difficulty V pays far more than three runs to round 5',(()=>{ let a=0,b=0; for(let r=1;r<=15;r++) a+=pay(4,r,kindOf(4,r)); for(let r=1;r<=5;r++) b+=pay(4,r); return a>3*b; })());
+  const total=d=>{ let s=x.abClearBonus(d); for(let r=1;r<=x.AB_DIFFS[d].rounds;r++) s+=pay(d,r,kindOf(d,r)); return s; };
+  const V=total(4); ok('a difficulty V clear pays about one Void Anchor / one Abyss Heart at the base price, a Prism is about three clears',x.abShopRow('lock').price>=V*0.9&&x.abShopRow('lock').price<=V*1.2&&x.abShopRow('heart').price===x.abShopRow('lock').price&&x.abShopRow('prism').price===3*x.abShopRow('lock').price,'V clear '+V);
+  console.log('     shards a run (rounds + clear bonus): '+[0,1,2,3,4].map(d=>x.AB_DIFFS[d].id+' '+total(d)).join(', '));
+  ok('the shop rows: unique ids, common rows with a daily stock and an essence the game knows, specials open at III / IV / V',(()=>{ const ids=new Set(x.AB_SHOP.map(r=>r.id)); return ids.size===x.AB_SHOP.length&&x.AB_SHOP.every(r=>(r.kind==='common'?r.day>=1&&r.open===0:r.day===undefined&&r.open>=3)&&r.price>0&&r.give.n>=1&&(!/^ess_/.test(r.give.to)||x.essOf(r.give.to)))&&x.abShopRow('heart').open===3&&x.abShopRow('lock').open===4&&x.abShopRow('prism').open===5; })());
+  ok('abShopRow and the specials\' price: own ids only; x1.5 a copy bought today',x.abShopRow('__proto__')===null&&x.abShopRow('constructor')===null&&x.abShopRow(7)===null&&x.abShopRow('toString')===null&&x.abShopPrice(x.abShopRow('lock'),0,1)===20000&&x.abShopPrice(x.abShopRow('lock'),2,1)===45000&&x.abShopPrice(x.abShopRow('lock'),0,2)===50000&&x.abShopPrice(x.abShopRow('rsw'),3,2)===120);
+  // a round won pays at once and a fall keeps it
+  const SP=mk('sp',60); SP.gear.ab.top=0; SP.gear.ab.as=0; const w0=[SP.gear.coins,SP.level,SP.exp];
+  sent.length=0; W.receive('sp',{t:'abyss',a:'go',d:0}); tick(2); let run=runOf(SP); upto(run,600);
+  ok('round 1 won: its shards are credited at once (the balance, the abs event, a toast)',SP.gear.ab.as===pay(0,1)&&evs('sp','abs').some(e=>e[2]===1&&e[3]===pay(0,1)&&e[4]===0&&e[5]===pay(0,1))&&sent.some(q=>q[1].t==='snap'&&(q[1].ev||[]).some(e=>e&&e[0]==='toast'&&e[1]==='sp'&&/\+\d+ Abyssal Shards/.test(e[2]))),J(SP.gear.ab.as));
+  W.receive('sp',{t:'abyss',a:'skip'}); W.receive('sp',{t:'abyss',a:'next',i:0}); tick(2); run=runOf(SP); upto(run,600);
+  ok('round 2 adds its own (more than round 1)',SP.gear.ab.as===pay(0,1)+pay(0,2)&&pay(0,2)>pay(0,1));
+  W.receive('sp',{t:'abyss',a:'skip'}); W.receive('sp',{t:'abyss',a:'next',i:0}); tick(2); const run3=runOf(SP); const kept=SP.gear.ab.as; SP.hp=0; SP.dead=true; SP.deadT=0; tick(Math.ceil(4/0.05));
+  ok('a fall in round 3 keeps every shard of the rounds won, and pays nothing for the lost round; no coins, XP or level from the Abyss',!SP.inst&&SP.gear.ab.as===kept&&kept===pay(0,1)+pay(0,2)&&SP.gear.coins===w0[0]&&SP.level===w0[1]&&SP.exp===w0[2]);
+  // the last round: its pay and the clear bonus
+  SP.gear.ab.as=0; const last=x.abRunNewS(SP,0,7,undefined,'forest','fight'); x.abStartRoundS(SP,last); tick(2); sent.length=0; upto(last,600);
+  ok('the last round of difficulty I pays its round and the clear bonus (the abs event names the bonus)',SP.gear.ab.as===pay(0,7)+x.abClearBonus(0)&&evs('sp','abs').some(e=>e[4]===x.abClearBonus(0)&&e[3]===pay(0,7)+x.abClearBonus(0)),J(SP.gear.ab.as)); tick(Math.ceil(25/0.05)); SP.hp=SP.maxHp;
+  // a cap: the balance never passes AB_AS_MAX
+  SP.gear.ab.as=x.AB_AS_MAX-3; W.receive('sp',{t:'abyss',a:'go',d:0}); tick(2); upto(runOf(SP),600); ok('the balance stops at AB_AS_MAX',SP.gear.ab.as===x.AB_AS_MAX); W.receive('sp',{t:'dg',a:'leave'}); tick(2); W.receive('sp',{t:'dg',a:'leave'}); tick(2); SP.gear.ab.run=null;
+}
+// guests earn no shards (a second server with accounts: a guest at level 60 and a registered hiker through the same hook)
+{ const {memoryAccounts}=require('./headless'), {store,auth}=memoryAccounts(), sent2=[];
+  const L2=loadServer({dev:false,log(){},store,auth,send(to,m){ sent2.push([to,m]); }},['abPayRoundP','isGuestP']); const W2=L2.api, x2=L2.x;
+  W2.join('gu',{acct:'g'.repeat(32),name:'Guesty',look:{cls:'warrior'},save:{level:60}}); W2.join('rg',{acct:'r'.repeat(32),name:'Regis',look:{cls:'warrior'},save:{level:60}}); for(let i=0;i<40;i++) W2.tick(0.05);
+  const G=W2.players.get('gu'), R=W2.players.get('rg'); G.acct='g'.repeat(32); G.user=undefined; R.acct='user:regis'; R.user='Regis'; const fake={abD:0,abR:1,abKind:'fight'};
+  x2.abPayRoundP(G,fake,false); x2.abPayRoundP(R,fake,false);
+  ok('a guest is a guest and earns no shards; a registered hiker does',x2.isGuestP(G)&&!x2.isGuestP(R)&&(G.gear.ab.as|0)===0&&R.gear.ab.as===10,J([G.gear.ab&&G.gear.ab.as,R.gear.ab&&R.gear.ab.as])); }
+// the shop
+{ const SP=W.players.get('sp'); SP.hp=SP.maxHp; SP.dead=false; const shop=()=>{ sent.length=0; W.receive('sp',{t:'abyss',a:'shop'}); return abm('sp').filter(m=>m.a==='shop').pop(); };
+  const buy=(id,n)=>{ W.receive('sp',{t:'abyss',a:'buy',id,n}); tick(1); };
+  const snap=()=>J([SP.gear.ab,SP.gear.rsw,SP.gear.rsa,SP.gear.rsr,SP.gear.temper,SP.gear.coins,SP.gear.awm]);
+  const realNow=Date.now; let off=0; Date.now=()=>realNow()+off*86400000;
+  try{
+  SP.gear.ab.top=2; SP.gear.ab.as=10000; SP.gear.rsw=0; let sh=shop(); const row=id=>sh.rows.find(r=>r.id===id);
+  ok('the shop info: the balance, one row per item, daily stock, locked specials with their difficulty',sh&&sh.as===10000&&sh.rows.length===x.AB_SHOP.length&&row('rsw').left===5&&row('rsw').price===60&&row('lock').left===-1&&row('heart').ok===0&&row('heart').open===3&&row('rsw').ok===1&&sh.d===x.gsDayOf(Date.now()),J(sh&&sh.rows&&row('heart')));
+  buy('rsw',2); ok('a common item within stock: charged, granted, the stock goes down',SP.gear.ab.as===10000-120&&SP.gear.rsw===2&&SP.gear.ab.sh.n.rsw===2&&shop().rows.find(r=>r.id==='rsw').left===3);
+  buy('rsw',4); ok('more than the stock left is refused and charges nothing',SP.gear.ab.as===9880&&SP.gear.rsw===2);
+  buy('rsw',3); buy('rsw',1); ok('the last of the stock sells, then it is sold out',SP.gear.rsw===5&&SP.gear.ab.as===10000-300&&shop().rows.find(r=>r.id==='rsw').left===0);
+  buy('coins',1); buy('temper',2); buy('echo',1); buy('ess_prime',1); buy('rsr',1); buy('rsa',1);
+  ok('the other common rows grant what the real saves hold (coins, Tempering Stones, Echo Shards, Prime Essence, the stones)',SP.gear.temper>=2&&SP.gear.awm.echo>=1&&SP.gear.awm.ess_prime===1&&SP.gear.rsr>=1&&SP.gear.rsa>=1&&sent.length>=0);
+  off=1; sh=shop(); ok('the next UTC day the stock is back',row('rsw').left===5&&SP.gear.ab.sh.n.rsw===undefined&&SP.gear.ab.sh.d===x.gsDayOf(Date.now())); buy('rsw',5); ok('...and sells again',SP.gear.rsw===10);
+  // specials: locked until the difficulty is beaten
+  SP.gear.ab.as=1e8; let b=snap(); buy('heart',1); ok('the Abyss Heart is refused before difficulty III is beaten (top 2): nothing charged, nothing granted',snap()===b);
+  SP.gear.ab.top=3; buy('heart',1); ok('...and sold after it (top 3)',!!SP.gear.awm.abyss&&SP.gear.awm.abyss===1&&SP.gear.ab.as===1e8-20000);
+  b=snap(); buy('lock',1); ok('the Void Anchor needs difficulty IV (top 3 refused)',snap()===b); SP.gear.ab.top=4; buy('lock',1); ok('...top 4: sold, gear.ab.lock 1',SP.gear.ab.lock===1);
+  b=snap(); buy('prism',1); ok('the Ascendant Prism needs difficulty V (top 4 refused)',snap()===b); SP.gear.ab.top=5; const a0=SP.gear.ab.as; buy('prism',1); ok('...top 5: sold at the base price, gear.ab.prism 1',SP.gear.ab.prism===1&&a0-SP.gear.ab.as===60000);
+  // the price rises with every one bought today, and resets next day
+  SP.gear.ab.as=1e8; const p0=SP.gear.ab.as; buy('prism',1); const p1=p0-SP.gear.ab.as; buy('prism',2); const p2=p0-p1-SP.gear.ab.as;
+  ok('a special costs x1.5 more for each one bought today: the 2nd 90,000, then two more 135,000 + 202,500',p1===90000&&p2===135000+Math.ceil(60000*1.5**3)&&SP.gear.ab.prism===4,J([p1,p2]));
+  ok('the shop shows the next price and an unlimited special',shop().rows.find(r=>r.id==='prism').price===Math.ceil(60000*1.5**4)&&row('prism').left===-1);
+  buy('lock',1); ok('another special keeps its own count (the Void Anchor\'s 2nd copy costs 30,000)',SP.gear.ab.sh.n.lock===2);
+  off=2; ok('the next day every special is at its base price again',shop().rows.find(r=>r.id==='prism').price===60000&&row('lock').price===20000&&SP.gear.ab.sh.n.prism===undefined);
+  // refusals
+  SP.gear.ab.as=7; b=snap(); buy('rsw',1); buy('prism',1); ok('not enough shards: refused, nothing charged, nothing granted',snap()===b);
+  SP.gear.ab.as=1e8; b=snap(); for(const id of ['__proto__','constructor','toString','hasOwnProperty','','nope',7,null,undefined,{},[],'rsw ','RSW']) for(const n of [1,2]){ try{ x.abBuyP(SP,id,n); }catch(e){ ok('abBuyP throws on id '+J(id),false,e.message); } }
+  ok('bad ids (__proto__, constructor, toString, unknown, numbers, objects) are refused: nothing charged, nothing granted',snap()===b);
+  b=snap(); for(const n of [0,-1,1e9,1.5,'2','1',NaN,Infinity,null,undefined,{},100,x.AB_BUY_MAX+1]){ try{ x.abBuyP(SP,'temper',n); W.receive('sp',{t:'abyss',a:'buy',id:'temper',n}); }catch(e){ ok('abBuyP throws on n '+J(n),false,e.message); } }
+  ok('bad counts (0, -1, 1e9, 1.5, strings, NaN, Infinity, null, 100) are refused: nothing charged, nothing granted',snap()===b);
+  b=snap(); for(const m of [{id:'rsw'},{n:1},{id:'__proto__',n:1},{id:'constructor',n:1}]) W.receive('sp',Object.assign({t:'abyss',a:'buy'},m)); ok('messages without an id or a count change nothing',snap()===b);
+  SP.gear.rsw=x.RL_STONE_MAX; SP.gear.ab.sh.n={}; SP.gear.ab.as=1000; b=snap(); buy('rsw',1); ok('a full pile (no room for the goods) refuses before charging',snap()===b); SP.gear.rsw=0;
+  SP.gear.ab.sh.n={}; SP.gear.ab.prism=x.AB_PRISM_MAX; SP.gear.ab.as=1e9; b=snap(); buy('prism',1); ok('the Prism count cap refuses before charging',snap()===b); SP.gear.ab.prism=0;
+  // inside a run: no shopping
+  SP.gear.ab.as=1000; W.receive('sp',{t:'abyss',a:'go',d:0}); tick(2); b=snap(); const inRun=!!SP.inst; buy('rsw',1); ok('no buying inside a run',inRun&&SP.gear.ab.as===1000&&SP.gear.rsw===0); W.receive('sp',{t:'dg',a:'leave'}); tick(2); W.receive('sp',{t:'dg',a:'leave'}); tick(2);
+  // level and flag
+  const LOW=mk('lw',39); LOW.gear.ab.as=1000; W.receive('lw',{t:'abyss',a:'buy',id:'rsw',n:1}); ok('level 39 cannot buy',LOW.gear.ab.as===1000&&!LOW.gear.rsw);
+  x.abSwitch(false); SP.gear.ab.as=1000; W.receive('sp',{t:'abyss',a:'buy',id:'rsw',n:1}); ok('flag off: the shop is silence',SP.gear.ab.as===1000); x.abSwitch(true);
+  // the day state and the save round-trip
+  off=0; SP.gear.ab.as=5000; buy('rsw',1); const rt=x.sanitizeGear(JSON.parse(J(SP.gear)),'warrior'); ok('today\'s purchases and the Abyss goods survive a save (sanitizeGear)',J(rt.ab.sh)===J(SP.gear.ab.sh)&&rt.ab.as===SP.gear.ab.as&&rt.ab.prism===SP.gear.ab.prism&&rt.ab.lock===SP.gear.ab.lock&&(rt.awm.abyss|0)===(SP.gear.awm.abyss|0),J(rt.ab.sh));
+  const wk=x.sanitizeGear({awm:{abyss:1e12,__proto__:{x:1}},ab:{prism:1e12}},'warrior'); ok('the Heart and the Prism are capped by the sanitizer',wk.awm.abyss===99999&&wk.ab.prism===x.AB_PRISM_MAX,J([wk.awm,wk.ab.prism]));
+  }finally{ Date.now=realNow; }
+}
 x.abKindDev.force=''; x.abKindDev.mode=''; x.abKindDev.boss='';
 // the Test: kill the code and the test fails (see the usage note at the top)
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

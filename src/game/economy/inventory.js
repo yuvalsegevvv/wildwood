@@ -22,6 +22,7 @@ function renderInv(){
   $('#invCoins').textContent=fmtCoins(GEAR.coins)+' coins';
   $('#invGems').textContent=(GEAR.gem||0)+' gems';
   $('#invAmber').textContent=(GEAR.amb||0)+' amber';
+  { const sh=$('#invShards'), n=NET.ab&&GEAR.ab?GEAR.ab.as|0:0; if(sh){ sh.hidden=!n; sh.textContent=fmtCoins(n)+' shards'; } }   // abyss: the Abyssal Shards (only once the mode is on and you hold some)
   const g=gearStats(), c=CLASSES[clsOf()];
   let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div>${invExtraStats()}</div>`;
   { const W=GEAR.eq.wpn||{}, act=ITEM[GEAR.eq.weapon]&&CLASS_OF[ITEM[GEAR.eq.weapon].slot];   // wpn: the three carried weapons; only the one for the class you play counts

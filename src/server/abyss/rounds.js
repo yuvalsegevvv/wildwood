@@ -117,6 +117,7 @@ function abRoundWonS(run){
     if(d===AB_INF) g.best=Math.max(g.best|0,Math.min(999999,run.abR));
     if(last){ g.top=Math.max(g.top|0,Math.min(5,d+1)); g.clears[d]=Math.min(999999,(g.clears[d]|0)+1); g.run=null; dgEndEvS(run,p,1,''); toastTo(p.id,AB_DIFFS[d].name+' cleared! '+AB_DIFFS[d+1].name+' is open.','good'); }
     else { dgEvTo('abw',p.id,run.abR,run.abKind); abOfferP(run,p); if(g.run&&g.run.offer) g.run.pk=Math.max(0,(AB_KIND_PICKS[run.abKind]||1)-1); else abTileOfferP(p); toastTo(p.id,'Round '+run.abR+' won. Go on to the next round, or leave with everything you earned.','good'); }   // B8: an Elite / Trial pays 2 picks one after another (abAfterPickP)
+    abPayRoundP(p,run,last);   // abyss: the round's Abyssal Shards, credited now (a fall keeps them): abyss/pay.js
     p.dirty=true;
   }
   if(last) run.endT=S.t;   // the dungeons' end timer closes the run (dgRunTickS) and puts everyone back

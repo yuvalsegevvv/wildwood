@@ -28,6 +28,9 @@ A solo roguelike mode: one hiker, one life, rounds of small tiles with choices b
 | `game/abyss/encounter.js` | (B8) the Event and Shrine cards on the pick screen, `abKindChip` (a tile card's colour, name and line) |
 | `shared/abyss/boss.js` | (B9) the pool `AB_BOSS_ALL` (24), the whitelist `AB_BOSS_OK` / `AB_BOSS_OUT`, each boss's land look `AB_BOSS_LAND`, `abBossOk`, `abBossRowOf`, `abBossTileOf` |
 | `server/abyss/boss.js` | (B9) `abBossDrawS`, `abBossS` (the run's boss, `dgBossS`'s way), `abBossSetupS` / `abBossTickS` (the disc keeper), `abBossDownS` (the `bossDefeatedS` hook) |
+| `shared/abyss/shop.js` | (B10) `abShardsOf(d,r,kind)`, `abClearBonus(d)`, `AB_SHOP` rows (`abShopRow`), `abShopPrice`, `AB_SPECIAL_GROWTH`, `AB_ROUND_S` (a rough round time) |
+| `server/abyss/pay.js` | (B10) `abPayRoundP` (shards when a round is won), `abShopP` / `abBuyP`, `abGiveS`, `abDayS` (the UTC day) |
+| `game/abyss/shop.js` | (B10) the Shop tab of the Abyss window (`abTabsAdd`, `abShopRender`), `EVH.abs`; the balance also shows in the inventory header (`#invShards`) |
 | `tools/abyss-sim.js` | (B6) the balance yardstick (section 3e); `--check` is the test row `abyss-sim` |
 | `tools/abyss-smoke.js` | the test (server side); the client side is the Abyss case of `tools/client-smoke.js` |
 
@@ -40,7 +43,7 @@ A solo roguelike mode: one hiker, one life, rounds of small tiles with choices b
 | boss rounds | 7, 13, 19... (every 6 from 7) and the last round of a finite difficulty (I [7], II [7,10], III [7,13], IV [7,13,16], V [7,13,19]) |
 | `AB_ART_MAX`, `AB_RANK_MAX`, `AB_CURSE_MAX` | 20 artifacts at once, 5 copies (ranks), 5 curses |
 | `AB_ENTRY_LV` | 40 |
-| `AB_AS_MAX`, `AB_LOCK_MAX` | 999,999,999 shards, 9,999 Void Anchors (save caps) |
+| `AB_AS_MAX`, `AB_LOCK_MAX`, `AB_PRISM_MAX`, `AB_HEART_MAX` | 999,999,999 shards, 9,999 Void Anchors, Ascendant Prisms and Abyss Hearts (save caps; the Heart is `gear.awm.abyss`, capped by `awkSanitize`) |
 
 Save: `gear.ab = {top (0-5), best, clears:[6], as, lock, sh:{d,n:{id:count}}, run:null}`, rebuilt field by field by `abSanitize`; shop ids in `sh.n` are only checked against the shop's rows from B10 (for now: own keys, no prototype names, counts 1-9999, at most 64).
 
@@ -57,6 +60,8 @@ Save: `gear.ab = {top (0-5), best, clears:[6], as, lock, sh:{d,n:{id:count}}, ru
 | `server/dungeons/lobby.js` `dgLeaveP` | `abLeaveP`: between rounds it is "out", in a fight a fall |
 | `server/dungeons/mobs.js` `rewardAllS` | an Abyss run pays no world rewards |
 | `server/economy.js` `devP` | `abyss`: `v` = top difficulty open, `r` = jump to round r of the run you are in (`abDevP`) |
+| `server/abyss/rounds.js` `abRoundWonS` | `abPayRoundP(p,run,last)`: the round's Abyssal Shards (B10) |
+| `server/awakening.js` `AWK_STORE_IDS` | `'abyss'`: `gear.awm.abyss`, the Abyss Heart, is sanitized like Echo Shards (B10) |
 | `server/api.js` welcome | `ab:1` when `abOnS()`: the client's one flag field (`NET.ab`, `game/net/client.js` `onWelcome`) |
 | `server/abyss/rounds.js` `abRoundWonS` | `abw` event for a won round that is not the last of a finite difficulty |
 | `server/combat.js` `rollDmgS` | `abP(p,'atk')` multiplies the hit, `abP(p,'crit')` adds crit chance |
@@ -239,4 +244,38 @@ After a won round the offer holds 3 cards, each a **tile and a kind**, drawn by 
 
 ## 4. Messages
 
-`abyss{a:'open'}` → `{t:'abyss',a:'info',on:1,top,best,diffs,lv}`; `go,d`, `next`, `out` (B2; a won last round of a finite difficulty sets `gear.ab.top = max(top, d+1)` and `clears[d]++`; Infinite keeps `top` and records `best`); events `abr [pid, round, of, lv]` and `abw [pid, round]` (`docs/PROTOCOL.md`). B4: `pick,i`, `skip`, `drop,i`; events `abo [pid,'art',ids]` and `aba [pid,id,copies]`. B7: `next,i` (a tile of the stored offer), `abo [pid,'tile',[[tile,kind]...]]`, `abr [pid,round,of,lv,tile]`, the tp's `dg.tile`. Planned: `shop`, `buy,id,n`, `lock,id,i`. Build order: PLAN.md section 8.
+`abyss{a:'open'}` → `{t:'abyss',a:'info',on:1,top,best,diffs,lv}`; `go,d`, `next`, `out` (B2; a won last round of a finite difficulty sets `gear.ab.top = max(top, d+1)` and `clears[d]++`; Infinite keeps `top` and records `best`); events `abr [pid, round, of, lv]` and `abw [pid, round]` (`docs/PROTOCOL.md`). B4: `pick,i`, `skip`, `drop,i`; events `abo [pid,'art',ids]` and `aba [pid,id,copies]`. B7: `next,i` (a tile of the stored offer), `abo [pid,'tile',[[tile,kind]...]]`, `abr [pid,round,of,lv,tile]`, the tp's `dg.tile`. B10: `shop` → `{t:'abyss',a:'shop',as,top,d,rows:[{id,name,kind,price,left,open,ok}]}`, `buy,id,n` (n an integer 1-99, charged first on the server, answers with a toast and a fresh `shop`), event `abs [pid,round,shards,bonus,balance]`. Planned: `lock,id,i` (B11). Build order: PLAN.md section 8.
+
+## 5. Shards and the shop (B10: `shared/abyss/shop.js`, `server/abyss/pay.js`)
+
+**The pay.** A won Fight / Elite / Trial / Boss round credits its shards at once (`abPayRoundP`, called from `abRoundWonS`), so a fall keeps everything already earned; the last round of a finite difficulty adds the clear bonus (the last three rounds' pay again, `abClearBonus`). An Event or a Shrine pays nothing (no fight). A guest (`isGuestP`) earns no shards (it also cannot reach level 40). The Abyss pays no XP, coins or loot.
+
+`round pay = AB_SH_BASE (10) x AB_SH_DIFF[d] (1, 1.6, 2.6, 4.2, 7, 9 for I-V and Infinite) x 1.2^(round-1) x the kind` (Fight 1, Elite and Trial 1.5, Boss 2.5; the exponent stops at round 60). A round's time grows by a few seconds a round (`AB_ROUND_S`, a model: 45 s + 3 s a round, x1.5 for an Elite or Trial, x2.5 for a boss), shards grow x1.2, so the marginal shards a minute and the average of a run to round R both rise at every round of every difficulty: **pushing on always pays more a minute than restarting** (`abyss-smoke` checks both for all six difficulties).
+
+| Difficulty | Rounds | Round 1 pays | Last round pays | A whole run (rounds + clear bonus) |
+|---|---|---|---|---|
+| I | 7 | 10 | 75 | 250 |
+| II | 10 | 16 | 206 | 819 |
+| III | 13 | 26 | 580 | 2,311 |
+| IV | 16 | 42 | 1,618 | 7,028 |
+| V | 19 | 70 | 4,659 | 19,587 |
+| Infinite | no end | 90 | grows without limit, no clear bonus | per round only |
+
+(The last round is a boss round, x2.5; the run totals are printed by `node tools/abyss-smoke.js`.)
+
+**The shop** (`AB_SHOP`; the Shop tab of the Abyss window at the gate, key and window as the difficulties):
+
+| Item | Price | Stock a day | Goes to |
+|---|---|---|---|
+| Weapon / Armor Reroll Stone | 60 | 5 each | `gear.rsw` / `gear.rsa` |
+| Accessory Reroll Stone | 80 | 5 | `gear.rsr` |
+| Tempering Stone | 20 | 25 | `gear.temper` |
+| Echo Shard | 25 | 10 | `gear.awm.echo` |
+| 50,000 coins | 20 | 10 | `gear.coins` |
+| Fire / Water / Air / Earth / Light / Dark Essence | 40 | 5 each | `gear.awm.ess_<element>` |
+| Prime Essence | 120 | 2 | `gear.awm.ess_prime` |
+| **Abyss Heart** (opens after Difficulty III) | 20,000 | none | `gear.awm.abyss` |
+| **Void Anchor** (after IV) | 20,000 | none | `gear.ab.lock` |
+| **Ascendant Prism** (after V) | 60,000 | none | `gear.ab.prism` |
+
+A common row has a daily stock; a special has none but each one bought today costs `AB_SPECIAL_GROWTH` (1.5) times the one before (`abShopPrice`: the 2nd Prism 90,000, the 3rd 135,000...), back to the base price the next UTC day (`gsDayOf`, the daily quest set's reset). Prices were tuned with the table above: one Difficulty V clear (about 19,600 shards) buys one Void Anchor or one Abyss Heart, a Prism costs about three clears, a reroll stone about four first-difficulty rounds; the whole common stock of a day costs about 3,400 shards. Today's purchases are `gear.ab.sh = {d, n:{id:count}}` (`abSanitize` keeps own `AB_SHOP` ids only, a new day empties it). `abBuyP` checks everything before it charges (an own row, n an integer 1-99, opened by `gear.ab.top`, stock left, shards, room under the item's cap, not inside a run, level 40), then charges, then grants; `economy-fuzz` covers it. The Void Anchor and Prism have no use until B11; the Abyss Heart none until Awakening A6. The shop works in Shared mode too (it needs no run), but shards can only be earned where a run can start.
