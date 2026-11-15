@@ -9,7 +9,7 @@
    online (p.pshOpen is not saved), so a sale is always settled between two live players in one tick. A buy names the stall, the slot and the id AND price it saw: any mismatch is refused.
    rules:   PSHOP_MIN_LV 11 (above level 10), registered accounts only (isGuestP), tradeable = PSHOP_KINDS; tools, materials, potions, gems are not ITEM kinds in that list and cannot be listed.
    exports: pshopSanitize(g.psh) (players.js sanitizeGear)   test: tools/pshop-smoke.js   Panel: game/economy/pshop.js */
-const PSHOP_MIN_LV=11, PSHOP_MAX=24, PSHOP_PRICE_MAX=1e9, PSHOP_KINDS=['weapon','armor','ring','pendant','talisman'];
+const PSHOP_MIN_LV=11, PSHOP_MAX=24, PSHOP_PRICE_MAX=1e9, PSHOP_KINDS=['weapon','armor','ring','pendant','talisman','cape'];
 const pshopTradeable=id=>{ const it=typeof id==='string'?ITEM[id]:null; return !!it&&PSHOP_KINDS.includes(it.kind); };
 function pshopSanitize(a){
   const out=[]; if(!Array.isArray(a)) return out;

@@ -282,8 +282,8 @@ const R=loadShared(['DG_THEMES','DG_REWARDS','DG_REWARD_W','DG_GEAR_LV','DG_TIER
 const mulberry=a=>()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
 const within=(obs,n,p)=>Math.abs(obs-n*p)<=4*Math.sqrt(n*p*(1-p))+1;   // 4 sigma
 const ODDS=[0.65,0.25,0.07,0.025,0.005];   // the owner's table, written out here so a change to the code's own table cannot hide
-const RT=Object.values(R.DG_THEMES).filter(t=>!t.dev&&!t.trial), RKINDS={home:'weapon',vale:'armor',hoar:'ring',grey:'pendant',sun:'talisman',gloam:'armor',amber:'ring',isles:'pendant'};
-ok('each of the eight dungeons pays one kind of reward: Wildwood weapons, the Vale armour, the Reach rings, the Greyspine pendants, the Sunscar talismans (D4), the Gloamhorn level-40 armour, the Amber Reach level-40 rings, the Isles level-40 pendants (a reward for every theme and no other)',
+const RT=Object.values(R.DG_THEMES).filter(t=>!t.dev&&!t.trial), RKINDS={home:'weapon',vale:'armor',hoar:'ring',grey:'pendant',sun:'talisman',gloam:'cape',amber:'ring',isles:'pendant'};
+ok('each of the eight dungeons pays one kind of reward: Wildwood weapons, the Vale armour, the Reach rings, the Greyspine pendants, the Sunscar talismans (D4), the Gloamhorn capes (D5), the Amber Reach level-40 rings, the Isles level-40 pendants (a reward for every theme and no other)',
   RT.length===8&&RT.every(t=>R.DG_REWARDS[t.id]&&R.DG_REWARDS[t.id].kind===RKINDS[t.land])&&Object.keys(R.DG_REWARDS).filter(id=>!RT.some(t=>t.id===id)).length===0&&R.DG_REWARDS.sandglass.t===8&&R.DG_REWARDS.gloamvault.t===8&&R.DG_REWARDS.termitecathedral.t===8&&R.DG_REWARDS.cenote.t===8);
 { const P=id=>R.DG_REWARDS[id].pool;
   ok('the pools are "all kinds": the weapons of all three classes, the four armour pieces, 7 rings (no element and the six elements) and the 5 pendants',
@@ -296,7 +296,7 @@ ok('each of the eight dungeons pays one kind of reward: Wildwood weapons, the Va
 { const rnd=mulberry(11), N=60000, bad=[];
   for(const t of RT){ const K=R.DG_REWARDS[t.id], seen={}, rar=[0,0,0,0,0];
     for(let i=0;i<N;i++){ const id=R.dgClearReward(t.id,rnd), it=R.dgItem(id);
-      if(!it||it.kind!==K.kind||it.n!==0||it.lv!==(K.t===8?40:30)){ bad.push(t.id+' '+id); break; } const key=it.el||it.stat||it.slot; seen[key]=(seen[key]||0)+1; rar[it.rar]++; }
+      if(!it||it.kind!==K.kind||it.n!==0||it.lv!==(K.t===8?40:30)){ bad.push(t.id+' '+id); break; } const key=it.el||it.stat||it.combo||it.slot; seen[key]=(seen[key]||0)+1; rar[it.rar]++; }
     if(!K.pool.every(s=>within(seen[s]||0,N,1/K.pool.length))) bad.push(t.id+' pool not uniform '+JSON.stringify(seen));
     if(!rar.every((c,r)=>within(c,N,ODDS[r]))) bad.push(t.id+' rarity '+rar); }
   ok('a clear pays one fresh (+0) level-30 item (level 40 for the Sandglass) of the dungeon\'s kind: every piece of the pool comes up equally often, at the table\'s rarities',!bad.length&&R.dgClearReward('bare')===null&&R.dgClearReward('nope')===null,bad.join('; ')); }

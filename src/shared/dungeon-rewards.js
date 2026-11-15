@@ -33,7 +33,7 @@ const DG_REWARDS={
   bonefrostbarrow:{kind:'ring',  pool:[...RING_ELS]},
   blackseam:      {kind:'pendant',pool:[...PENDANT_STATS]},
   sandglass:      {kind:'talisman',pool:[...TAL_STATS],   t:8},   // D4: the Sunscar's dungeon pays a talisman of one of the five kinds at the rolled level (was a level-40 weapon)
-  gloamvault:     {kind:'armor',  pool:[...ARMOR_SLOTS],  t:8},   // ... the Gloamhorn's a level-40 armour piece
+  gloamvault:     {kind:'cape',   pool:[...CAPE_IDS],     t:8},   // D5: the Gloamhorn's pays a cape of one of the eight combos at the rolled level (was a level-40 armour piece)
   termitecathedral:{kind:'ring',  pool:[...RING_ELS],     t:8},
   cenote:         {kind:'pendant',pool:[...PENDANT_STATS], t:8}};   // the Emberwake Isles' pays a level-40 pendant of one of the five kinds (ids pendant8-..., never rolled)   // the Amber Reach's pays a level-40 ring of one of the seven types (three rolled lines once a Ring Reroll Stone rolls it, docs/ROLLS.md)
 const DG_REWARD_W=[650,250,70,25,5];   // out of 1000, Common..Legendary: 65 / 25 / 7 / 2.5 / 0.5%, the same at every tier (dungeon revamp D2; the luck per difficulty step is gone)
@@ -45,24 +45,26 @@ const enhMult=n=>1+ENH_STEP*n;
 // the rarity of one clear's piece, from x in [0,1)
 function dgRewardRarity(x){ let t=x*1000; for(let r=0;r<DG_REWARD_W.length;r++){ if(t<DG_REWARD_W[r]) return r; t-=DG_REWARD_W[r]; } return DG_REWARD_W.length-1; }
 const dgSuffix=(r,n)=>(r?'-'+RAR_KEY[r]:'')+(n?'+'+n:'');
-const dgGearId=(slot,r,n)=>slot+(DG_TIER+1)+dgSuffix(r,n), dgGearId40=(slot,r,n,roll,t)=>slot+(t||DG40_TIER+1)+dgSuffix(r,n)+(roll||''), dgRingId=(el,r,n)=>'ring-'+el+dgSuffix(r,n), dgRingId40=(el,r,n,roll,t)=>'ring'+(t||8)+'-'+el+dgSuffix(r,n)+(roll||''), dgPendantId=(stat,r,n)=>'pendant-'+stat+dgSuffix(r,n), dgPendantId40=(stat,r,n,roll,t)=>'pendant'+(t||8)+'-'+stat+dgSuffix(r,n)+(roll||''), dgTalismanId=(stat,r,n,roll,t)=>'talisman'+(t||8)+'-'+stat+dgSuffix(r,n)+(roll||'');   // t: the level digit 7 / 8 (default) / 9 / 10 (D4)
+const dgGearId=(slot,r,n)=>slot+(DG_TIER+1)+dgSuffix(r,n), dgGearId40=(slot,r,n,roll,t)=>slot+(t||DG40_TIER+1)+dgSuffix(r,n)+(roll||''), dgRingId=(el,r,n)=>'ring-'+el+dgSuffix(r,n), dgRingId40=(el,r,n,roll,t)=>'ring'+(t||8)+'-'+el+dgSuffix(r,n)+(roll||''), dgPendantId=(stat,r,n)=>'pendant-'+stat+dgSuffix(r,n), dgPendantId40=(stat,r,n,roll,t)=>'pendant'+(t||8)+'-'+stat+dgSuffix(r,n)+(roll||''), dgTalismanId=(stat,r,n,roll,t)=>'talisman'+(t||8)+'-'+stat+dgSuffix(r,n)+(roll||''), dgCapeId=(combo,r,n,roll,t)=>'cape'+(t||8)+'-'+combo+dgSuffix(r,n)+(roll||'');   // t: the level digit 7 / 8 (default) / 9 / 10 (D4)
 // an id back into its parts, or null when it is not a level-30 piece (or asks for more enhancement than its rarity allows)
 function dgParse(id){
-  const m=/^(?:(sword|bow|wand|helmet|top|bottom|shoes)(7|8|9|10)|ring(8|9|10)?-(basic|fire|water|earth|air|dark|light)|pendant(8|9|10)?-(xp|drop|coin|crit|critdmg)|talisman(7|8|9|10)-(aspd|buffdur|chg|cdr|atk))(?:-([reul]))?(?:\+(\d{1,2}))?(~(?:[a-m]\d\d){1,3})?$/.exec(String(id));
+  const m=/^(?:(sword|bow|wand|helmet|top|bottom|shoes)(7|8|9|10)|ring(8|9|10)?-(basic|fire|water|earth|air|dark|light)|pendant(8|9|10)?-(xp|drop|coin|crit|critdmg)|talisman(7|8|9|10)-(aspd|buffdur|chg|cdr|atk)|cape(7|8|9|10)-(al|ai|la|gh|hg|ia|mi|ml))(?:-([reul]))?(?:\+(\d{1,2}))?(~(?:[a-m]\d\d){1,3})?$/.exec(String(id));
   if(!m) return null;
-  const rar=m[9]?RAR_KEY.indexOf(m[9]):0, n=m[10]===undefined?0:+m[10], t=m[2]?+m[2]:m[3]?+m[3]:m[5]?+m[5]:m[7]?+m[7]:7, roll=m[11]||null;   // ring8-... is a level-40 ring, pendant8-... a level-40 pendant, talisman7- / 8- / 9- / 10- a level-30 / 40 / 50 / 60 talisman (D4; the old talisman8- ids are level 40)
-  if(m[10]!==undefined&&(n<1||String(n)!==m[10])||n>ENH_MAX[rar]) return null;
+  const rar=m[11]?RAR_KEY.indexOf(m[11]):0, n=m[12]===undefined?0:+m[12], t=m[2]?+m[2]:m[3]?+m[3]:m[5]?+m[5]:m[7]?+m[7]:m[9]?+m[9]:7, roll=m[13]||null;   // ring8-... is a level-40 ring, pendant8-... a level-40 pendant, talisman7- / 8- / 9- / 10- a level-30 / 40 / 50 / 60 talisman (D4; the old talisman8- ids are level 40)
+  if(m[12]!==undefined&&(n<1||String(n)!==m[12])||n>ENH_MAX[rar]) return null;
   if(roll&&(rlLinesFor(t)<1||!rlParseCode(roll,rlLinesFor(t)))) return null;   // only a level-40+ piece carries a roll, of exactly its level's count of different stats (40: 1, 50: 2, 60: 3)
-  return {slot:m[1]||(m[6]?'pendant':m[8]?'talisman':'ring'),el:m[4]||null,stat:m[6]||m[8]||null,rar,n,t,roll};
+  return {slot:m[1]||(m[6]?'pendant':m[8]?'talisman':m[10]?'cape':'ring'),el:m[4]||null,stat:m[6]||m[8]||null,combo:m[10]||null,rar,n,t,roll};   // cape7- / 8- / 9- / 10-<combo> (D5): a cape of level 30 / 40 / 50 / 60
 }
 // the record the piece would have in ITEM (stats of its rarity, then x enhMult). Level table (D2): digit t 7 = level 30, 8 = 40, 9 = 50, 10 = 60; every step above 40 is x DG_EQ_STEP on the level-40 numbers
 const DG_EQ_STEP=1.25, dgEqLv=t=>t<=7?30:(t-4)*10, dgEqK=t=>t>8?Math.pow(DG_EQ_STEP,t-8):1;   // (level of a digit; the stat factor on level 40)
 function dgItem(id){
   const q=dgParse(id); if(!q) return null;
   const {slot,el,stat,rar,n,t}=q, k=enhMult(n), tag=n?' +'+n:'', hi=t>=8, f=dgEqK(t), lv=dgEqLv(t), lvTag=lv>40?' Lv'+lv:'', pk=Math.pow(3,Math.max(0,t-8));   // pk: the sell-back price x3 a level step above 40
-  const it={id,slot,tier:hi||slot==='talisman'?DG40_TIER:DG_TIER,rar,lv,n,dg:true,t};
+  const it={id,slot,tier:hi||slot==='talisman'||slot==='cape'?DG40_TIER:DG_TIER,rar,lv,n,dg:true,t};
   if(el){ Object.assign(it,{kind:'ring',el,name:(rar?RARITY[rar]+' ':'')+(hi?RING40_NAMES:RING_NAMES)[el]+lvTag+tag,ratk:Math.round((hi?DG40_RING_ATK*f:RING_ATK)*RAR_MULT[rar]*k),price:Math.round((hi?DG40_PRICE*pk:DG_PRICE)*DG_RING_PRICE*Math.pow(3,rar))});
     if(hi){ it.roll0=true; if(q.roll){ it.rcode=q.roll; it.roll=rlLinesOf(q.roll,'ring',rlLinesFor(t)); } } }   // rolls: a level-40+ ring is unrolled until a Ring Reroll Stone rolls it
+  else if(slot==='cape'){ const cv=capeVals(q.combo,rar,n,t); Object.assign(it,{kind:'cape',combo:q.combo,name:(rar?RARITY[rar]+' ':'')+CAPE_BY_ID[q.combo].name+lvTag+tag,plus:cv.plus,minus:cv.minus,price:Math.round(DG40_PRICE*pk*DG_PENDANT_PRICE*Math.pow(3,rar))});
+    it.roll0=true; if(q.roll){ it.rcode=q.roll; it.roll=rlLinesOf(q.roll,'cape',rlLinesFor(t)); } }   // a cape has a fixed plus and minus and rlLinesFor(t) rolled lines (level 30: none) (Accessory Reroll Stone)
   else if(stat&&slot==='talisman'){ Object.assign(it,{kind:'talisman',stat,name:(rar?RARITY[rar]+' ':'')+TAL_NAMES[stat]+lvTag+tag,v:Math.round(TAL_BASE[stat]*(t<8?1/DG_EQ_STEP:f)*RAR_MULT[rar]*k*10000)/10000,price:Math.round(DG40_PRICE*pk*DG_PENDANT_PRICE*Math.pow(3,rar))});   // level 30 = level 40 / 1.25, 50 / 60 x1.25 per step like the other kinds
     it.roll0=true; if(q.roll){ it.rcode=q.roll; it.roll=rlLinesOf(q.roll,'talisman',rlLinesFor(t)); } }   // a talisman has a fixed bonus and rlLinesFor(t) rolled lines (level 30: none) (Accessory Reroll Stone)
   else if(stat){ Object.assign(it,{kind:'pendant',stat,name:(rar?RARITY[rar]+' ':'')+(hi?PENDANT40_NAMES:PENDANT_NAMES)[stat]+lvTag+tag,v:Math.round((hi?PENDANT40_BASE[stat]*f:PENDANT_BASE[stat])*RAR_MULT[rar]*k*10000)/10000,price:Math.round((hi?DG40_PRICE*pk:DG_PRICE)*DG_PENDANT_PRICE*Math.pow(3,rar))});   // (v rounded to 4 places: 0.066 and not 0.06600000000000002)
@@ -78,11 +80,11 @@ function dgItem(id){
 }
 // the id of a parsed piece q (dgParse) at rarity r, tempering n and roll code: the one place that picks the id maker by kind and level digit
 function dgIdOfQ(q,r,n,roll){
-  const hi=q.t>=8; return q.el?(hi?dgRingId40(q.el,r,n,roll,q.t):dgRingId(q.el,r,n)):q.slot==='talisman'?dgTalismanId(q.stat,r,n,roll,q.t):q.stat?(hi?dgPendantId40(q.stat,r,n,roll,q.t):dgPendantId(q.stat,r,n)):hi?dgGearId40(q.slot,r,n,roll,q.t):dgGearId(q.slot,r,n);
+  const hi=q.t>=8; return q.el?(hi?dgRingId40(q.el,r,n,roll,q.t):dgRingId(q.el,r,n)):q.slot==='talisman'?dgTalismanId(q.stat,r,n,roll,q.t):q.slot==='cape'?dgCapeId(q.combo,r,n,roll,q.t):q.stat?(hi?dgPendantId40(q.stat,r,n,roll,q.t):dgPendantId(q.stat,r,n)):hi?dgGearId40(q.slot,r,n,roll,q.t):dgGearId(q.slot,r,n);
 }
 // the id of one dungeon piece: kind ('weapon'|'armor'|'ring'|'pendant'), its pick (slot / element / stat), level digit t, rarity r, tempering n
 function dgPieceId(kind,pick,t,r,n){
-  const hi=t>=8; return kind==='talisman'?dgTalismanId(pick,r,n,null,t):kind==='ring'?(hi?dgRingId40(pick,r,n,null,t):dgRingId(pick,r,n)):kind==='pendant'?(hi?dgPendantId40(pick,r,n,null,t):dgPendantId(pick,r,n)):hi?dgGearId40(pick,r,n,null,t):dgGearId(pick,r,n);
+  const hi=t>=8; return kind==='cape'?dgCapeId(pick,r,n,null,t):kind==='talisman'?dgTalismanId(pick,r,n,null,t):kind==='ring'?(hi?dgRingId40(pick,r,n,null,t):dgRingId(pick,r,n)):kind==='pendant'?(hi?dgPendantId40(pick,r,n,null,t):dgPendantId(pick,r,n)):hi?dgGearId40(pick,r,n,null,t):dgGearId(pick,r,n);
 }
 // one piece for a dungeon (rnd: a function returning [0,1), Math.random when the server rolls it); null for a theme with no reward. eq: the equipment level index 0-3 (30 / 40 / 50 / 60), default the dungeon's own
 // (a 't:8' theme: level 40). Every kind exists at every level, so dungeons 5-8 pay their current kinds at the rolled level until D4-D7 change them.
@@ -119,6 +121,7 @@ function dgAllIds40(t){ t=t||8; const out=[]; for(let r=0;r<5;r++) for(let n=0;n
 function dgAllRingIds40(t){ t=t||8; const out=[]; for(let r=0;r<5;r++) for(let n=0;n<=ENH_MAX[r];n++) for(const e of RING_ELS) out.push(dgRingId40(e,r,n,null,t)); return out; }
 // every level-40 pendant: 5 kinds x the same 35 pairs = 175 (the Cenote's reward; no rolls)
 function dgAllTalismanIds(t){ t=t||8; const out=[]; for(let r=0;r<5;r++) for(let n=0;n<=ENH_MAX[r];n++) for(const st of TAL_STATS) out.push(dgTalismanId(st,r,n,null,t)); return out; }   // t: the level digit (default 8)
+function dgAllCapeIds(t){ t=t||8; const out=[]; for(let r=0;r<5;r++) for(let n=0;n<=ENH_MAX[r];n++) for(const c of CAPE_IDS) out.push(dgCapeId(c,r,n,null,t)); return out; }   // 8 combos x the 35 pairs = 280 a level (D5)
 function dgAllPendantIds40(t){ t=t||8; const out=[]; for(let r=0;r<5;r++) for(let n=0;n<=ENH_MAX[r];n++) for(const st of PENDANT_STATS) out.push(dgPendantId40(st,r,n,null,t)); return out; }
 // all the stones from +0 to a rarity's limit
 const dgEnhanceTotal=rar=>{ let s=0; for(let n=1;n<=ENH_MAX[rar];n++) s+=ENH_STONES(n); return s; };

@@ -91,14 +91,14 @@ A cape gives a big plus to one stat and a minus to another. Both stats come only
 
 | Id | Cape | Plus (common +0, eq 30) | Minus (+0) |
 |---|---|---|---|
-| `as` | Cape of the Brute | +12% attack | -5% attack speed |
+| `al` | Cape of the Brute | +12% attack | -5% attack speed |
 | `ai` | Cape of the Reckless | +12% attack | -5% cooldown reduction |
-| `sa` | Cape of the Whirlwind | +10% attack speed | -6% attack |
+| `la` | Cape of the Whirlwind | +10% attack speed | -6% attack |
 | `gh` | Cape of the Hawk | +6% crit rate | -0.15x crit damage |
 | `hg` | Cape of the Headsman | +0.30x crit damage | -3% crit rate |
 | `ia` | Cape of the Sage | +10% cooldown reduction | -6% attack |
 | `mi` | Cape of the Storm | +25% charge gain | -5% cooldown reduction |
-| `ms` | Cape of the Tide | +25% charge gain | -5% attack speed |
+| `ml` | Cape of the Tide | +25% charge gain | -5% attack speed |
 
 - The id is `cape<d>-<combo>[-rarity][+n][~roll]`, for example `cape9-gh-e+4~a57k12`.
 - **The plus** grows with rarity (`RAR_MULT`, except that a legendary cape uses x2 instead of x3) x enhancement (+10% a step) x eq level (x1.15 a step; a percent stacks with everything, so it grows more slowly than attack and health).
@@ -191,7 +191,7 @@ The travel window (`game/ui/travel.js`: `openTravel`, `renderTravel`, it has no 
 | D2 **(built)** | Eq 50 / 60 ids, 1 / 2 / 3 lines, the old level-40 migration, sacrifice, the fixed rarity, the eq table and piece count in `dgWinS` (it calls `dgClearReward(theme,rnd,steps)` once and grants the one id with `dgGrantItemP`; the fixed rarity replaces `DG_REWARD_W` 70 / 25 / 4 / 0.8 / 0.2 and the per-step luck `DG_REWARD_LUCK` / `dgRewardWeights`) | `rewards-smoke`, `rolls-smoke`, `rolls-client-smoke`, `pendants-smoke`, `server-smoke`, the four `<name>-dungeon-smoke` (`sandglass`, `gloamvault`, `termite`, `cenote`: they pin `DG_REWARDS`) |
 | D3 **(built)** | Rings need their kit or path | `rewards-smoke`, `skillsets-smoke`, `bond-smoke`, `testworld-smoke` (its kit wears a plain ring) |
 | D4 (built) | Talismans at all levels from the Sandglass; Pyrrhax's list emptied; the slot at 30 | `volcano-smoke`, `rewards-smoke`, `sandglass-dungeon-smoke`, `testworld-smoke` |
-| D5 | Capes: slot, the 8 combos, plus and minus growth, caps; the Gloamvault pays them | new `capes-smoke` |
+| D5 **(built)** | Capes: slot, the 8 combos, plus and minus growth, caps; the Gloamvault pays them | new `capes-smoke` |
 | D6 | Gloves: slot, the 6 kinds, combat hooks; the Termite Cathedral | new `gloves-smoke`, `skills-smoke` |
 | D7 | Shields: slot, the 7 kinds, hurt hooks; the Cenote | new `shields-smoke`, `server-smoke` |
 | D8 | Client: inventory slots and icons, forge tabs, details text, the board, a results card with several pieces; the docs | `rewards-client-smoke`, `client-smoke`, `phone-layout-smoke` |
@@ -223,6 +223,14 @@ The main files touched: `shared/dungeon-rewards.js`, `dungeon-items.js`, `rolls.
 - `dgParse` takes `talisman(7|8|9|10)-<kind>`; `dgTalismanId(stat,r,n,roll,t)` (t default 8, so every old `talisman8-` id and call is unchanged), `dgAllTalismanIds(t)`, `dgPieceId('talisman',stat,t,r,n)`; `dungeon-items.js` registers 7-10 (175 each). Value = `TAL_BASE` x `dgEqK(t)` (level 30: / 1.25, so atk is 24 / 30 / 37.5 / 46.9); price x3 per step above 40; name suffix ` Lv50` / ` Lv60`; look tier stays 40's. Lines 0 / 1 / 2 / 3 as every kind.
 - `DG_REWARDS.sandglass` = `{kind:'talisman',pool:TAL_STATS,t:8}`: one of the five kinds, the rolled level, unrolled. The slot's gate is the item's own `lv` (a level-30 talisman is wearable from 30); `TAL_LV` was read by nothing and is deleted.
 - Pyrrhax: `vbRewardP` keeps the ending toast only; `talRarityWeights` / `talRarityOf` / `TAL_W0` / `TAL_W5` are deleted. Rerolls and sacrifice are unchanged (`gear.rsr`, per level as D2). Tests: `rolls-smoke` (levels, values, old ids), `sandglass-dungeon-smoke`, `volcano-smoke`.
+
+### D5 as built (decisions)
+
+- `shared/capes.js` (`CAPE_COMBOS`, `capeVals`, `capeText`, `capeNet`). **The id letters follow the rolled-stat letters** (`RL_STATS`: a atk, g crit, h critdmg, i cdr, l aspd, m chg), so the plan's `as` / `sa` / `ms` are `al` / `la` / `ml` (table above fixed). Ids `cape<7|8|9|10>-<combo>[-rarity][+n][~roll]` (`dgCapeId`, `dgAllCapeIds(t)` = 280 a level, `dgParse` returns `combo`); records have `kind:'cape'`, `slot:'cape'`, `plus` / `minus` `{stat,v}`, lines 0 / 1 / 2 / 3, price like a talisman. `RL_STONE_KIND` / `RL_KIND_K` have a `cape` row (stone `rsr`).
+- Values: plus = base x rarity (`RAR_MULT`, legendary x2) x (1 + 0.1 n) x 1.15^(level step above 30); minus = base x (1 + 0.1 n).
+- Server: `rlSumOf` adds a cape's plus beside the lines (inside `RL_CAPS`; crit and crit damage go through `rlP('crit' / 'critdmg')`, so `CRIT_CAP` / `CRIT_MULT_CAP` in `rollDmgS` still cap them; attack % is `rlP('atk')` in `recalcP`). The minus (`rlMinusOf`) is taken off in `rlRefreshP` after the caps with `capeNet(sum,minus,avail)`: the stat's total never goes below zero, where `avail` (`rlAvailP`) is what the wearer has of that stat from elsewhere (base crit 12% and the 1.7x multiplier, the passives; attack % counts as 1). So a minus on attack speed does nothing to a hiker with none. `p.rl[stat]` can therefore be negative. A cape above your level counts for nothing; the Proving Isle ignores it like every rolled line. Hooks marked `// dgrev:`.
+- Client minimum: `BODY_SLOTS` + the doll's grid area `cape`, `capeIconArt`, details / tempering text, `rlUiSum` mirrors the minus, `rlUiKindOk` and `pshKinds` list capes (`PSHOP_KINDS` too). Forge tabs and full polish stay D8. The test world's kit holds all eight and wears the Headsman.
+- `gloamvault` pays capes (the tests of D2 / D3 were updated: `dungeons-smoke`, `rolls-smoke`, `gloamvault-dungeon-smoke`); `tools/capes-smoke.js` is new.
 
 ### D3 as built (decisions)
 

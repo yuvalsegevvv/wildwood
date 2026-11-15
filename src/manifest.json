@@ -105,6 +105,7 @@
     "items.js",
     "pendants.js",
     "talisman.js",
+    "capes.js",
     "quests.js",
     "main-quest.js",
     "main-quest-more.js",

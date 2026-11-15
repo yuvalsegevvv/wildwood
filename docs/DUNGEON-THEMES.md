@@ -535,7 +535,7 @@ One random **talisman** (D4; `DG_REWARDS.sandglass`, `t:8`) of one of the five k
 | 3 | **Requiem** (`requiem`) | eight water bursts round the rim, 0.35 s apart |
 
 ### 12.2 What a clear pays
-One random **level-40 armour piece** (`DG_REWARDS.gloamvault`, `t:8`): helmet, top, bottom or shoes, rarity 70 / 25 / 4 / 0.8 / 0.2%, the same piece for the whole party (`dgClearReward` / `dgGrantItemP`). Ids `helmet8` ... `shoes8`, +0 and **unrolled** until an Armor Reroll Stone is spent (`docs/ROLLS.md`).
+**Dungeon revamp D5: it pays capes** (`DG_REWARDS.gloamvault` = `{kind:'cape',pool:CAPE_IDS,t:8}`): one of the eight combos (`shared/capes.js`, `docs/DUNGEON-REVAMP.md` section 5b) at the rolled equipment level (`cape7-` ... `cape10-`), rarity 65 / 25 / 7 / 2.5 / 0.5%, the same piece for the whole party (`dgClearReward` / `dgGrantItemP`), +0 and **unrolled** until an Accessory Reroll Stone is spent (`docs/ROLLS.md`). (It used to pay a level-40 armour piece.)
 
 ### 12.3 Decisions (my picks)
 20. Entry level 38 and `gear.gloam >= 2`. 21. Water, goblin-family model (Haugbui already uses the wisp). 22. The Toll's numbers are constants at the top of the kit file.

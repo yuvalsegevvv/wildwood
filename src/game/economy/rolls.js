@@ -10,8 +10,10 @@ const rlUiStones=kind=>(GEAR&&GEAR[kind])||0;
 function rlUiSum(stat){
   if(typeof PVC!=='undefined'&&PVC&&PVC.on) return 0;   // pvp: no gear bonus on the island
   if(!GEAR||!GEAR.eq) return 0;
-  const items=[]; for(const s in GEAR.eq){ const it=GEAR.eq[s]?ITEM[GEAR.eq[s]]:null; if(it&&it.roll&&dgRingUiOn(it)) items.push(it); }   // dgrev: a ring of another element than your kit counts for nothing
-  return items.length?rlSumOf(items,stat,PL.level):0;
+  const items=[]; for(const s in GEAR.eq){ const it=GEAR.eq[s]?ITEM[GEAR.eq[s]]:null; if(it&&(it.roll||it.kind==='cape')&&dgRingUiOn(it)) items.push(it); }   // dgrev: a ring of another element than your kit counts for nothing
+  if(!items.length) return 0;
+  const v=rlSumOf(items,stat,PL.level), m=rlMinusOf(items,stat,PL.level);   // dgrev D5: a cape's minus, never below zero in total
+  return m?capeNet(v,m,GEAR.skills?passiveSum(GEAR.skills,PL.level,stat==='cdr'?'cd':stat,clsOf()):0):v;
 }
 function rlUiCdr(){ return rlUiSum('cdr'); }   // (the 5th argument of abilityCd)
 // quality 0..99 -> a colour from grey-green to gold
@@ -39,7 +41,7 @@ function rlUiRows(pred){
   for(const s in GEAR.eq){ const id=GEAR.eq[s], it=id?ITEM[id]:null; if(it&&pred(it)&&worn.has(id)) rows.push({id,worn:true,n:1}); }
   return rows.sort((a,b)=>b.worn-a.worn||ITEM[b.id].rar-ITEM[a.id].rar||ITEM[b.id].name.localeCompare(ITEM[a.id].name)||a.id.localeCompare(b.id));
 }
-const rlUiKindOk=it=>(it.kind==='weapon'||it.kind==='armor'||it.kind==='ring'||it.kind==='pendant'||it.kind==='talisman')&&it.dg;   // a ring has its own stone (gear.rsr)
+const rlUiKindOk=it=>(it.kind==='weapon'||it.kind==='armor'||it.kind==='ring'||it.kind==='pendant'||it.kind==='talisman'||it.kind==='cape')&&it.dg;   // a ring has its own stone (gear.rsr)
 function rlUiRollHtml(){
   const rows=rlUiRows(it=>rlUiKindOk(it)&&it.roll0);
   let h=`<p class="fg-intro">Level-40 gear and accessories carry one rolled line out of 13 stats, level 50 two and level 60 three. A roll costs ${RL_COST} Reroll Stone of the piece's kind (weapon, armour or ring) and replaces all its lines. Weapons roll higher offence, armour higher defence. Make stones in the other tab.</p>`+rlUiStoneBarHtml();

@@ -64,7 +64,8 @@ function itemIcon(it){
   else if(it.kind==='ring') g=ringIconArt(it);   // dungeons: the ring
   else if(it.kind==='pendant') g=pendantIconArt(it);
   else if(it.kind==='talisman') g=talismanIconArt(it);
-  if(it.dg&&it.kind!=='ring'&&it.kind!=='pendant'&&it.kind!=='talisman') g+=it.roll0?RL_SPARK:DG_SPARK;   // rolls: level-40 gear sparkles gold   // dungeons: a jade sparkle marks level-30 gear (a ring and a pendant draw theirs when tempered)
+  else if(it.kind==='cape') g=capeIconArt(it);   // dgrev D5
+  if(it.dg&&it.kind!=='ring'&&it.kind!=='pendant'&&it.kind!=='talisman'&&it.kind!=='cape') g+=it.roll0?RL_SPARK:DG_SPARK;   // rolls: level-40 gear sparkles gold   // dungeons: a jade sparkle marks level-30 gear (a ring and a pendant draw theirs when tempered)
   return `<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${g}</g></svg>`;
 }
 // the three tools: a wooden haft and a head in the colour of the tier's ore (ORE_GRADES)
@@ -105,6 +106,12 @@ function talismanIconArt(it){
     :`<path d="M16 12L19 21H13Z" fill="${c}" ${OUT}/><path d="M13 21H19V23H13Z" fill="${d}"/><path d="M16 23V29" stroke="${d}" stroke-width="2"/>`;
   return `<path d="M8 3.5Q16 12 24 3.5" fill="none" stroke="#15120e" stroke-width="3" stroke-linecap="round"/><path d="M8 3.5Q16 12 24 3.5" fill="none" stroke="${m}" stroke-width="1.5" stroke-linecap="round"/><path d="M16 9L25 14V27L16 31.5L7 27V14Z" fill="${m}" ${OUT}/><path d="M16 11.5L22.8 15.4V25.8L16 29.4L9.2 25.8V15.4Z" fill="#241a14"/>${glyph}`+(it.roll0?RL_SPARK:'');
 }
+// the capes (Gloamvault): a cloak hanging from two shoulder points in the rarity's cloth, a clasp in the plus stat's colour
+const CAPE_GLYPH={atk:'#ff6a3a',aspd:'#ffd24a',crit:'#e0384a',critdmg:'#b77cf5',cdr:'#62d6a0',chg:'#c07cf5'};
+function capeIconArt(it){
+  const m=PENDANT_METAL[it.rar], c=CAPE_GLYPH[it.plus.stat], d=icoShade(m,0.6);
+  return `<path d="M9 6Q16 9 23 6L28 27Q16 31 4 27Z" fill="${d}" ${OUT}/><path d="M10 8Q16 11 22 8L25 26Q16 29 7 26Z" fill="${m}" ${OUT}/><path d="M16 11V27M12 10L11 26.5M20 10L21 26.5" stroke="${d}" stroke-width=".8" opacity=".7"/><circle cx="16" cy="9.5" r="2.6" fill="${c}" ${OUT}/>`;
+}
 // bag icons for what is not equipment: a monster drop (a faceted shard in the monster's colour), ore (a rock), a log, a herb (a sprig)
 function matIconArt(col,kind){
   const d=icoShade(col,0.62), l=icoShade(col,1.3);
@@ -130,5 +137,5 @@ const btIcon=col=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g fi
 const matIcon=(col,kind,id,name)=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${kind==='drop'&&id?dropIconArt(id,col,name):matIconArt(col,kind)}</g></svg>`;
 // faint outline for an empty equipment slot
 function slotIcon(slot){
-  const fake=slot==='weapon'?ITEM.sword1:slot==='ring'?ITEM['ring-basic']:slot==='pendant'?ITEM['pendant-xp']:slot==='talisman'?ITEM['talisman8-atk']:ITEM[slot+'1'];  return itemIcon(fake).replace('class="ico"','class="ico ghost"');
+  const fake=slot==='weapon'?ITEM.sword1:slot==='ring'?ITEM['ring-basic']:slot==='pendant'?ITEM['pendant-xp']:slot==='talisman'?ITEM['talisman8-atk']:slot==='cape'?ITEM['cape8-al']:ITEM[slot+'1'];  return itemIcon(fake).replace('class="ico"','class="ico ghost"');
 }

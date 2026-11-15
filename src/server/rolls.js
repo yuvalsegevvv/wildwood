@@ -9,10 +9,12 @@
    test:    tools/rolls-smoke.js */
 // the capped sums of the worn pieces' lines, kept on the player (recalcP runs whenever a piece or the level changes); a piece above your level counts for nothing
 function rlRefreshP(p){
-  const eq=p.gear.eq, items=[], kit=eq.ring?dgKitElP(p):null; for(const k in eq){ const it=ITEM[eq[k]]; if(it&&(it.roll||it.kind==='talisman')&&(it.kind!=='ring'||dgRingOn(it,kit))) items.push(it); }   // dgrev: a ring whose element is not the kit's gives no lines   // (a talisman counts without a roll: its fixed bonus)
-  const o={}; if(items.length) for(const s of RL_STATS) { const v=rlSumOf(items,s.id,p.level); if(v) o[s.id]=v; }
+  const eq=p.gear.eq, items=[], kit=eq.ring?dgKitElP(p):null; for(const k in eq){ const it=ITEM[eq[k]]; if(it&&(it.roll||it.kind==='talisman'||it.kind==='cape')&&(it.kind!=='ring'||dgRingOn(it,kit))) items.push(it); }   // dgrev: a ring whose element is not the kit's gives no lines   // (a talisman counts without a roll: its fixed bonus)
+  const o={}; if(items.length) for(const s of RL_STATS) { let v=rlSumOf(items,s.id,p.level); const m=rlMinusOf(items,s.id,p.level); if(m) v=capeNet(v,m,rlAvailP(p,s.id)); if(v) o[s.id]=v; }   // dgrev D5: a cape's minus comes off the capped sum, and never takes the stat's total below zero
   p.rl=o;
 }
+// what a wearer has of one stat besides the rolled sums (a cape's minus may eat into it, never below zero): the base crit and multiplier, the passives
+const rlAvailP=(p,stat)=>stat==='atk'?1:stat==='crit'?CRIT_BASE+psP(p,'crit'):stat==='critdmg'?CRIT_MULT+psP(p,'critdmg'):stat==='cdr'?psP(p,'cd'):(stat==='aspd'||stat==='chg')?psP(p,stat):0;
 const rlP=(p,stat)=>(!p.pv&&p.rl&&p.rl[stat])||0;   // pvp: nothing rolled counts on the island
 function rlAddStonesP(p,kind,n){
   const have=p.gear[kind]||0, add=Math.min(n,RL_STONE_MAX-have); if(!(add>0)) return 0;
