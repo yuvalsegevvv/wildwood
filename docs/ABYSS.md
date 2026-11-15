@@ -2,7 +2,7 @@
 
 A solo roguelike mode: one hiker, one life, rounds of small tiles with choices between them, artifacts that live for the run, paid only in Abyssal Shards. Plan, numbers and decisions: the project's `abyss-plan/PLAN.md` (version 5). Stem `abyss`, prefix `ab` / `AB_`.
 
-**Status: B0-B7 built, behind `AB_ON`** (false until step B12). The server asks `abOnS()` = `AB_ON || io.test || S.dev`, so the test world and dev servers have it, the deploy (`--no-dev`) does not. Built so far: the slot split, the rules tables, the save `gear.ab`, the window message, and (B2) the server run with Fight rounds only: three waves of the Shardmere's glass kinds at the round's level with plain numbers (no `RIFT_HP_K` / `RIFT_DMG_K`), `go` / `next` / `out`, death and leaving end the run, no XP, coins or loot from Abyss kills. B3 (the client shell): the flag reaches the client as `welcome.ab`, the gate stands in Glasswell, the window lists the six difficulties, the `abr` banner, the `abw` event and the between-rounds bar (Next round / Leave); the HUD row `DG_HUD.abyss` and the void look were already there. B4-B5 (artifacts): the registry, twelve stat artifacts, the run's bar in the save, `abP`, an offer after every won round, pick / skip / drop, and the client's pick screen, bar and discard dialog. B6: ten combat artifacts, eight wildcards, ten curses (the engine, a dev way to give one) and the balance yardstick `tools/abyss-sim.js`, sections 3c-3e. B7: the tiles (section 3f): every Fight round is a land patch or cave chunk floating in the rift's void, and the next tile is chosen from three. Still none: bosses, shards, Elite / Trial / Event / Shrine rounds (B8-B9), the Events that hand out curses (B8).
+**Status: B0-B8 built, behind `AB_ON`** (false until step B12). The server asks `abOnS()` = `AB_ON || io.test || S.dev`, so the test world and dev servers have it, the deploy (`--no-dev`) does not. Built so far: the slot split, the rules tables, the save `gear.ab`, the window message, and (B2) the server run with Fight rounds only: three waves of the Shardmere's glass kinds at the round's level with plain numbers (no `RIFT_HP_K` / `RIFT_DMG_K`), `go` / `next` / `out`, death and leaving end the run, no XP, coins or loot from Abyss kills. B3 (the client shell): the flag reaches the client as `welcome.ab`, the gate stands in Glasswell, the window lists the six difficulties, the `abr` banner, the `abw` event and the between-rounds bar (Next round / Leave); the HUD row `DG_HUD.abyss` and the void look were already there. B4-B5 (artifacts): the registry, twelve stat artifacts, the run's bar in the save, `abP`, an offer after every won round, pick / skip / drop, and the client's pick screen, bar and discard dialog. B6: ten combat artifacts, eight wildcards, ten curses (the engine, a dev way to give one) and the balance yardstick `tools/abyss-sim.js`, sections 3c-3e. B7: the tiles (section 3f): every Fight round is a land patch or cave chunk floating in the rift's void, and the next tile is chosen from three. Still none: bosses, shards, Elite / Trial / Event / Shrine rounds (B8-B9), the Events that hand out curses (B8). B8 (round kinds, section 3g): the offer's cards have kinds (Fight, Elite, Trial, Event, Shrine; Boss comes in B9), an Elite and a Trial pay 2 picks, a Trial plays one of the seven rift modes, Events (8) and Shrines are cards with no fight.
 
 ## 1. Files
 
@@ -22,6 +22,10 @@ A solo roguelike mode: one hiker, one life, rounds of small tiles with choices b
 | `shared/abyss/tiles.js` | (B7) `defineAbTile`, `AB_TILES` / `AB_TILE_IDS` / `AB_TILE_BAD`, `abTileOf`, `abTileLayout` (the island), the 14 rows |
 | `server/abyss/tiles.js` | (B7) the next-tile offer: `abDrawTilesS`, `abRandTileS`, `abTileOfferP`, `abTilePickP` |
 | `game/abyss/view.js` | (B7) `abTileViewBuild` (the island, props, tears, rift sky), `abTileLookTune`, `AB_PROP_DRAW` |
+| `shared/abyss/events.js` | (B8) eight Events, one `defineAbEvent` row each (the registry `AB_EVENTS` / `AB_EVENT_BAD`, the kinds `AB_KIND_*`, `AB_TRIAL_MODES`, `abEncWindow` are in `shared/abyss.js`) |
+| `server/abyss/events.js` | (B8) Event and Shrine rounds: `abEncounterS`, `abEventPickP`, `abShrinePickP`, `abShrineOfferS`, `abEventFlagsP` |
+| `server/abyss/trial.js` | (B8) Trial rounds: `abTrialDefS`, the kit delegates, `abTrialSpawnS`, `abTrialWonS`, `RIFT_PAY.abyss` |
+| `game/abyss/encounter.js` | (B8) the Event and Shrine cards on the pick screen, `abKindChip` (a tile card's colour, name and line) |
 | `tools/abyss-sim.js` | (B6) the balance yardstick (section 3e); `--check` is the test row `abyss-sim` |
 | `tools/abyss-smoke.js` | the test (server side); the client side is the Abyss case of `tools/client-smoke.js` |
 
@@ -69,6 +73,10 @@ Save: `gear.ab = {top (0-5), best, clears:[6], as, lock, sh:{d,n:{id:count}}, ru
 | `server/dungeons/instances.js` `dgInfoS` | (B7) `tile:run.abTile`: the tp tells the client which tile a round is on |
 | `game/dungeon/view.js` `dgViewBuild` | (B7) `if(R.tile) return abTileViewBuild(R)` before the rift's branch |
 | `game/dungeon/look.js` `dgLookEnter` | (B7) `abTileLookTune(L,R)` after `riftLookTune` |
+| `server/rift.js` `riftDefOf(run)` | (B8) `run.rdef||RIFT_DEFS[run.rift]`: a Trial's rift def |
+| `server/rift.js` `riftSpawnS` | (B8) `if(run.ab) abTrialSpawnS(...)`: a Trial's monsters have the plain numbers of the round (no `RIFT_HP_K` / `RIFT_DMG_K`), the curses' factors, the Herald's health halved |
+| `server/rift.js` `riftWonS` | (B8) `if(run.ab) return abTrialWonS(run)`: a Trial's win ends the round, not a rift run (no `gear.rift`, no XP, no `dge`) |
+| `server/abyss/arts.js` `abPickP`, `abSkipP` | (B8) an Event / Shrine offer goes to `abEventPickP` / `abShrinePickP`; every resolved pick ends in `abAfterPickP` (the round's second pick, else the tiles) |
 | `game/main/loop.js` | `abUpdate(dt)` |
 | `game/ui/panels.js` | `'abyss'` in `PANELS` |
 | `game/dungeon/run.js` `dgRunEnter` | the client rebuilds an Abyss run's theme and layout (`abLayout(tile,seed)`, `shared/abyss.js`; `DG_RUN.tile`) |
@@ -180,6 +188,37 @@ A Fight round is played on a **tile**: one land's look and monster kinds, or one
 **The look** (`game/abyss/view.js`): ground quads blended between `ground` and `ground2`, a rock face under every edge over the void, hanging rock, a rock stack on each pillar, 12 (phone) / 22 props of the tile's `props` scattered 8 m from the landing and 3 m from the rim (decoration: the server never sees them), the tears, the landing, then the rift's own sky and shards (`riftSkyBuild`, `riftShardsBuild`) and its light, leaned toward the tile's `fog` and `ground` (`abTileLookTune`). Two merged vertex-coloured meshes: no `InstancedMesh`, so nothing to lack `instanceColor`.
 
 **The next-tile choice** (`server/abyss/tiles.js`). Round 1 is a random tile. After a won round (not the last of a finite difficulty) and once its artifact offer is resolved (pick, or skip; at once when there was no offer) the server draws 3 different tiles (not the one just played), stores `gear.ab.run.offer = {k:'tile', o:[{tile, kind:'fight'}]}` and sends `abo [pid,'tile',[[tile,kind]...]]` (again on `open`); `abyss{a:'next',i}` (i an integer index into the stored offer) plays that tile; a bad or missing i and a pending artifact offer are refused; `skip` never clears a tile offer; with no offer pending (the dev jump) `next` plays a random tile. For now every offered kind is `fight` (B8 adds the other kinds, B9 bosses). Client: the same screen as the artifact pick shows a card per tile (name, land / cave, kind, a colour chip, four of its monsters) with Later; the bar's Next brings the cards back.
+
+## 3g. Round kinds (B8): Elite, Trial, Event, Shrine
+
+After a won round the offer holds 3 cards, each a **tile and a kind**, drawn by `abDrawKindsS(d, r, es, n)` (`server/abyss/tiles.js`; `r` = the round the offer is for, `es` = `gear.ab.run.es`, the round of the last Event / Shrine played). Weights `AB_KIND_W`: **fight 45, elite 15, trial 10, event 15, shrine 10, boss 0** (boss comes in B9). Round 1 is always a Fight (`abGoP`). **Guarantee:** in rounds 4-6, 10-12, 16-18... (`abEncWindow(r)` = the window's first round) while no Event / Shrine was played inside the window (`es` below it) the offer holds at least one Event or Shrine card, and in the window's third round every card is one. The last round of a finite difficulty is never an Event or a Shrine (it wins the run). An Event / Shrine card has no tile (`tile:''`); a Trial card carries a `mode`. The kind is stored with the offer (`{tile, kind, mode?}`), cleaned by `abOfferSanitize`, shown on the tile cards (colour, icon, name, what it pays: `abKindChip`). `abKindDev = {force, mode}` pins every drawn kind (the smoke test; `devP abyss` `kind` / `mode`).
+
+| Kind | The round | Pays |
+|---|---|---|
+| Fight | 3 waves of the tile's monsters (B2) | 1 artifact pick (as since B4) |
+| Elite | the Fight's waves at half the size (`AB_ELITE_K`): half of the monsters elites (x2 health, scale 1.15), one champion in wave 2 and a second in wave 3 half of the time (x4 health, scale 1.5); `m.abTier` `'e'` / `'c'` | 2 picks, one after another |
+| Trial | a rift mode on its rift's platforms (below), the tile's monsters, plain numbers at the round level | 2 picks |
+| Event | plain rift platforms (the Shardmere's), no monsters; won at once; an encounter card | the card's own reward (curses come only from here) |
+| Shrine | plain platforms, no monsters; won at once; a shrine card | one of: heal to full, lift one curse (choose which), copy one artifact held (needs a free place of the 20 and rank under 5) |
+
+**Picks.** `AB_KIND_PICKS`; the first offer comes from `abOfferP` in `abRoundWonS`, the rest is owed in `gear.ab.run.pk`; `abAfterPickP` (after a pick, a skip, an Event or a Shrine) offers the next pick or, when none is owed, the tiles. An Event / Shrine round stores its card as the offer (`abEncounterS`, from the kit's setup) and is "won" from the start, so `pick` / `drop` / `next` / `out` work as between rounds; `skip` does nothing to it, and `next` is refused until it is answered.
+
+**Trials.** `AB_TRIAL_MODES` gives each mode the rift whose platforms it was designed for: heart on the Taproot, gale the Petal, beacons the Sunlit, thaw the Rime, lanterns the Long-night, quarry the Stone, gauntlet the Forge. The run's theme is that rift (the client builds its look; `abLayout('rift:<id>', seed)` is its layout), its `run.rdef` (`abTrialDefS`) a copy of the rift with `reward:'abyss'`, the tile's pool as kinds (the first four from stage 1, then one more every stage or two) and the pool's last kind as the Herald (x4 health after the halving). `DG_KITS.abyss` hands setup, tick, `onKill`, `onUse` and the HUD to `DG_KITS.rift` and the mode's `RIFT_MODE_KITS` entry unchanged, so the modes' own rules (breakers, gusts, beacons, frost, cores, pylons, champions and vents) all hold. `RIFT_PAY.abyss` pays nothing (no XP, coins or Essence, no `riftStageS` payment); `riftWonS` ends the ROUND (`abTrialWonS`: the left-over monsters go, `abRoundWonS`). A lost Trial (the heart broken, the gauntlet's clock) ends the run the dungeons' way (`dgLoseS`, then the close). **All seven modes work** (the smoke test wins each headless with the rift smoke's bot). Their `riftStageS` call needs no hook (nothing is paid per stage). The Trial HUD is the rift mode's tuple (`run.hud[0..7]`) with `1`, the round and the rounds after it; `DG_HUD.abyss` draws it with `DG_HUD.rift` minus the XP line, titled "Trial: <mode>".
+
+**Events** (`shared/abyss/events.js`, `defineAbEvent`; ops in `shared/abyss.js`: `art {rar, fam, n}`, `lose {n}`, `curse {n}`, `uncurse`, `heal`, `gamble {p, win, lose}`):
+
+| Event | Choices |
+|---|---|
+| The Whispering Altar | a rare artifact and a curse / heal to full / walk on |
+| The Void Peddler | lose one, gain two commons / a rare and a curse / walk on |
+| The Coin of Two Faces | 50%: a rare, else a curse / 34%: a wildcard, else two curses / walk on |
+| The Bargain Shard | a wildcard / a common / walk on |
+| The Fountain of Scars | heal to full and a curse / lift a curse / walk on |
+| The Broken Forge | lose one, gain a rare / lose two, gain a wildcard / walk on |
+| The Hungry Mirror | 60%: two commons, else lose one / a common and a curse / walk on |
+| The Tithe Collector | a common, heal and a curse / lose one, lift a curse / walk on |
+
+`abEventFlagsP` says which choices can be taken now (sent with the card; the client greys the rest): a choice is refused (toast, the offer stays) when it would lose what you do not hold, take the bar past 20, or the curses past `AB_CURSE_MAX` (a gamble counts its worse branch). Curses sit outside the 20. The Shrine's card is built when the round starts (`abShrineOfferS`: heal, a removal per distinct curse held, a copy of up to 4 distinct artifacts held while a place is free) and every use is checked again at the pick.
 
 ## 4. Messages
 

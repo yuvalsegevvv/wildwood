@@ -63,7 +63,7 @@ for(const m of x.MONS) if(!m.boss){ m.x=p.x+400; m.z=p.z+400; }
   p.cd.skill=p.cd.burst=0; p.cd.ult=30; W.receive('a',{t:'atk',k:'ult',face:0,aim:[0,0,-1]}); tick(2); ok('a second cast while it runs is ignored',p.cd.ult>28&&p.cd.ult<=30); }
 // ---- the stun lock: a second caster, the 50 s ----
 { const ms=pile(p,3); p.cd.ult=0; for(const m of ms) m.ultLock=x.S.t+30; cast('a'); ok('a locked enemy is hurt but not stunned again',ms.filter(m=>m.hp<m.maxHp).length>=2&&ms.every(m=>!(m.stunT>0)));
-  pile(p,3); for(const m of ms) m.ultLock=x.S.t-1; p.cd.ult=0; cast('a'); ok('the lock over, the next burst stuns again (even a different caster would be locked the same: it lives on the monster)',ms.every(m=>m.ultLock>x.S.t+40)); }
+  pile(p,3); for(const m of ms) m.ultLock=x.S.t-1; p.cd.ult=0; cast('a'); { const hit=ms.filter(m=>m.hp<m.maxHp); ok('the lock over, the next burst stuns again (even a different caster would be locked the same: it lives on the monster)',hit.length>=2&&hit.every(m=>m.ultLock>x.S.t+40),hit.length); }   /* only what the burst reached: the awake monsters walk during its 1.5 s windup, so one of three can end 3 m away (about 1 run in 20) */; }
 { const hv=x.MONS.find(m=>!m.boss&&!m.dead&&m.T.heavy);
   if(hv){ hv.stunT=0; hv.ultLock=0; hv.immune=false; x.ultStunS(hv); ok('a heavy enemy is stunned too (the burst ignores the heavy exclusion)',hv.stunT===x.ULT_STUN); } else ok('(no heavy monster in this world to test)',true);
   const m0=x.MONS.find(m=>!m.boss&&!m.dead); m0.stunT=0; m0.ultLock=0; m0.immune=true; x.ultStunS(m0); ok('an immune enemy is not stunned and its lock is not spent',!(m0.stunT>0)&&!(m0.ultLock>0)); m0.immune=false; }

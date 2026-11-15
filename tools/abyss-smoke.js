@@ -7,9 +7,11 @@
 // Usage: node tools/abyss-smoke.js
 const {loadServer}=require('./load');
 const sent=[];
-const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K','abP','AB_ARTS','AB_ART_BAD','defineAbArt','abArtStat','AB_CAPS','rollDmgS','hurtP','healP','damageMonsterS','abDrawOfferS','AB_CURSES','AB_CURSE_BAD','defineAbCurse','abCurseStat','abIsCurse','abHitS','abKillP','abThornsS','abShieldS','abCurseAddP','abGiveArtP','abSpawnS','DEF_BY_ID','AB_NTH','monK','AB_TILES','AB_TILE_IDS','AB_TILE_BAD','defineAbTile','abTileOf','abLayout','dgBake','dgFlow','CAVE_FLOOR_DEFS','abRandTileS','AB_TILE_OFFER_N']);
+const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['getH','recalcP','AB_ELITE_HP','AB_CHAMP_HP','RIFT_HERALD_HP','RIFT_GAUNT_S','RIFT_THAW_S','abKindDev','abDrawKindsS','abTileOfferP','abTileSendP','AB_CURSE_MAX','AB_KIND_W','AB_KIND_IDS','AB_KIND_PICKS','AB_TRIAL_MODES','AB_EVENTS','AB_EVENT_BAD','AB_CURSES','abEncWindow','abIsEvent','abEvWhyP','abShrineOfferS','abRoundWonS','abRunNewS','RIFT_DEFS','riftDefOf',  'AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K','abP','AB_ARTS','AB_ART_BAD','defineAbArt','abArtStat','AB_CAPS','rollDmgS','hurtP','healP','damageMonsterS','abDrawOfferS','AB_CURSES','AB_CURSE_BAD','defineAbCurse','abCurseStat','abIsCurse','abHitS','abKillP','abThornsS','abShieldS','abCurseAddP','abGiveArtP','abSpawnS','DEF_BY_ID','AB_NTH','monK','AB_TILES','AB_TILE_IDS','AB_TILE_BAD','defineAbTile','abTileOf','abLayout','dgBake','dgFlow','CAVE_FLOOR_DEFS','abRandTileS','AB_TILE_OFFER_N']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefined?'  ('+i+')':'')); if(!c) fails++; };
 const K=(id,s)=>x.AB_ARTS[id].k[s];   // the numbers are tuned by tools/abyss-sim.js: the tests read them from the rows
+// a hit of a size where rounding cannot matter: the damage a plain 50 does depends on the monster's kind (a weak kind made 7 -> 12 and a 5% rounding error), so the size is calibrated to about 800 taken (at most a fifth of max health) with no artifact on the bar
+const bigV=(q,m,bar)=>{ q.shield=null; q.dead=false; const keep=bar.slice(); bar.length=0; q.ab=null; q.vbGrace=0; q.hp=q.maxHp; const base=Math.max(1,x.hurtP(q,50,m)); q.hp=q.maxHp; bar.push(...keep); q.ab=null; return Math.max(50,Math.ceil(50*Math.min(800,q.maxHp*0.2)/base)); };
 const J=JSON.stringify, tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const noArtOffer=()=>{ const o=Dq.gear.ab.run.offer; return !o||o.k==='tile'; };   // B7: a resolved artifact offer is followed by the tile offer
 const lvs=(d,n)=>Array.from({length:n},(_,i)=>x.abRoundLv(d,i+1));
@@ -52,7 +54,7 @@ x.abSwitch(false); sent.length=0; W.receive('a',{t:'abyss',a:'open'}); ok('switc
 { const wel=pid=>sent.filter(q=>q[0]===pid&&q[1].t==='welcome').map(q=>q[1]).pop(); x.abSwitch(false); W.join('wf',{name:'Wf',look:{cls:'warrior'},save:{level:40}}); tick(1); const off=wel('wf'); x.abSwitch(true); W.join('wn',{name:'Wn',look:{cls:'warrior'},save:{level:40}}); tick(1); const on=wel('wn');
   ok('the welcome carries ab:1 when the flag is on and nothing when it is off',off&&on&&off.ab===undefined&&on.ab===1,J(off&&off.ab)+' '+J(on&&on.ab)); W.leave('wf'); W.leave('wn'); }
 // ---- B2: the run
-x.abSwitch(true);
+x.abSwitch(true); x.abKindDev.force='fight';   // B8: the offered kinds are pinned to Fights for everything up to the B8 section (it frees them again)
 ok('a saved run is kept while valid and young, dropped when old, malformed or past the last round',(()=>{ const now=Date.now(), c=r=>clean({run:r}).run;
   const g=c({d:1,r:3,at:now-1000}); return g&&g.d===1&&g.r===3&&c({d:1,r:3,at:now-(x.AB_RUN_KEEP_S+5)*1000})===null&&c({d:0,r:8,at:now})===null&&c({d:9,r:1,at:now})===null&&c({d:'x',r:1,at:now})===null&&c({d:0,r:1})===null&&c('q')===null&&c({d:0,r:1,at:now+1e9}).at<=Date.now(); })());
 const evs=(pid,k)=>sent.filter(s=>s[1].t==='snap').flatMap(s=>s[1].ev||[]).filter(e=>e&&e[0]===k&&e[1]===pid);
@@ -150,7 +152,7 @@ ok('pick / drop with no offer or mid-round do nothing',J(Dq.gear.ab.run.arts)===
 sent.length=0; upto(rD,600); ok('(round 1 won)',rD.abWon);
 const off1=Dq.gear.ab.run.offer, abo1=evs('d','abo').pop();
 ok('a won round stores an offer of 3 different artifacts (k art) and sends abo [pid, art, ids] with the same ids',off1&&off1.k==='art'&&off1.o.length===3&&new Set(off1.o).size===3&&off1.o.every(id=>x.AB_ARTS[id])&&abo1&&abo1[2]==='art'&&J(abo1[3])===J(off1.o),J(off1)+' '+J(abo1));
-ok('the offer is in the stored save before it is sent: the `you` message carries it and only the bar, curses and offer beside d, r, at',(()=>{ const y=sent.filter(q=>q[0]==='d'&&q[1].t==='you').pop(); const r=y&&y[1].gear.ab.run; return !!r&&J(Object.keys(r).sort())===J(['arts','at','curses','d','offer','r']); })());
+ok('the offer is in the stored save before it is sent: the `you` message carries it and only the bar, curses, offer, es and pk beside d, r, at',(()=>{ const y=sent.filter(q=>q[0]==='d'&&q[1].t==='you').pop(); const r=y&&y[1].gear.ab.run; return !!r&&J(Object.keys(r).sort())===J(['arts','at','curses','d','es','offer','pk','r']); })());
 sent.length=0; W.receive('d',{t:'abyss',a:'open'}); tick(1); const abo2=evs('d','abo').pop();
 ok('reopening during the run shows the same offer again',abo2&&J(abo2[3])===J(off1.o)&&J(Dq.gear.ab.run.offer)===J(off1),J(abo2));
 W.receive('d',{t:'abyss',a:'next',i:0}); tick(1); ok('next is refused while an offer is pending',runOf(Dq)===rD&&rD.abWon&&Dq.gear.ab.run.r===1);
@@ -191,8 +193,8 @@ ok('(round 2 on, a monster to hit)',!!mm&&rD.abR===2);
 { const R0=Math.random; Math.random=()=>0.5; try{
     const dmg=()=>x.rollDmgS(Dq,1,mm,null).v, v0=dmg(); arts().push('ab_edge','ab_edge','ab_fang'); const v1=dmg();
     ok('damage dealt: the same hit does the bar\'s factor more (rollDmgS)',Math.abs(v1/v0-K('ab_edge','atk')**2*K('ab_fang','atk'))<0.02*K('ab_edge','atk')**2*K('ab_fang','atk'),v0+' -> '+v1);
-    arts().length=0; arts().push('ab_scale','ab_scale'); Dq.vbGrace=0; Dq.hp=Dq.maxHp; const h0=x.hurtP(Dq,50,mm); Dq.hp=Dq.maxHp; arts().length=0; const h1=x.hurtP(Dq,50,mm); Dq.vbGrace=1e12;
-    ok('damage taken: the same hit does the factor of two Slate Scales (hurtP)',h1>20&&Math.abs(h0/h1-K('ab_scale','def')**2)<0.03,h1+' -> '+h0);
+    arts().length=0; const hv=bigV(Dq,mm,arts()); arts().push('ab_scale','ab_scale'); Dq.ab=null; Dq.vbGrace=0; Dq.shield=null; Dq.hp=Dq.maxHp; const h0=x.hurtP(Dq,hv,mm); Dq.hp=Dq.maxHp; arts().length=0; Dq.ab=null; const h1=x.hurtP(Dq,hv,mm); Dq.vbGrace=1e12;
+    ok('damage taken: the same hit does the factor of two Slate Scales (hurtP)',h1>20&&Math.abs(h0/h1-K('ab_scale','def')**2)<0.005,h1+' -> '+h0);
     arts().length=0; arts().push('ab_thread'); Dq.hp=1; x.healP(Dq,100); const g1=Dq.hp-1; arts().length=0; Dq.hp=1; x.healP(Dq,100); const g0=Dq.hp-1;
     ok('healing received x Mender\'s Thread (healP)',g0===100&&g1===Math.round(100*K('ab_thread','heal')),g0+' -> '+g1);
     arts().length=0; for(let i=0;i<10;i++) arts().push('ab_leech'); mm.hp=1e9; Dq.hp=1; const dd=x.damageMonsterS(mm,1,Dq,mm.x+3,mm.z); const gain=Dq.hp-1;
@@ -235,8 +237,8 @@ W.receive('d',{t:'abyss',a:'go',d:0}); tick(Math.ceil(5/0.05)); rD=runOf(Dq); co
   A6().length=0; A6().push('ab_thorn'); Dq.ab=null; mm6.hp=1000; mm6.dead=false; x.abThornsS(Dq,mm6); ok('Thornmail: the attacker loses a share of its own max health',Math.abs(1000-mm6.hp-1000*K('ab_thorn','thorns'))<1e-6,mm6.hp);
   // a wildcard's minus really applies
   A6().length=0; A6().push('ab_w_glass'); Dq.ab=null; ok('a wildcard: its plus AND its minus are in abP (damage x, damage taken x)',Math.abs(x.abP(Dq,'atk')-K('ab_w_glass','atk'))<1e-9&&Math.abs(x.abP(Dq,'def')-K('ab_w_glass','def'))<1e-9&&x.abP(Dq,'def')>1);
-  { const R0=Math.random; Math.random=()=>0.5; try{ Dq.vbGrace=0; Dq.hp=Dq.maxHp; const hg=x.hurtP(Dq,50,mm6); A6().length=0; Dq.ab=null; Dq.hp=Dq.maxHp; const h0g=x.hurtP(Dq,50,mm6); Dq.vbGrace=1e12;
-      ok('a wildcard\'s minus: the same hit really hurts more (hurtP: x1.75 above the 10% floor)',h0g>20&&Math.abs(hg/h0g-K('ab_w_glass','def'))<0.05,h0g+' -> '+hg); } finally { Math.random=R0; } }
+  { const R0=Math.random; Math.random=()=>0.5; try{ const hv=bigV(Dq,mm6,A6()); Dq.vbGrace=0; Dq.shield=null; Dq.hp=Dq.maxHp; const hg=x.hurtP(Dq,hv,mm6); A6().length=0; Dq.ab=null; Dq.hp=Dq.maxHp; const h0g=x.hurtP(Dq,hv,mm6); Dq.vbGrace=1e12;
+      ok('a wildcard\'s minus: the same hit really hurts more (hurtP: x1.75 above the 10% floor)',h0g>20&&Math.abs(hg/h0g-K('ab_w_glass','def'))<0.005,h0g+' -> '+hg); } finally { Math.random=R0; } }
   A6().length=0; A6().push('ab_w_colossus'); Dq.ab=null; ok('Colossus Heart: max health up, damage down (both factors in abP)',x.abP(Dq,'hp')>1&&x.abP(Dq,'atk')<1); A6().length=0; Dq.ab=null; }
 // Last Breath: saves once per copy, is consumed, the bar loses it
 { A6().push('ab_last','ab_last','ab_edge'); Dq.ab=null; x.recalcP&&0; Dq.hp=Dq.maxHp; Dq.dead=false; Dq.vbGrace=0; sent.length=0;
@@ -292,15 +294,15 @@ W.receive('d',{t:'abyss',a:'go',d:0}); tick(Math.ceil(5/0.05)); rD=runOf(Dq); co
   ok('round 1: a tile of the registry, its island baked, abr carries its id',!!T&&run.tile===T&&run.B.marks.S.length>=4&&evs('e','abr').some(e=>e[5]===T.id),run&&run.abTile);
   ok('the tp carries the tile id (the client rebuilds the island from tile + seed)',(()=>{ const tp=sent.filter(s=>s[0]==='e'&&s[1].t==='tp').pop(); return tp&&tp[1].dg&&tp[1].dg.tile===T.id&&tp[1].dg.m==='abyss'; })());
   tick(Math.ceil(40/0.05)); E.hp=E.maxHp; const ms=live(run);
-  ok('wave monsters are the tile\'s kinds at the round level, plain (not the rift\'s glass copies, normal speed)',ms.length>0&&ms.every(m=>T.pool.includes(m.def.id)&&m.dgK.lv===run.L&&!m.def.rift&&!(m.def.pal&&m.def.pal.glass)&&m.def.speed===x.DEF_BY_ID[m.def.id].speed),J(ms.map(m=>m.def.id)));
+  ok('wave monsters are the tile\'s kinds at the round level, plain (not the rift\'s glass copies, normal speed)',ms.length>0&&ms.every(m=>T.pool.includes(m.def.id)&&m.dgK.lv===run.L&&!m.def.rift&&m.def===x.DEF_BY_ID[m.def.id]&&m.def.speed===x.DEF_BY_ID[m.def.id].speed),J(ms.map(m=>m.def.id)));
   ok('...and more than one kind comes (a varied pool)',new Set(ms.map(m=>m.def.id)).size>=2);
   for(let i=0;i<400&&!run.abWon;i++){ for(const m of live(run)){ m.hp=0; x.killMonsterS(m,E); } tick(10); E.hp=E.maxHp; E.dead=false; }
   ok('(round won; the artifact offer comes first)',run.abWon&&E.gear.ab.run.offer&&E.gear.ab.run.offer.k==='art');
   W.receive('e',{t:'abyss',a:'next',i:0}); tick(1); ok('next with an artifact offer pending is refused',runOf(E)===run);
   sent.length=0; W.receive('e',{t:'abyss',a:'pick',i:0}); tick(2); const o=E.gear.ab.run.offer;
   ok('after the pick: a tile offer of 3 different tiles, kind fight, stored before abo is sent',o&&o.k==='tile'&&o.o.length===x.AB_TILE_OFFER_N&&new Set(o.o.map(t=>t.tile)).size===o.o.length&&o.o.every(t=>x.abTileOf(t.tile)&&t.kind==='fight')&&!o.o.some(t=>t.tile===run.abTile),J(o));
-  ok('abo [pid, tile, [[tile, kind]...]] was sent',evs('e','abo').some(e=>e[2]==='tile'&&J(e[3])===J(o.o.map(t=>[t.tile,t.kind]))),J(evs('e','abo')));
-  sent.length=0; W.receive('e',{t:'abyss',a:'open'}); tick(1); ok('reopening shows the same tile offer again',evs('e','abo').some(e=>e[2]==='tile'&&J(e[3])===J(o.o.map(t=>[t.tile,t.kind]))));
+  ok('abo [pid, tile, [[tile, kind]...]] was sent',evs('e','abo').some(e=>e[2]==='tile'&&J(e[3])===J(o.o.map(t=>[t.tile,t.kind,t.mode||'']))),J(evs('e','abo')));
+  sent.length=0; W.receive('e',{t:'abyss',a:'open'}); tick(1); ok('reopening shows the same tile offer again',evs('e','abo').some(e=>e[2]==='tile'&&J(e[3])===J(o.o.map(t=>[t.tile,t.kind,t.mode||'']))));
   const keep=J(o);
   for(const bad of [undefined,null,-1,3,99,1.5,'0','1',{},[0],NaN,true]){ W.receive('e',{t:'abyss',a:'next',i:bad}); }
   tick(1); ok('next with a missing, negative, too large, fractional or non-number index is refused: same run, same offer',runOf(E)===run&&J(E.gear.ab.run.offer)===keep);
@@ -313,5 +315,137 @@ W.receive('d',{t:'abyss',a:'go',d:0}); tick(Math.ceil(5/0.05)); rD=runOf(Dq); co
   W.receive('e',{t:'abyss',a:'next',i:0}); tick(2); ok('next,0 on it',runOf(E)&&runOf(E).abTile===o2.o[0].tile&&runOf(E).abR===3);
   // no tile offer pending (the dev jump): a random tile, as before
   W.receive('e',{t:'dg',a:'leave'}); tick(2); }
+
+// ---- B8: round kinds (Elite, Trial, Event, Shrine); the kinds were pinned to Fights above, they are freed here
+x.abKindDev.force=''; x.abKindDev.mode='';
+{ const KW=x.AB_KIND_W, draws=Array.from({length:3000},()=>x.abDrawKindsS(5,2,0,3)).flat(), cnt={}; for(const k of draws) cnt[k]=(cnt[k]|0)+1;
+  ok('kinds: weights are fight 45, elite 15, trial 10, event 15, shrine 10, boss 0 (B9)',J(KW)===J({fight:45,elite:15,trial:10,event:15,shrine:10,boss:0}));
+  ok('every kind comes over many draws, never a boss; the shares follow the weights (+-4 points)',['fight','elite','trial','event','shrine'].every(k=>cnt[k]>0&&Math.abs(cnt[k]/draws.length*100-KW[k]/95*100)<4)&&!cnt.boss,J(cnt));
+  ok('a kind the weights do not name is never drawn; the offer slot of a boss has weight 0',x.AB_KIND_IDS.includes('boss')&&KW.boss===0);
+  ok('the guarantee windows are rounds 4-6, 10-12, 16-18: abEncWindow gives the first round of a window',J([1,2,3,4,5,6,7,9,10,11,12,13,16,18,19].map(x.abEncWindow))==='[0,0,0,4,4,4,0,0,10,10,10,0,16,16,0]');
+  const hasEnc=o=>o.some(k=>k==='event'||k==='shrine'), many=(d,r,es)=>Array.from({length:400},()=>x.abDrawKindsS(d,r,es,3));
+  ok('window rounds 4, 5: an Event or a Shrine is always among the cards while none was played in the window; round 6: every card is one',[[4,0],[5,3],[10,0],[11,9],[16,0],[17,5]].every(([r,es])=>many(5,r,es).every(hasEnc))&&[[6,0],[12,4],[18,0]].every(([r,es])=>many(5,r,es).every(o=>o.every(k=>k==='event'||k==='shrine'))));
+  ok('...but not once one was played in the window (es inside it), and outside the windows the draw is free',many(5,6,5).some(o=>!hasEnc(o))&&many(5,5,4).some(o=>!hasEnc(o))&&many(5,3,0).some(o=>!hasEnc(o))&&many(5,8,0).some(o=>!hasEnc(o)));
+  ok('the last round of a finite difficulty is never an Event or a Shrine (it wins the run); Infinite has no last round',[[0,7],[1,10],[4,19]].every(([d,r])=>many(d,r,0).every(o=>!hasEnc(o)))&&many(5,6,0).every(hasEnc)&&many(5,7,0).some(hasEnc)); }
+const Dk=mk('k',60), kRun=()=>runOf(Dk), tilesOf=()=>Dk.gear.ab.run&&Dk.gear.ab.run.offer;
+const rift0=()=>J(Dk.gear.rift), seen=new Set(); let kcount=0;
+const finish=run=>{ for(let i=0;i<600&&!run.abWon&&!run.endT;i++){ for(const m of live(run)){ seen.add(m); m.hp=0; x.killMonsterS(m,Dk); } tick(10); Dk.hp=Dk.maxHp; Dk.dead=false; } };
+const aboArt=()=>evs('k','abo').filter(e=>e[2]==='art').length;
+// round 1 is a Fight, whatever the draw
+{ Dk.gear.ab.top=0; x.abKindDev.force='trial'; W.receive('k',{t:'abyss',a:'go',d:0}); tick(2); const r=kRun();
+  ok('round 1 is always a Fight (even with every kind pinned to something else)',r&&r.abKind==='fight'&&r.abR===1&&!!r.tile&&evs('k','abr').some(e=>e[6]==='fight'),r&&r.abKind);
+  x.abKindDev.force='elite'; finish(r); ok('(round 1 won; its offer is for an Elite now)',r.abWon);
+  // an Elite pays two offers one after another, then the tiles
+  sent.length=0; const ids0=Dk.gear.ab.run.arts.length;
+  const o1=Dk.gear.ab.run.offer; ok('a Fight pays one pick: after it the tile offer (cards of kind elite, with their tiles)',o1.k==='art'&&Dk.gear.ab.run.pk===0);
+  W.receive('k',{t:'abyss',a:'pick',i:0}); tick(1); const to=tilesOf();
+  ok('the tile offer carries kinds, stored: 3 Elite cards (tile + kind)',to&&to.k==='tile'&&to.o.length===3&&to.o.every(c=>c.kind==='elite'&&x.abTileOf(c.tile)),J(to));
+  W.receive('k',{t:'abyss',a:'next',i:1}); tick(3); const e=kRun();
+  ok('next: an Elite round on that tile at the round level, abr carries the kind',e&&e.abKind==='elite'&&e.abR===2&&e.abTile===to.o[1].tile&&evs('k','abr').some(q=>q[2]===2&&q[6]==='elite'));
+  // composition: smaller waves than a Fight, elites x2, champions x4 and bigger
+  x.abKindDev.force='fight'; const spawned=[]; for(let i=0;i<600&&!e.abWon&&!e.endT;i++){ for(const m of live(e)){ if(!spawned.includes(m)) spawned.push(m); m.hp=0; x.killMonsterS(m,Dk); } tick(10); Dk.hp=Dk.maxHp; Dk.dead=false; }
+  const el=spawned.filter(m=>m.abTier==='e'), ch=spawned.filter(m=>m.abTier==='c'), base=spawned.filter(m=>!m.abTier);
+  ok('an Elite round is won; it had fewer monsters than a Fight of its round (half a wave), elites and 1-2 champions',e.abWon&&spawned.length<3*x.abWaveSize(2,1)&&el.length>0&&ch.length>=1&&ch.length<=2&&base.length>0,J([spawned.length,el.length,ch.length,base.length]));
+  ok('elites have x2 health, champions x4 and a bigger scale; the others are plain',el.every(m=>Math.abs(m.maxHp/m.T.hp-x.AB_ELITE_HP)<1e-6&&m.s>1)&&ch.every(m=>Math.abs(m.maxHp/m.T.hp-x.AB_CHAMP_HP)<1e-6&&m.s>el[0].s)&&base.every(m=>m.maxHp===m.T.hp&&m.s===1),J(ch.map(m=>m.maxHp/m.T.hp)));
+  sent.length=0; const a0=Dk.gear.ab.run.arts.length, off1=Dk.gear.ab.run.offer;
+  ok('an Elite pays 2 picks: the first offer is there, one more is owed (pk 1)',off1&&off1.k==='art'&&Dk.gear.ab.run.pk===1);
+  W.receive('k',{t:'abyss',a:'pick',i:0}); tick(1); const off2=Dk.gear.ab.run.offer;
+  ok('...picking it opens a SECOND artifact offer (not the tiles yet), stored and sent',off2&&off2.k==='art'&&Dk.gear.ab.run.pk===0&&aboArt()===1&&Dk.gear.ab.run.arts.length===a0+1);
+  W.receive('k',{t:'abyss',a:'skip'}); tick(1); ok('...skipping that one leads to the tile offer; the bar has the one copy',tilesOf()&&tilesOf().k==='tile'&&Dk.gear.ab.run.arts.length===a0+1);
+  ok('a bad index on a pending second offer is refused (the offer stays)',(()=>{ W.receive('k',{t:'abyss',a:'next',i:9}); return !!kRun()&&kRun()===e; })());
+  W.receive('k',{t:'dg',a:'leave'}); tick(2); }
+// Trials: every working mode is played by the rift smoke's bot; the win ends the ROUND (picks, tiles), never the rift's save or XP
+const modeOk={};
+for(const mode of Object.keys(x.AB_TRIAL_MODES)){
+  Dk.gear.ab.top=0; x.abKindDev.force='fight'; x.abKindDev.mode=''; W.receive('k',{t:'abyss',a:'go',d:0}); tick(2); const r1=kRun(); x.abKindDev.force='trial'; x.abKindDev.mode=mode; finish(r1);
+  W.receive('k',{t:'abyss',a:'skip'}); tick(1); const to=tilesOf(); const c0=Dk.gear.coins, xp=Dk.exp+Dk.level*1e9, rs=rift0();
+  ok(mode+': the offered cards are Trials of that mode on a tile',to&&to.k==='tile'&&to.o.every(c=>c.kind==='trial'&&c.mode===mode&&x.abTileOf(c.tile)),J(to));
+  W.receive('k',{t:'abyss',a:'next',i:0}); tick(3); const r=kRun(); sent.length=0;
+  ok(mode+': a Trial round on the mode\'s rift platforms (th '+x.AB_TRIAL_MODES[mode]+'), level '+x.abRoundLv(0,2)+', the Abyss\'s own def (reward abyss)',r&&r.abKind==='trial'&&r.abMode===mode&&r.th===x.AB_TRIAL_MODES[mode]&&r.L===43&&x.riftDefOf(r).reward==='abyss'&&x.riftDefOf(r).mode===mode&&r.abTile==='rift:'+r.th&&!r.rift,r&&[r.abKind,r.th,r.abTile]);
+  ok(mode+': the client rebuilds the same platforms: abLayout(tile, seed) is the rift\'s layout',J(x.abLayout(r.abTile,r.seed).cells.map(c=>c.art))===J(r.lay.cells.map(c=>c.art)));
+  let steps=0, plain=true; const bot=()=>{ if(mode==='thaw'&&r.t<x.RIFT_THAW_S-5) r.t=x.RIFT_THAW_S-5;
+    for(const m of [...r.mons]) if(!m.dead&&!m.remove&&!m.immune){ seen.add(m); if(Math.abs(m.dgK.dmg-x.dgKOf(m.def,r.L).dmg)>1e-9||(!(m.riftChamp||m.riftGuard||m.riftCol)&&Math.abs(m.maxHp-m.T.hp*(m.dgRole==='herald'?x.RIFT_HERALD_HP*0.5:1))>1e-6)) plain=false; m.hp=0; x.killMonsterS(m,Dk); }
+    const ob=r.objs.find(o=>o.st===1&&(o.kind==='beacon'||((o.kind==='core'||o.kind==='pylon')&&!(o.v>0)))); if(ob){ Dk.x=ob.x; Dk.z=ob.z; Dk.y=x.getH(Dk.x,Dk.z); if(ob.kind!=='beacon'&&!Dk.cast) W.receive('k',{t:'dg',a:'use',id:ob.id}); } };
+  for(;steps<12000&&!r.abWon&&!r.endT;steps++){ bot(); tick(2); Dk.hp=Dk.maxHp; Dk.dead=false; Dk.vbGrace=1e12; }
+  const won=r.abWon&&!r.endT&&r.phase==='won'; modeOk[mode]=won;
+  ok(mode+': won headless: the round is won (abWon), the run goes on (no end timer, hiker still inside)',won&&Dk.inst===r.id,r.phase+' '+steps+' steps '+J(r.hud));
+  ok(mode+': nothing from the rift: gear.rift untouched, no XP, no coins, the HUD was the mode\'s tuple + marker',rift0()===rs&&Dk.gear.coins===c0&&Dk.exp+Dk.level*1e9===xp&&r.hud[8]===1&&r.hud[9]===2&&r.hud[10]===7,rs+' '+rift0());
+  ok(mode+': monsters had the plain numbers of the round (no brittle K) and the run had no riftwon / rift save',plain&&!evs('k','dge').some(q=>q[2]===1));
+  const o1=Dk.gear.ab.run.offer; ok(mode+': a Trial pays 2 picks: a first artifact offer, pk 1',o1&&o1.k==='art'&&Dk.gear.ab.run.pk===1);
+  W.receive('k',{t:'abyss',a:'pick',i:0}); tick(1); const o2=Dk.gear.ab.run.offer; ok(mode+': then the second offer, then the tiles',o2&&o2.k==='art'&&!(Dk.gear.ab.run.pk>0));
+  W.receive('k',{t:'abyss',a:'pick',i:0}); tick(1); ok(mode+': ...and then the next tiles',tilesOf()&&tilesOf().k==='tile');
+  W.receive('k',{t:'dg',a:'leave'}); tick(2); ok(mode+': leaving between rounds is "out"',!Dk.inst&&Dk.gear.ab.run===null); }
+ok('every Trial mode of the plan plays (heart gale beacons thaw lanterns quarry gauntlet)',Object.keys(x.AB_TRIAL_MODES).join()==='heart,gale,beacons,thaw,lanterns,quarry,gauntlet'&&Object.values(modeOk).every(Boolean),J(modeOk));
+// a lost Trial (the gauntlet's clock) ends the run like a fall
+{ Dk.gear.ab.top=0; x.abKindDev.force='fight'; W.receive('k',{t:'abyss',a:'go',d:0}); tick(2); const r1=kRun(); x.abKindDev.force='trial'; x.abKindDev.mode='gauntlet'; finish(r1); W.receive('k',{t:'abyss',a:'skip'}); W.receive('k',{t:'abyss',a:'next',i:0}); tick(3); const r=kRun();
+  r.t=x.RIFT_GAUNT_S+1; tick(3); ok('a Trial that runs out of time is lost: the run ends, the save is cleared, nothing is paid',r.endT>0&&r.phase==='lost'&&!r.abWon,r.phase); tick(Math.ceil(25/0.05)); ok('...and the hiker is back in the world with no run',!Dk.inst&&Dk.gear.ab.run===null); }
+// Events
+x.abKindDev.force='event'; x.abKindDev.mode='';
+{ Dk.gear.ab.top=0; x.abKindDev.force='fight'; W.receive('k',{t:'abyss',a:'go',d:0}); tick(2); const r1=kRun(); x.abKindDev.force='event'; finish(r1); W.receive('k',{t:'abyss',a:'skip'}); tick(1);
+  ok('Event cards in the offer have no tile',tilesOf().o.every(c=>c.kind==='event'&&c.tile===''),J(tilesOf())); sent.length=0;
+  W.receive('k',{t:'abyss',a:'next',i:0}); tick(3); const ev=kRun(); const off=tilesOf();
+  ok('an Event round: plain rift platforms, no monsters, won at once, an encounter offer stored and sent',ev.abKind==='event'&&ev.abTile===''&&ev.abWon&&!ev.endT&&live(ev).length===0&&off&&off.k==='event'&&x.abIsEvent(off.o.id)&&evs('k','abo').some(q=>q[2]==='event'&&q[3]===off.o.id&&q[4].length===x.AB_EVENTS[off.o.id].choices.length),J(off));
+  ok('the layout is the Shardmere\'s plain platforms (3 x 3)',ev.lay.gw===3&&x.abLayout('',ev.seed).gw===3);
+  ok('the save names it: es is this round, pk 0',Dk.gear.ab.run.es===2&&Dk.gear.ab.run.pk===0);
+  for(const bad of [-1,3,99,1.5,'0',null,undefined,NaN,{},[0],true]) W.receive('k',{t:'abyss',a:'pick',i:bad}); W.receive('k',{t:'abyss',a:'next',i:0}); W.receive('k',{t:'abyss',a:'skip'}); tick(1);
+  ok('a bad pick index, next and skip leave the encounter as it is',tilesOf()&&tilesOf().k==='event'&&tilesOf().o.id===off.o.id&&kRun()===ev);
+  // every event, every choice (the bar and the curses reset each time; a gamble may go either way)
+  const g=()=>Dk.gear.ab.run, set=(id,arts,curses)=>{ g().arts.length=0; g().arts.push(...arts); g().curses.length=0; g().curses.push(...curses); g().offer={k:'event',o:{id}}; Dk.ab=null; Dk.hp=1; Dk.dead=false; x.recalcP(Dk); Dk.hp=1; };
+  const bar4=['ab_edge','ab_fang','ab_heart','ab_scale'], cur2=['ab_c_hides','ab_c_dull'];
+  const delta=ops=>{ let a=0,c=0,h=false,u=0; const out=[]; const walk=(os)=>{ for(const o of os){ if(o.op==='art') a+=o.n||1; else if(o.op==='lose') a-=o.n||1; else if(o.op==='curse') c+=o.n||1; else if(o.op==='uncurse') u++; else if(o.op==='heal') h=true; } }; 
+    const gam=ops.find(o=>o.op==='gamble'); if(!gam){ walk(ops); return [[a,c,h,u]]; } const res=[]; for(const br of [gam.win,gam.lose]){ a=0;c=0;h=false;u=0; walk(ops.filter(o=>o!==gam)); walk(br); res.push([a,c,h,u]); } return res; };
+  let nChoice=0, allOk=true, why='';
+  for(const id of Object.keys(x.AB_EVENTS)) for(let ci=0;ci<x.AB_EVENTS[id].choices.length;ci++) for(let rep=0;rep<(x.AB_EVENTS[id].choices[ci].fx.some(o=>o.op==='gamble')?12:1);rep++){
+    set(id,bar4,cur2); const a0=g().arts.length, c0=g().curses.length; sent.length=0; let threw=false; try{ W.receive('k',{t:'abyss',a:'pick',i:ci}); tick(1); }catch(err){ threw=true; why=id+'/'+ci+' threw '+err.message; }
+    const fx=x.AB_EVENTS[id].choices[ci].fx, dl=delta(fx), da=g().arts.length-a0, dc=g().curses.length-c0, healed=Dk.hp===Dk.maxHp, u=cur2.length-g().curses.filter(q=>cur2.includes(q)).length;
+    const match=dl.some(([a,c,h,uu])=>a===da&&c-uu===dc&&(!h||healed));
+    const resolved=g().offer&&g().offer.k==='tile'&&!threw; nChoice++; if(!match||!resolved||!g().arts.every(q=>x.AB_ARTS[q])||g().arts.length>x.AB_ART_MAX){ allOk=false; why=why||id+'/'+ci+' deltas '+J([da,dc,healed])+' wanted '+J(dl)+' offer '+J(g().offer&&g().offer.k); } }
+  ok('every choice of every event ('+nChoice+' picks, gambles repeated) resolves without throwing, does what it says (artifacts gained / lost, curses added / lifted, heal) and leads to the tiles',allOk&&nChoice>=24,why);
+  ok('eight events, 2-3 choices each, each with a way to walk on; no bad row',Object.keys(x.AB_EVENTS).length===8&&x.AB_EVENT_BAD.length===0&&Object.values(x.AB_EVENTS).every(E=>E.choices.length>=2&&E.choices.length<=3&&E.choices.some(c=>c.fx.length===0)));
+  ok('a curse comes from the events: the Altar takes a rare artifact AND adds a curse (outside the 20, repeats stack)',(()=>{ set('ab_ev_altar',bar4,[]); W.receive('k',{t:'abyss',a:'pick',i:0}); tick(1); return g().arts.length===5&&g().curses.length===1&&x.AB_ARTS[g().arts[4]].rar==='rare'&&x.abIsCurse(g().curses[0])&&evs('k','aba').length>0; })());
+  // refusals: nothing to lose, too many curses, a full bar
+  set('ab_ev_forge',[],[]); W.receive('k',{t:'abyss',a:'pick',i:0}); tick(1); ok('a choice that loses what you do not hold is refused: bar unchanged, the offer stays',g().arts.length===0&&g().offer&&g().offer.k==='event');
+  set('ab_ev_altar',bar4,['ab_c_hides','ab_c_dull','ab_c_claws','ab_c_famine','ab_c_frail']); W.receive('k',{t:'abyss',a:'pick',i:0}); tick(1); ok('a curse past AB_CURSE_MAX is refused: 5 curses stay 5, the bar unchanged, the offer stays',g().curses.length===5&&g().arts.length===4&&g().offer.k==='event');
+  set('ab_ev_altar',Array.from({length:20},(_,i)=>['ab_edge','ab_fang','ab_heart','ab_scale','ab_thread'][i%5]),[]); W.receive('k',{t:'abyss',a:'pick',i:0}); tick(1); ok('a gain with a full bar of 20 is refused (the 20 never grows); a choice with no gain still works',g().arts.length===20&&g().offer.k==='event'&&(()=>{ W.receive('k',{t:'abyss',a:'pick',i:1}); tick(1); return g().offer.k==='tile'&&Dk.hp===Dk.maxHp; })());
+  set('ab_ev_scars',bar4,[]); W.receive('k',{t:'abyss',a:'pick',i:1}); tick(1); ok('lifting a curse with none held is refused',g().offer.k==='event'&&g().curses.length===0);
+  W.receive('k',{t:'dg',a:'leave'}); tick(2); }
+// Shrines
+{ Dk.gear.ab.top=0; x.abKindDev.force='fight'; W.receive('k',{t:'abyss',a:'go',d:0}); tick(2); const r1=kRun(); x.abKindDev.force='shrine'; finish(r1); W.receive('k',{t:'abyss',a:'skip'}); tick(1);
+  const g=()=>Dk.gear.ab.run; g().arts.length=0; g().arts.push('ab_edge','ab_edge','ab_fang'); g().curses.length=0; g().curses.push('ab_c_hides','ab_c_dull'); sent.length=0;
+  W.receive('k',{t:'abyss',a:'next',i:0}); tick(3); const sh=kRun(); g().arts.push('ab_edge','ab_edge','ab_fang');
+  ok('a Shrine round: no fight, plain platforms, won at once, a shrine offer stored (heal first) and sent',sh.abKind==='shrine'&&sh.abWon&&sh.abTile===''&&live(sh).length===0&&g().offer&&g().offer.k==='shrine'&&g().offer.o[0].t==='heal'&&evs('k','abo').some(q=>q[2]==='shrine'));
+  // the stored offer is rebuilt for the assertions below with the bar and curses of the test
+  const put=(arts,curses)=>{ g().arts.length=0; g().arts.push(...arts); g().curses.length=0; g().curses.push(...curses); g().offer={k:'shrine',o:x.abShrineOfferS(g())}; Dk.ab=null; };
+  put(['ab_edge','ab_edge','ab_fang'],['ab_c_hides','ab_c_dull']); const o=g().offer.o;
+  ok('the shrine offers: heal, one removal per curse held, a copy of up to 4 artifacts held',o[0].t==='heal'&&o.filter(c=>c.t==='curse').map(c=>c.id).sort().join()==='ab_c_dull,ab_c_hides'&&o.filter(c=>c.t==='copy').length===2&&o.filter(c=>c.t==='copy').every(c=>['ab_edge','ab_fang'].includes(c.id)),J(o));
+  Dk.hp=1; W.receive('k',{t:'abyss',a:'pick',i:0}); tick(1); ok('heal: full health, the bar and curses as they were, then the tiles',Dk.hp===Dk.maxHp&&g().arts.length===3&&g().curses.length===2&&g().offer&&g().offer.k==='tile');
+  put(['ab_edge','ab_edge','ab_fang'],['ab_c_hides','ab_c_dull']); const ci=g().offer.o.findIndex(c=>c.t==='curse'&&c.id==='ab_c_dull'); sent.length=0; W.receive('k',{t:'abyss',a:'pick',i:ci}); tick(1);
+  ok('remove a curse (the one chosen): that curse is gone, the other stays, the tiles follow',J(g().curses)===J(['ab_c_hides'])&&g().offer.k==='tile');
+  put(['ab_edge','ab_edge','ab_fang'],[]); const cp=g().offer.o.findIndex(c=>c.t==='copy'&&c.id==='ab_fang'); sent.length=0; W.receive('k',{t:'abyss',a:'pick',i:cp}); tick(1);
+  ok('copy an artifact: one more copy of exactly that one (a place used), aba sent, the tiles follow',g().arts.length===4&&g().arts.filter(q=>q==='ab_fang').length===2&&evs('k','aba').some(q=>q[2]==='ab_fang'&&q[3]===2)&&g().offer.k==='tile');
+  // copy at 20 is refused (the offer was made with a free place, then the bar filled)
+  put(['ab_edge','ab_fang'],[]); const cp2=g().offer.o.findIndex(c=>c.t==='copy'); g().arts.length=0; for(let i=0;i<20;i++) g().arts.push(['ab_edge','ab_fang','ab_heart','ab_scale','ab_thread'][i%5]); g().arts[0]='ab_edge';
+  W.receive('k',{t:'abyss',a:'pick',i:cp2}); tick(1); ok('copy with 20 held is refused: the bar stays 20, the offer stays',g().arts.length===20&&g().offer.k==='shrine');
+  ok('a shrine made with a full bar offers no copy at all',x.abShrineOfferS(g()).every(c=>c.t!=='copy'));
+  put(['ab_edge'],['ab_c_hides']); for(const bad of [-1,9,1.5,'0',null,NaN,{},undefined,true]) W.receive('k',{t:'abyss',a:'pick',i:bad}); tick(1);
+  ok('bad indices on a shrine are refused (offer stays)',g().offer.k==='shrine');
+  g().offer.o.push({t:'curse',id:'ab_c_frail'}); W.receive('k',{t:'abyss',a:'pick',i:g().offer.o.length-1}); tick(1); ok('a removal of a curse you no longer carry is refused',g().offer.k==='shrine'&&g().curses.length===1);
+  g().arts.length=0; g().arts.push('ab_edge'); g().offer.o.push({t:'copy',id:'ab_heart'}); W.receive('k',{t:'abyss',a:'pick',i:g().offer.o.length-1}); tick(1); ok('a copy of an artifact you no longer hold is refused',g().offer.k==='shrine'&&g().arts.length===1);
+  W.receive('k',{t:'dg',a:'leave'}); tick(2); }
+// the guarantee inside a run: with no Event / Shrine yet, the offer for round 4 always has one
+{ x.abKindDev.force=''; Dk.gear.ab.top=0; W.receive('k',{t:'abyss',a:'go',d:0}); tick(2); const r=kRun(); let all=true, all6=true;
+  for(let i=0;i<40;i++){ r.abWon=true; r.endT=0; r.abR=3; Dk.gear.ab.run.es=0; Dk.gear.ab.run.offer=null; x.abTileOfferP(Dk); const o=tilesOf(); if(!(o&&o.k==='tile'&&o.o.some(c=>c.kind==='event'||c.kind==='shrine'))) all=false;
+    r.abR=5; Dk.gear.ab.run.offer=null; x.abTileOfferP(Dk); const o6=tilesOf(); if(!(o6&&o6.o.every(c=>c.kind==='event'||c.kind==='shrine'))) all6=false; }
+  ok('in a real run: the offer for round 4 holds an Event or Shrine card, the offer for round 6 only such cards (none played yet)',all&&all6);
+  r.abR=3; Dk.gear.ab.run.es=4; let free=false; for(let i=0;i<60;i++){ Dk.gear.ab.run.offer=null; x.abTileOfferP(Dk); if(!tilesOf().o.some(c=>c.kind==='event'||c.kind==='shrine')) free=true; } ok('...and not forced once es says one was played in the window',free);
+  W.receive('k',{t:'dg',a:'leave'}); tick(2); }
+// the stored offers survive sanitizing; garbage in a stored offer is cleaned
+{ const now=Date.now(), san=o=>clean({run:{d:0,r:3,at:now,offer:o}}).run&&clean({run:{d:0,r:3,at:now,offer:o}}).run.offer;
+  ok('tile offers with kinds round-trip; an Event / Shrine card needs no tile, a Trial needs a mode',J(san({k:'tile',o:[{tile:'forest',kind:'elite'},{tile:'',kind:'event'},{tile:'vale',kind:'trial',mode:'gale'}]}))===J({k:'tile',o:[{tile:'forest',kind:'elite'},{tile:'',kind:'event'},{tile:'vale',kind:'trial',mode:'gale'}]}));
+  ok('bad cards are dropped: an unknown kind, a boss (weight 0), a Trial without a mode or with a prototype mode, a fight with no tile',J(san({k:'tile',o:[{tile:'forest',kind:'boss'},{tile:'forest',kind:'constructor'},{tile:'vale',kind:'trial'},{tile:'vale',kind:'trial',mode:'__proto__'},{tile:'',kind:'fight'},{tile:'sun',kind:'fight'}]}))===J({k:'tile',o:[{tile:'sun',kind:'fight'}]}));
+  ok('event and shrine offers round-trip; unknown ids, prototype names and garbage entries are cleaned',J(san({k:'event',o:{id:'ab_ev_altar'}}))===J({k:'event',o:{id:'ab_ev_altar'}})&&san({k:'event',o:{id:'constructor'}})===null&&san({k:'event',o:'ab_ev_altar'})===null
+    &&J(san({k:'shrine',o:[{t:'heal'},{t:'curse',id:'ab_c_hides'},{t:'curse',id:'nope'},{t:'copy',id:'ab_edge'},{t:'copy',id:'__proto__'},{t:'x'},7,null]}))===J({k:'shrine',o:[{t:'heal'},{t:'curse',id:'ab_c_hides'},{t:'copy',id:'ab_edge'}]})&&san({k:'shrine',o:[]})===null);
+  ok('es and pk are clamped integers (a bad value is 0)',(()=>{ const q=clean({run:{d:0,r:3,at:now,es:-4,pk:99}}).run, q2=clean({run:{d:0,r:3,at:now,es:'x',pk:NaN}}).run; return q.es===0&&q.pk===3&&q2.es===0&&q2.pk===0; })()); }
+x.abKindDev.force=''; x.abKindDev.mode='';
 // the Test: kill the code and the test fails (see the usage note at the top)
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

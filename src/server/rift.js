@@ -24,7 +24,7 @@ function riftInfoP(p,R){
   sendTo(p.id,{t:'rift',a:'info',id:R.id,e:Math.floor(riftEnergyAt(g,now)*10)/10,full:riftFullIn(g,now),L:Math.max(RIFT_LV,p.level|0),best:g.best|0,clears:g.clears|0,lv:R.lv,cost:RIFT_E_DOUBLE,mode:R.mode,tiers:R.tiers||[],tier:g.tier|0});
 }
 const RIFT_SLOT_END=32;   // rifts scan slots RIFT_SLOT0..RIFT_SLOT_END-1; 32-47 are the Abyss's (AB_SLOT0, shared/dungeon-slots.js)
-const riftDefOf=run=>RIFT_DEFS[run.rift];   // abyss: one read for a run's def, so an Abyss run can supply its own (B2)
+const riftDefOf=run=>run.rdef||RIFT_DEFS[run.rift];   // abyss: one read for a run's def, so an Abyss run can supply its own (B2)
 const RIFT_TXT_SHARED='Rifts need Solo mode or a server: a shared room cannot keep a run apart from the world.';
 function riftStartP(p,R,x2,lv){
   if(io.broadcastSnaps){ toastTo(p.id,RIFT_TXT_SHARED,'bad'); return; }
@@ -54,6 +54,7 @@ function riftSpawnS(run,defId,lx,lz,herald){
   if(m.inst!==run.id) dgAdoptS(m);
   const k=dgKOf(d,run.L); m.dgK={lv:k.lv,hp:k.hp,dmg:k.dmg*RIFT_DMG_K,xp:k.xp};
   m.maxHp=m.hp=Math.max(1,m.maxHp*RIFT_HP_K*(herald?RIFT_HERALD_HP:1)); m.dgHunt=true; if(herald){ m.elite=true; m.dgRole='herald'; }
+  if(run.ab) abTrialSpawnS(run,m,k,herald);   // abyss: a Trial's monsters have the plain numbers of the round (abyss/trial.js)
   ev('spawn',monRoster(m)); S.ctx=c0; return m;
 }
 /* WHAT A RIFT PAYS: one entry per reward mode (R.reward, shared/rift.js RIFT_REWARDS), kill(run,m,q,mb) for each kill, clear(run,p,mb) for the clear bonus. The engine only calls riftPayOf(run).
@@ -110,6 +111,7 @@ function riftLeaveP(run,p){
   dgExitS(run,p); dgCloseS(run);
 }
 function riftWonS(run){
+  if(run.ab) return abTrialWonS(run);   // abyss: a Trial's win ends the round, not a rift run (no rift save, no XP; abyss/trial.js)
   if(run.endT) return; run.phase='won'; run.endT=S.t;
   const secs=Math.max(1,Math.round(run.t));
   riftStageS(run,RIFT_WAVES);   // (the last stage, paid before the clear)

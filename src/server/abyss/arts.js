@@ -41,7 +41,7 @@ function abOfferP(run,p){
   const ids=abDrawOfferS(g.run.arts||(g.run.arts=[]),AB_OFFER_N-abCurseStat(g.run.curses,'offer'));   // B6: a curse takes cards off the offer (at least 1 stays) if(!ids.length) return;
   g.run.offer={k:'art',o:ids}; p.dirty=true; dgEvTo('abo',p.id,'art',ids);
 }
-function abResendOfferP(p){ const g=abSaveOf(p), o=g.run&&g.run.offer; if(o&&o.k==='art'&&abRunOf(p)) dgEvTo('abo',p.id,'art',o.o.slice()); else if(o&&o.k==='tile'&&abRunOf(p)) abTileSendP(p); }   // B7: a tile offer shows again too
+function abResendOfferP(p){ const g=abSaveOf(p), o=g.run&&g.run.offer; if(o&&o.k==='art'&&abRunOf(p)) dgEvTo('abo',p.id,'art',o.o.slice()); else if(o&&o.k==='tile'&&abRunOf(p)) abTileSendP(p); else if(o&&(o.k==='event'||o.k==='shrine')&&abRunOf(p)) abEncSendP(p); }   // B7: a tile offer shows again too
 // the run, its saved bar and the offer, only between rounds (a won round that has not ended the run)
 function abBetweenP(p){ const run=abRunOf(p); return run&&run.abWon&&!run.endT&&!p.dead&&abSaveOf(p).run?run:null; }
 const abIdx=(i,n)=>typeof i==='number'&&Number.isInteger(i)&&i>=0&&i<n;
@@ -50,14 +50,22 @@ function abBarChangedP(p,id){
   const n=abArtsOf(p).filter(x=>x===id).length; dgEvTo('aba',p.id,id,n);
 }
 function abPickP(p,i){
-  if(!abBetweenP(p)) return; const g=abSaveOf(p), o=g.run.offer; if(!o||o.k!=='art'||!abIdx(i,o.o.length)) return;
+  if(!abBetweenP(p)) return; const g=abSaveOf(p), o=g.run.offer;
+  if(o&&o.k==='event') return abEventPickP(p,i); if(o&&o.k==='shrine') return abShrinePickP(p,i);   // B8: an Event's or a Shrine's card (abyss/events.js)
+  if(!o||o.k!=='art'||!abIdx(i,o.o.length)) return;
   const id=o.o[i]; if(!abIsArt(id)){ g.run.offer=null; return; }
   const arts=g.run.arts||(g.run.arts=[]);
   if(arts.length>=AB_ART_MAX){ toastTo(p.id,AB_TXT_FULL,'bad'); return; }
   if(arts.filter(x=>x===id).length>=AB_RANK_MAX){ toastTo(p.id,AB_ARTS[id].name+' is at rank '+AB_RANK_MAX+' already.','bad'); return; }
-  arts.push(id); g.run.offer=null; abBarChangedP(p,id); abTileOfferP(p);   // B7: the artifact offer is resolved: the next tiles
+  arts.push(id); g.run.offer=null; abBarChangedP(p,id); abAfterPickP(p);   // B7: the artifact offer is resolved: the next tiles; B8: or the round's second pick first
 }
-function abSkipP(p){ if(!abBetweenP(p)) return; const g=abSaveOf(p); if(g.run.offer&&g.run.offer.k==='art'){ g.run.offer=null; p.dirty=true; abTileOfferP(p); } }   // B7: skipping an artifact offer (never a tile offer) leads to the tiles
+// a pick is resolved (an artifact taken or skipped, an Event or a Shrine answered): the round's next pick if it pays another (an Elite, a Trial: gear.ab.run.pk), else the next tiles
+function abAfterPickP(p){
+  const g=abSaveOf(p), run=abRunOf(p); if(!g.run||!run) return;
+  if((g.run.pk|0)>0){ g.run.pk--; abOfferP(run,p); if(g.run.offer) return; g.run.pk=0; }
+  abTileOfferP(p);
+}
+function abSkipP(p){ if(!abBetweenP(p)) return; const g=abSaveOf(p); if(g.run.offer&&g.run.offer.k==='art'){ g.run.offer=null; p.dirty=true; abAfterPickP(p); } }   // B7: skipping an artifact offer (never a tile offer) leads to the tiles (B8: or the round's second pick)
 function abDropP(p,i){
   const run=abRunOf(p); if(!run||!run.abWon||run.endT){ if(run) toastTo(p.id,'You can throw an artifact away between rounds only.','bad'); return; }
   const g=abSaveOf(p), arts=g.run&&g.run.arts; if(!arts||!abIdx(i,arts.length)) return;
