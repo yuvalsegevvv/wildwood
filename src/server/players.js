@@ -139,7 +139,7 @@ function recalcP(p){
   bdRefreshP(p);   // bond: the active Bond (gear.skills.bdx: Bond passives, rows, level changes), before anything reads psP
   g.atk+=dgRingAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else; dgrev: only while the ring's element is the kit's (so after bdRefreshP)
   rlRefreshP(p);   // rolls: the lines of the worn level-40 pieces (p.rl)
-  p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)*(1+rlP(p,'hp'))*(1+toolBonusStat(p.gear,'hp'))); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym)*(1+rlP(p,'atk'))*(1+toolBonusStat(p.gear,'atk')); p.def=Math.round(g.def*(1+rlP(p,'def'))*(1+toolBonusStat(p.gear,'def'))); p.red=defRed(p.def);   // rolls: hp, atk and def lines   // professions: the worn tools' small bonus (shared/professions.js)
+  p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)*(1+rlP(p,'hp'))*(1+toolBonusStat(p.gear,'hp'))); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym)*Math.max(CAPE_FLOOR_K,1+rlP(p,'atk'))*(1+toolBonusStat(p.gear,'atk')); p.def=Math.round(g.def*(1+rlP(p,'def'))*(1+toolBonusStat(p.gear,'def'))); p.red=defRed(p.def);   // rolls: hp, atk and def lines   // professions: the worn tools' small bonus (shared/professions.js)
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
   ssRefreshP(p);   // skillsets: the sets worn and their bonuses
 }

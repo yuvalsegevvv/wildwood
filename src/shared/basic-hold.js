@@ -13,8 +13,8 @@
 const BH_TAP=0.25, BH_FULL={warrior:0.9,archer:1.0,mage:1.1}, BH_ASPD_CAP=0.6, BH_CHG_CAP=1.0, BH_RECOVER=0.4;
 const BH_STYLE={press:{p:1.15,h:0.9},hold:{p:0.9,h:1.15}}, BH_EVEN={p:1,h:1};
 const BH_SHAPES=['cone','ring','beam','chain','zone','proj'], BH_KEEP=['mark','status','burn','slow','stun','taunt'];
-const bhSpeedK=(passive,rolled)=>1+Math.max(0,Math.min(BH_ASPD_CAP,(passive||0)+(rolled||0)));
-const bhChargeK=(passive,rolled)=>1+Math.max(0,Math.min(BH_CHG_CAP,(passive||0)+(rolled||0)));
+const bhSpeedK=(passive,rolled)=>1+Math.max(-0.5,Math.min(BH_ASPD_CAP,(passive||0)+(rolled||0)));
+const bhChargeK=(passive,rolled)=>1+Math.max(-0.5,Math.min(BH_CHG_CAP,(passive||0)+(rolled||0)));
 const bhFrac=(held,cls,chgK)=>held>=BH_TAP?Math.min(1,Math.max(0.2,held*(chgK||1)/(BH_FULL[cls]||1))):0;
 // seconds between two swings of skill 1: the row's cd is now its base interval (a skill level still shortens it 3% a level); buffCd: a buff's basic-cooldown x; f: a held release recovers longer
 const bhInterval=(ab,skills,speedK,buffCd,f)=>ab.cd*skillCdMult(skillLvOf(skills,ab.id))/speedK*(buffCd||1)*(1+BH_RECOVER*(f||0));

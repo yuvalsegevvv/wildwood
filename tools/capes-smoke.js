@@ -1,7 +1,7 @@
 // Headless test of the capes (dungeon revamp D5: shared/capes.js, the cape ids in shared/dungeon-rewards.js, eq.cape, server/rolls.js): the eight combos and their letters, ids, plus (rarity, legendary x2,
 // tempering, level x1.15) and minus (tempering only), caps, the minus floor at zero, equip and sanitize, rolled lines, sacrifice, the Gloamvault paying capes. Usage: node tools/capes-smoke.js
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({dev:true,send(){}},['ITEM','CAPE_COMBOS','CAPE_IDS','CAPE_BY_ID','RL_BY_KEY','RL_CAPS','capeVals','capeNet','dgParse','dgItem','dgCapeId','dgAllCapeIds','dgEnhanceNext','dgClearReward','DG_REWARDS','rlP','rlSumOf','rlMinusOf','sanitizeGear','recalcP','newGearFor','RAR_MULT','mergedId','rlLinesFor','itemStat','psP','CRIT_BASE','CRIT_MULT']);
+const {api:W,x}=loadServer({dev:true,send(){}},['ITEM','CAPE_COMBOS','CAPE_IDS','CAPE_BY_ID','RL_BY_KEY','RL_CAPS','capeVals','capeNet','dgParse','dgItem','dgCapeId','dgAllCapeIds','dgEnhanceNext','dgClearReward','DG_REWARDS','rlP','rlSumOf','rlMinusOf','sanitizeGear','recalcP','newGearFor','RAR_MULT','mergedId','rlLinesFor','rollDmgS','itemStat','psP','CRIT_BASE','CRIT_MULT','bhSpeedK','bhChargeK','bhSpeedP','bhChargeP','abilityCd','CAPE_FLOOR_K']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const I=x.ITEM, near=(a,b)=>Math.abs(a-b)<1e-9;
@@ -27,7 +27,8 @@ ok('lines by level: 30 none, 40 one, 50 two, 60 three (a cape\'s range is the ac
 { const items=[{lv:30,kind:'cape',plus:{stat:'cdr',v:0.10},minus:{stat:'atk',v:0.06}},{lv:30,roll:[{stat:'cdr',v:0.38}]}];
   ok('the plus counts inside the cap: cdr 10% cape + 38% line is 40%, not 48%',near(x.rlSumOf(items,'cdr',30),0.40));
   ok('a cape above your level counts for nothing, plus and minus',x.rlSumOf(items,'cdr',29)===0&&x.rlMinusOf(items,'atk',29)===0&&near(x.rlMinusOf(items,'atk',30),0.06)); }
-ok('capeNet: the minus comes off the capped sum, never takes the total below zero',near(x.capeNet(0.4,0.05,0),0.35)&&x.capeNet(0.02,0.05,0)===0&&near(x.capeNet(0,0.05,0.03),-0.03)&&x.capeNet(0.1,0,0)===0.1);
+ok('capeNet: the minus comes off the capped sum and may go negative (a real cost)',near(x.capeNet(0.4,0.05),0.35)&&near(x.capeNet(0.02,0.05),-0.03)&&x.capeNet(0.1,0)===0.1);
+ok('the consumers floor the resulting stat: attack speed and charge gain at x0.5, cooldowns at most doubled, no NaN',x.bhSpeedK(0,-0.05)===0.95&&x.bhSpeedK(-5,0)===0.5&&x.bhChargeK(0,-0.05)===0.95&&x.bhChargeK(0,-9)===0.5&&near(x.abilityCd({cd:10,id:'x'},{lv:{}},50,'warrior',-0.05),10.5)&&near(x.abilityCd({cd:10,id:'x'},{lv:{}},50,'warrior',-9),20));
 
 // ---- on a player ----
 W.join('a',{name:'A',look:{cls:'warrior'},save:{level:60}}); tick(2); const A=W.players.get('a');
@@ -36,12 +37,17 @@ A.level=60; x.recalcP(A);
 ok('a fresh gear has an empty cape slot',x.newGearFor('warrior').eq.cape===null);
 const dmg0=A.dmg; wear('cape10-al-l'); 
 ok('equipping puts it in eq.cape, and its attack plus raises damage (x1 + 0.12 x 2 x 1.5209)',A.gear.eq.cape==='cape10-al-l'&&near(x.rlP(A,'atk'),I['cape10-al-l'].plus.v)&&A.dmg>dmg0*1.3);
-ok('the minus (attack speed) cannot go below zero in total with no attack speed from anywhere else',x.rlP(A,'aspd')===0);
+ok('a minus with none of that stat is a real cost: -5% attack speed makes a bare hero 5% slower (x0.95)',near(x.rlP(A,'aspd'),-0.05)&&near(x.bhSpeedP(A),0.95));
 wear('cape8-hg-l'); const crit=x.rlP(A,'critdmg');
-ok('Headsman: crit damage plus in the rolled sum, crit chance minus takes from the base 12% (the cape\'s own -3%)',near(crit,I['cape8-hg-l'].plus.v)&&near(x.rlP(A,'crit'),-I['cape8-hg-l'].minus.v));
+ok('Headsman: crit damage plus in the rolled sum, crit chance minus -3% off the base 12%',near(crit,I['cape8-hg-l'].plus.v)&&near(x.rlP(A,'crit'),-I['cape8-hg-l'].minus.v));
 A.gear.inv.push('cape30-x'); A.gear.eq.cape='cape9-ia'; A.level=40; x.recalcP(A);
 ok('a cape above your level counts for nothing (level 50 cape at hiker level 40)',x.rlP(A,'cdr')===0&&x.rlP(A,'atk')===0);
 A.level=60; A.gear.eq.cape=null; x.recalcP(A);
+{ A.gear.eq.cape=null; x.recalcP(A); const d1=A.dmg; A.gear.eq.cape='cape10-la-u+8'; x.recalcP(A); const d0=A.dmg;
+  ok('Whirlwind +8: its -10.8% attack really lowers damage (x0.88, no attack bonus to take it from) and the attack factor floors at x0.5',near(d0/d1,1-I['cape10-la-u+8'].minus.v)&&x.CAPE_FLOOR_K===0.5); }
+{ const run=()=>{ for(let i=0;i<300;i++){ const r=x.rollDmgS(A,1,null,null); if(!Number.isFinite(r.v)||r.v<1) return false; } return true; };
+  A.rl={crit:-5,critdmg:-5}; ok('rollDmgS stays finite with absurd negative crit and crit damage (chance floors at 0, multiplier at 1.0)',run());
+  A.gear.eq.cape=null; x.recalcP(A); }
 W.receive('a',{t:'equip',id:'cape7-ai'}); tick(1); A.level=29; A.gear.eq.cape=null; A.gear.inv.push('cape7-gh'); W.receive('a',{t:'equip',id:'cape7-gh'}); tick(1);
 ok('equip refuses a piece above your level',A.gear.eq.cape!=='cape7-gh');
 A.level=60; wear('cape9-mi-e'); W.receive('a',{t:'unequip',slot:'cape'}); tick(1);

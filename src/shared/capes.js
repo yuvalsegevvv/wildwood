@@ -1,7 +1,7 @@
 //@ Capes, the "wildcards" the Gloamvault pays (eq.cape, wearable at the piece's own level): eight combos of one big plus and one smaller minus over attack %, crit, crit damage, attack speed, cooldown reduction and charge gain; base values, names, growth, texts. Pure.
 /* Agent map (design: docs/DUNGEON-REVAMP.md section 5b; the ids and records are dungeon-rewards.js)
    owns:    CAPE_COMBOS (the 8: id, name, plus {stat,v}, minus {stat,v}), CAPE_BY_ID, CAPE_IDS, CAPE_LEG_K, CAPE_LV_STEP, capePlusK(rar), capeVals(combo,rar,n,t) -> {plus,minus},
-            capeText(it), capePlusLine(it) / capeMinusLine(it) (the {stat,v} a worn cape adds to / takes from the rolled sums), capeNet(sum,minus,avail) (the minus after the caps, never below zero).
+            capeText(it), capePlusLine(it) / capeMinusLine(it) (the {stat,v} a worn cape adds to / takes from the rolled sums), capeNet(sum,minus) (the minus after the caps; the stat's floors are at the consumers).
    uses:    nothing at load; RAR_MULT (items.js), enhMult (dungeon-rewards.js) and RL_STATS letters (rolls.js) at call time. Loaded after talisman.js.
    used by: shared/dungeon-rewards.js (dgParse, dgItem, dgCapeId, DG_REWARDS.gloamvault), shared/rolls.js (rlSumOf, rlMinusOf), server/rolls.js (rlRefreshP), game/economy/rolls.js (rlUiSum), inventory / item details.
    test:    tools/capes-smoke.js.
@@ -30,5 +30,6 @@ function capeStatText(l,sign){ const s=l.stat==='critdmg'?(Math.round(l.v*100)/1
 const capeText=it=>capeStatText(it.plus,'+')+', '+capeStatText(it.minus,'-');
 const capePlusLine=it=>it&&it.kind==='cape'?it.plus:null;
 const capeMinusLine=it=>it&&it.kind==='cape'?it.minus:null;
-// the minus after the caps: sum = the capped plus and lines of a stat, avail = what the wearer has of that stat from everything else (a stat's total never goes below zero)
-const capeNet=(sum,minus,avail)=>minus>0?Math.max(sum-minus,-Math.max(0,avail||0)):sum;
+// the minus after the caps: sum = the capped plus and lines of a stat. A real cost: the bonus total may go negative; each consumer floors the RESULTING stat (attack speed, charge gain, attack and the cooldown rate at x0.5 of base, crit chance at 0, crit multiplier at 1.0)
+const capeNet=(sum,minus)=>sum-(minus||0);
+const CAPE_FLOOR_K=0.5;   // attack speed / charge gain / attack / the cooldown rate never fall below x0.5 of base

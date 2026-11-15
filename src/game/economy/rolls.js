@@ -12,8 +12,8 @@ function rlUiSum(stat){
   if(!GEAR||!GEAR.eq) return 0;
   const items=[]; for(const s in GEAR.eq){ const it=GEAR.eq[s]?ITEM[GEAR.eq[s]]:null; if(it&&(it.roll||it.kind==='cape')&&dgRingUiOn(it)) items.push(it); }   // dgrev: a ring of another element than your kit counts for nothing
   if(!items.length) return 0;
-  const v=rlSumOf(items,stat,PL.level), m=rlMinusOf(items,stat,PL.level);   // dgrev D5: a cape's minus, never below zero in total
-  return m?capeNet(v,m,GEAR.skills?passiveSum(GEAR.skills,PL.level,stat==='cdr'?'cd':stat,clsOf()):0):v;
+  const v=rlSumOf(items,stat,PL.level), m=rlMinusOf(items,stat,PL.level);   // dgrev D5: a cape's minus, the bonus may go negative
+  return capeNet(v,m);
 }
 function rlUiCdr(){ return rlUiSum('cdr'); }   // (the 5th argument of abilityCd)
 // quality 0..99 -> a colour from grey-green to gold
