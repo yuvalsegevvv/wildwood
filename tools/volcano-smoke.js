@@ -10,8 +10,8 @@ ok('the boss is level 50, in the volcano isle\'s crater arena, one fight of thre
 ok('each part\'s pool is twice a full boss: the sleeping bar, and the four wardens together',m.maxHp===H&&m.hpDiv===2&&Math.abs(x.SINK_GUARD_DEF.hp*4-2*H)<=4,m.maxHp+' vs '+H);
 ok('the volcano has common monsters in e49 and e50',['e49','e50'].every(z=>x.MON_DEFS.filter(d=>d.zone===z).length>=2)&&x.MONS.some(q=>q.def.zone==='e49')&&x.MONS.some(q=>q.def.zone==='e50'));
 // the talisman: five kinds, 175 ids, a fixed bonus + a rolled line set, one stone shared with rings and pendants
-{ const ids=x.dgAllTalismanIds(), it=x.ITEM[x.dgTalismanId('cdr',2,3)], r=x.ITEM[x.dgTalismanId('cdr',2,3)+'~a10b20c30'];
-  ok('175 talisman ids, level 40, a fixed bonus; rolling adds three lines and keeps the tempering',ids.length===175&&it.lv===40&&it.kind==='talisman'&&it.v>0.05&&it.roll0&&!it.roll&&r&&r.roll.length===3&&r.n===3); }
+{ const ids=x.dgAllTalismanIds(), it=x.ITEM[x.dgTalismanId('cdr',2,3)], r=x.ITEM[x.dgTalismanId('cdr',2,3)+'~a10'];
+  ok('175 talisman ids, level 40, a fixed bonus; rolling adds one line and keeps the tempering',ids.length===175&&it.lv===40&&it.kind==='talisman'&&it.v>0.05&&it.roll0&&!it.roll&&r&&r.roll.length===1&&r.n===3); }
 ok('rings, pendants and talismans share one stone (rsr)',['ring','pendant','talisman'].every(k=>x.RL_STONE_KIND[k]==='rsr'));
 { const w0=x.talRarityWeights(0), w5=x.talRarityWeights(5), w9=x.talRarityWeights(9);
   ok('drop table: 80/15/4/0.8/0.2 at +0, 50/25/15/7/3 at +5, in between linear, beyond +5 the same',w0.join()==='80,15,4,0.8,0.2'&&w5.join()==='50,25,15,7,3'&&w9.join()===w5.join()&&Math.abs(x.talRarityWeights(1)[0]-74)<1e-9&&x.talRarityOf(0.999,0)===4&&x.talRarityOf(0,5)===0); }

@@ -61,7 +61,7 @@ W.receive('a',{t:'dg',a:'leave'}); tick(3);
   for(let i=0;i<N2;i++){ const id=x.dgClearReward('gloamvault',rnd), q=x.dgParse(id), it=x.dgItem(id);
     if(!q||!it||q.t!==8||q.n!==0||q.roll||it.lv!==40||it.kind!=='armor'||!R.pool.includes(q.slot)||!it.roll0||it.rcode||!/^(helmet|top|bottom|shoes)8(-[reul])?$/.test(id)) bad++; seen[q.slot]=(seen[q.slot]||0)+1; rar[q.rar]++; }
   const within=(o,n,p)=>Math.abs(o-n*p)<=4*Math.sqrt(n*p*(1-p))+1;
-  ok('a clear rolls a +0, UNROLLED level-40 armour piece (helmet8 / top8 / bottom8 / shoes8, no ~roll code, waiting for an Armor Reroll Stone) of the pool, each piece equally often, at 70 / 25 / 4 / 0.8 / 0.2%',bad===0&&R.pool.join()===x.ARMOR_SLOTS.join()&&R.t===8&&x.ARMOR_SLOTS.every(s=>within(seen[s],N2,1/x.ARMOR_SLOTS.length))&&rar.every((c,r)=>within(c,N2,[0.7,0.25,0.04,0.008,0.002][r])),JSON.stringify(seen)+' '+rar); }
+  ok('a clear rolls a +0, UNROLLED level-40 armour piece (helmet8 / top8 / bottom8 / shoes8, no ~roll code, waiting for an Armor Reroll Stone) of the pool, each piece equally often, at 65 / 25 / 7 / 2.5 / 0.5%',bad===0&&R.pool.join()===x.ARMOR_SLOTS.join()&&R.t===8&&x.ARMOR_SLOTS.every(s=>within(seen[s],N2,1/x.ARMOR_SLOTS.length))&&rar.every((c,r)=>within(c,N2,[0.65,0.25,0.07,0.025,0.005][r])),JSON.stringify(seen)+' '+rar); }
 
 // ---- a purge won through the Abbess by a party of two: the Drowning Toll, then both get the same level-40 armour ----
 const K=join('k','Kai',{level:40,gear:{gloam:2,neck:1,zt:gzt(0,0)}}), L2=join('l','Lea',{level:40,gear:{gloam:2,neck:1,zt:gzt(0,0)}}); tick(2);
@@ -96,7 +96,7 @@ W.receive('k',{t:'dg',a:'leave'}); W.receive('l',{t:'dg',a:'leave'}); tick(3);
     ok('played wrong (one stays outside for the first toll, the other stays in for the second): the one outside is hurt by the donut, the one inside by the burst, and the bell does not crack',R2.first[0]&&!R2.first[1]&&R2.second[1]&&R2.stun===0,JSON.stringify(R2));
     IMM.add('w'); IMM.add('v'); for(const p of [W2,W3]){ p.hp=p.maxHp; } B.stunT=0;
     const i2=W2.gear.inv.length, i3=W3.gear.inv.length; clear(); withRandom(0.0005,()=>x.killMonsterS(B.m,W2)); tick(3);
-    const n2=W2.gear.inv.slice(i2), n3=W3.gear.inv.slice(i3), w2=n2.find(id=>/^(helmet|top|bottom|shoes)8/.test(id)), d2=last('w','dge');
-    ok('the win pays EVERY member the same level-40 armour piece through dgGrantItemP (unrolled: no ~ code), listed in the results, and is saved as a clear',r.phase==='won'&&!!w2&&n3.includes(w2)&&x.dgParse(w2).t===8&&!x.dgParse(w2).roll&&x.ITEM[w2].lv===40&&x.ITEM[w2].roll0===true&&x.ITEM[w2].kind==='armor'&&!!d2&&d2[6].includes(w2)&&W2.gear.dg.clear['gloamvault:purge']===1&&W3.gear.dg.clear['gloamvault:purge']===1,n2+' / '+n3);
+    const n2=W2.gear.inv.slice(i2), n3=W3.gear.inv.slice(i3), w2=n2.find(id=>/^(helmet|top|bottom|shoes)7/.test(id)), d2=last('w','dge');
+    ok('the win (tier I: one level-30 piece, D2) pays EVERY member the same armour piece through dgGrantItemP (unrolled: no ~ code), listed in the results, and is saved as a clear',r.phase==='won'&&!!w2&&n3.includes(w2)&&x.dgParse(w2).t===7&&!x.dgParse(w2).roll&&x.ITEM[w2].lv===30&&x.ITEM[w2].kind==='armor'&&!!d2&&d2[6].includes(w2)&&W2.gear.dg.clear['gloamvault:purge']===1&&W3.gear.dg.clear['gloamvault:purge']===1,n2+' / '+n3);
     secs(x.DG_END_S+0.5); } }
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

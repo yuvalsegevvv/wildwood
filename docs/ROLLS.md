@@ -1,4 +1,6 @@
-# Rolled level-40 gear (version 3)
+# Rolled level-40+ gear (version 3, lines by level since the dungeon revamp D2)
+
+**D2 (read this first)**: the number of rolled lines depends on the piece's level, **level 30 none, 40 one, 50 two, 60 three** (`rlLinesFor`, id digit 7 / 8 / 9 / 10: `sword9-e+3~a57k12`). A code's line count must equal its level's (`dgParse`). A roll or reroll replaces all the lines with the right count. Level 50 and 60 stats are x1.25 per step on level 40. Sacrifice pays x1 / 1.5 / 2 / 3 by level. Old level-40 pieces with three lines keep their first line (`gear.dgv`, `docs/DUNGEON-REVAMP.md` D2 as built). The text below was written for the three-line level-40 pieces.
 
 Level-40 weapons (the Sunscar's dungeon, `sandglass`) and armour (the Gloamhorn's dungeon, `gloamvault`) are the level-30 dungeon family one step on (`DG40_*` in `shared/dungeon-rewards.js`, ids end in `8`, tier index 7, x1.25 on the level-30 numbers) and may carry **three rolled lines** on top of their fixed stats. Tempering (+n by rarity, `ENH_MAX`) works exactly as for level-30 pieces and keeps the lines; rolled lines are not scaled by it. There are no level-35 pieces.
 

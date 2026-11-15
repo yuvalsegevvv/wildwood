@@ -8,10 +8,9 @@
             ui/item-icons.js, combat/weapons.js.
    test:    tools/rewards-smoke.js (server), tools/rewards-client-smoke.js (client). */
 for(const id of dgAllIds()) ITEM[id]=dgItem(id);
-for(const id of dgAllRingIds40()) ITEM[id]=dgItem(id);   // rolls: the 245 unrolled level-40 rings
-for(const id of dgAllPendantIds40()) ITEM[id]=dgItem(id);   // the 175 level-40 pendants (the Cenote of Hollow Stars)
+for(const t of [8,9,10]) for(const id of [...dgAllRingIds40(t),...dgAllPendantIds40(t),...dgAllIds40(t)]) ITEM[id]=dgItem(id);   // rolls: the unrolled level-40 / 50 / 60 rings (245 each), pendants (175) and gear (245); the rolled ones are made on demand (ITEM's Proxy)
 for(const id of dgAllTalismanIds()) ITEM[id]=dgItem(id);   // the 175 unrolled level-40 talismans (the volcano boss)
-for(const id of dgAllIds40()) ITEM[id]=dgItem(id);   // version 3: the 245 unrolled level-40 pieces (the same shelf rules)   // ITEM only, never ITEM_LIST or TOOL_LIST (like the tools): shops, drops, "give every item" and tierFor leave them alone
+// ITEM only, never ITEM_LIST or TOOL_LIST (like the tools): shops, drops, "give every item" and tierFor leave them alone
 const DG_STONE_MAX=9999;
 const DG_LOOK_TIER=5;   // the Shogun's (tier 5) look, icon and weapon model stand in for level 30 until it has art of its own
 const dgVisTier=it=>Math.min(it.tier,DG_LOOK_TIER);
@@ -23,7 +22,7 @@ function dgMergedId(it){
 // the same piece at rarity r, keeping its tempering step (merge and upgrade scrolls); null when it is not a level-30/40 piece or the step is more than that rarity allows
 function dgRaisedId(it,r){
   if(!it||!it.dg||it.roll||!(r>=0&&r<=4)) return null; const n=it.n|0; if(n>ENH_MAX[r]) return null;
-  return it.kind==='ring'?(it.t===8?dgRingId40(it.el,r,n):dgRingId(it.el,r,n)):it.kind==='talisman'?dgTalismanId(it.stat,r,n):it.kind==='pendant'?(it.t===8?dgPendantId40(it.stat,r,n):dgPendantId(it.stat,r,n)):it.t===8?dgGearId40(it.slot,r,n):dgGearId(it.slot,r,n);
+  const q=dgParse(it.id); return q?dgIdOfQ(q,r,n,null):null;
 }
 // the attack a worn ring adds to a gear: its own flat number
 function dgRingAtkOf(gear){

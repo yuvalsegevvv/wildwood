@@ -24,21 +24,21 @@ function rlSacrificeP(p,id){
   const it=typeof id==='string'?ITEM[id]:null;
   if(!it||!it.dg||it.lv<30||!RL_STONE_KIND[it.kind]){ toastTo(p.id,'Only level-30 and level-40 weapons, armour and accessories can be sacrificed','bad'); return; }
   if(unwornCount(p,id)<1){ toastTo(p.id,'Take it off first, or keep a spare in your bag','bad'); return; }
-  const kind=RL_STONE_KIND[it.kind], n=RL_SAC[it.rar];
+  const kind=RL_STONE_KIND[it.kind], n=rlSacFor(it);   // dgrev: x1 / 1.5 / 2 / 3 by the piece's level
   p.gear.inv.splice(p.gear.inv.lastIndexOf(id),1);
   const add=rlAddStonesP(p,kind,n); p.dirty=true;
   if(!add) toastTo(p.id,'You hold the most stones there can be: '+it.name+' was still sacrificed','bad');
   ev('sac',p.id,id,kind,add);
 }
 MSG.sac=(p,msg)=>rlSacrificeP(p,msg.id);
-// reroll{id[,worn]}: roll (or reroll) the three lines of a level-40 weapon, armour piece or ring; costs RL_COST stones of its kind and replaces all three lines. With several copies the one in the bag is rolled unless worn is set
+// reroll{id[,worn]}: roll (or reroll) the its lines of a level-40 weapon, armour piece or ring; costs RL_COST stones of its kind and replaces all its lines. With several copies the one in the bag is rolled unless worn is set
 function rlRollP(p,id,worn){
   const it=typeof id==='string'?ITEM[id]:null;
   if(!it||!it.dg||!it.roll0||!RL_STONE_KIND[it.kind]||!p.gear.inv.includes(id)){ toastTo(p.id,'Only level-40 weapons, armour and accessories can be rolled','bad'); return; }
   const kind=RL_STONE_KIND[it.kind], have=p.gear[kind]||0;
   if(have<RL_COST){ toastTo(p.id,'You need '+RL_COST+' '+RL_STONE_NAME[kind]+' (you have '+have+')','bad'); return; }
   const slot=Object.keys(p.gear.eq).find(s=>p.gear.eq[s]===id), wornCopy=!!slot&&(!!worn||unwornCount(p,id)<1);
-  const q=dgParse(id), nid=it.kind==='ring'?dgRingId40(q.el,q.rar,q.n,rlRoll()):it.kind==='pendant'?dgPendantId40(q.stat,q.rar,q.n,rlRoll()):it.kind==='talisman'?dgTalismanId(q.stat,q.rar,q.n,rlRoll()):dgGearId40(q.slot,q.rar,q.n,rlRoll());
+  const q=dgParse(id), nid=dgIdOfQ(q,q.rar,q.n,rlRoll(null,rlLinesFor(q.t)));   // dgrev: a reroll replaces all the lines with the level's count (40: 1, 50: 2, 60: 3)
   p.gear[kind]=have-RL_COST;
   p.gear.inv[p.gear.inv.lastIndexOf(id)]=nid; wpnSwapG(p.gear,id,nid);   // wpn: a carried weapon's slot follows
   if(wornCopy){ p.gear.eq[slot]=nid; gearChangedP(p); } else p.dirty=true;
@@ -50,7 +50,7 @@ MSG.rldev=(p,msg)=>{
   if(!S.dev){ toastTo(p.id,'Testing tools are off on this server','bad'); return; }
   if(msg.cmd==='stones'){ for(const k of RL_STONE_ORDER) rlAddStonesP(p,k,30); }
   else if(msg.cmd==='all40'){ for(const s of ALL_SLOTS) if(p.gear.inv.length<BAG_MAX) p.gear.inv.push(dgGearId40(s,0,0)); for(const e of RING_ELS) if(p.gear.inv.length<BAG_MAX) p.gear.inv.push(dgRingId40(e,0,0)); p.dirty=true; toastTo(p.id,'A level-40 piece of every slot and every ring added (common, unrolled)','good'); }
-  else if(msg.cmd==='rolled'){ for(const s of ALL_SLOTS) if(p.gear.inv.length<BAG_MAX) p.gear.inv.push(dgGearId40(s,4,0,rlRoll())); if(p.gear.inv.length<BAG_MAX) p.gear.inv.push(dgRingId40(RING_ELS[Math.floor(Math.random()*RING_ELS.length)],4,0,rlRoll())); p.dirty=true; toastTo(p.id,'A rolled legendary level-40 piece of every slot and a ring added','good'); }
+  else if(msg.cmd==='rolled'){ for(const s of ALL_SLOTS) if(p.gear.inv.length<BAG_MAX) p.gear.inv.push(dgGearId40(s,4,0,rlRoll(null,1))); if(p.gear.inv.length<BAG_MAX) p.gear.inv.push(dgRingId40(RING_ELS[Math.floor(Math.random()*RING_ELS.length)],4,0,rlRoll(null,1))); p.dirty=true; toastTo(p.id,'A rolled legendary level-40 piece of every slot and a ring added','good'); }
 };
 // rewardKill: a world boss may drop Reroll Stones, chance and number by the zone tier it was fought at (rlBossStoneChance, shared/rolls.js); dungeon bosses pay through their clear instead
 function rlBossStonesP(q,m,K){

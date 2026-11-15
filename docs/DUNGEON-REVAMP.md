@@ -1,4 +1,4 @@
-# Dungeon revamp: plan (D1 built)
+# Dungeon revamp: plan (D1, D2 built)
 
 Status: **plan, version 2, with Yuval's answers.** Built so far: **D1** (the tier ladder, section 9; see the note under it). The rest is built in the steps of section 9, and each step is merged before the next one starts.
 
@@ -188,7 +188,7 @@ The travel window (`game/ui/travel.js`: `openTravel`, `renderTravel`, it has no 
 | Step | What | Test |
 |---|---|---|
 | D1 **(built)** | `shared/dungeon-tiers.js`: `DG_TIERS`, run level = tier level, the board's tier picker, `gear.dg.top`, the unlock rule, zone tiers unhooked, the old entry locks removed | new `dungeon-tiers-smoke`, `dungeon-runs-smoke`, `dungeon-board-client-smoke`, `dungeons-smoke`, `tiers-smoke`, `skillset-sources-smoke`, `entrances-client-smoke`, the four `<name>-dungeon-smoke` |
-| D2 | Eq 50 / 60 ids, 1 / 2 / 3 lines, the old level-40 migration, sacrifice, the fixed rarity, the eq table and piece count in `dgWinS` (it calls `dgClearReward(theme,rnd,steps)` once and grants the one id with `dgGrantItemP`; the fixed rarity replaces `DG_REWARD_W` 70 / 25 / 4 / 0.8 / 0.2 and the per-step luck `DG_REWARD_LUCK` / `dgRewardWeights`) | `rewards-smoke`, `rolls-smoke`, `rolls-client-smoke`, `pendants-smoke`, `server-smoke`, the four `<name>-dungeon-smoke` (`sandglass`, `gloamvault`, `termite`, `cenote`: they pin `DG_REWARDS`) |
+| D2 **(built)** | Eq 50 / 60 ids, 1 / 2 / 3 lines, the old level-40 migration, sacrifice, the fixed rarity, the eq table and piece count in `dgWinS` (it calls `dgClearReward(theme,rnd,steps)` once and grants the one id with `dgGrantItemP`; the fixed rarity replaces `DG_REWARD_W` 70 / 25 / 4 / 0.8 / 0.2 and the per-step luck `DG_REWARD_LUCK` / `dgRewardWeights`) | `rewards-smoke`, `rolls-smoke`, `rolls-client-smoke`, `pendants-smoke`, `server-smoke`, the four `<name>-dungeon-smoke` (`sandglass`, `gloamvault`, `termite`, `cenote`: they pin `DG_REWARDS`) |
 | D3 | Rings need their kit or path | `rewards-smoke`, `skillsets-smoke`, `bond-smoke`, `testworld-smoke` (its kit wears a plain ring) |
 | D4 | Talismans at all levels from the Sandglass; Pyrrhax's list emptied; the slot at 30 | `volcano-smoke`, `rewards-smoke`, `sandglass-dungeon-smoke`, `testworld-smoke` |
 | D5 | Capes: slot, the 8 combos, plus and minus growth, caps; the Gloamvault pays them | new `capes-smoke` |
@@ -208,3 +208,12 @@ The main files touched: `shared/dungeon-rewards.js`, `dungeon-items.js`, `rolls.
 - Protocol: `dg{a:'start',dungeon,type,tier}` (tier clamped 0-10, refused with a toast when not open for the leader; every member is checked again when asked to follow); `dgboard` carries `tier` (the highest open one, the picker's starting point) and `top`, and `L` is tier I's level. The testing tool is `dev{cmd:'dg',v:'<theme>:<mission>[:seed[:tier]]'}` (tier 0-10, ignores the unlock).
 - `D2` still reads `DG_TIERS[t].eq` / `.n`; until then `dgClearReward` gets `min(5, run.tier)` as its luck steps. Boss levels follow `run.L` (`dgAdoptS`), the monster strength is unchanged (section 3).
 - `ssDungeonClearP` is unchanged: it passes `run.tier`, so a skill set piece needs tier II or above; its toast text still says "+N" (not reworded in D1).
+
+### D2 as built (decisions)
+
+- **Levels**: `dgParse` takes the level digit `7 | 8 | 9 | 10` (`t` of the record; `dgEqLv(t)` = 30 / 40 / 50 / 60, `dgEqK(t)` = 1.25 per step above 40) for weapons, armour, rings and pendants. Talismans stay `talisman8-` only (D4). Level 50 / 60 names get a ` Lv50` / ` Lv60` suffix; sell-back price x3 per step above 40; `tier` (look) stays the level-40 one. One id maker per kind with an optional last parameter `t` (`dgGearId40(slot,r,n,roll,t)`, `dgRingId40`, `dgPendantId40`), `dgIdOfQ(q,r,n,roll)` and `dgPieceId(kind,pick,t,r,n)` replace the `t===8` branches (`dgEnhanceNext`, `dgRaisedId`, `rlRollP`). `dgAllIds40(t)`, `dgAllRingIds40(t)`, `dgAllPendantIds40(t)` take the digit (default 8); `dungeon-items.js` registers 8, 9 and 10.
+- **Lines**: `rlLinesFor(t)` = 0 / 1 / 2 / 3. `rlRoll(rnd,n)`, `rlParseCode(code,n)`, `rlLinesOf(code,kind,n)` take the count; `dgParse` refuses a code whose count differs from its level's. `RL_LINES` became `RL_LINES_MAX`; `RL_CODE_RE` takes 1-3 lines. A reroll builds the id with the piece's own count.
+- **Sacrifice**: `rlSacFor(it)` = `RL_SAC[rar]` x `RL_SAC_LV` (1 / 1.5 / 2 / 3), rounded (a common level-40 piece pays 2).
+- **Migration** (`gear.dgv` = 1, `dgvMigrate` in `server/dungeon-gear.js`, called first in `sanitizeGear`, before `inv` is filtered through `ITEM`): walks the whole raw save and cuts every id that ends in a three-line code to its first line (bag, worn, carried weapons, `gear.psh`). A save that already has `dgv` is never walked again (a level-60 piece has three lines).
+- **Clears**: `DG_REWARD_W` = 650 / 250 / 70 / 25 / 5; `DG_REWARD_LUCK` and `dgRewardWeights` are gone; `dgClearReward(theme,rnd,eq)` makes one piece (eq index 0-3, default the theme's `t`), `dgClearRewards(theme,rnd,tier)` the whole clear; `dgWinS` grants every piece to every member present (`dgGrantItemP`, a full bag loses the piece with a toast). The results card already lists several ids (`dge` carries the last 40), so the client is unchanged. Dungeons 5-8 pay their current kinds at the rolled level.
+- Not done (later steps): rings need a kit (D3), talisman levels (D4), capes / gloves / shields.

@@ -1,4 +1,4 @@
-//@ Rolled stats of level-40 gear (version 3): the 13 stats, three lines a roll, ranges for weapons and armour, caps, the code a roll adds to an item id, the reroll stones and what sacrificing a level-30+ piece pays. Pure.
+//@ Rolled stats of level-40 gear (version 3): the 13 stats, 1-3 lines a roll by level (40: one, 50: two, 60: three), ranges for weapons and armour, caps, the code a roll adds to an item id, the reroll stones and what sacrificing a level-30+ piece pays. Pure.
 /* Agent map (design and numbers: docs/ROLLS.md; the pieces themselves are dungeon-rewards.js / dungeon-items.js)
    owns:    RL_STATS (13 stats: atk hp def exp drop coin crit critdmg cdr buffdur debuffdur aspd chg), RL_LINES (3), RL_CAPS (cdr 40%, aspd 60%, chg 100%), RL_SAC (stones per rarity: 1 / 2 / 4 / 8 / 16),
             RL_COST (stones a roll costs), RL_STONE_KIND (weapon -> 'rsw', armour -> 'rsa'), rlRoll (a fresh code), rlParseCode, rlLinesOf (the lines of a code for a slot kind), rlText,
@@ -6,10 +6,11 @@
    uses:    items.js (RAR_MULT is not needed here; ITEM is the Proxy declared there), dungeon-rewards.js (dgItem builds the record of an id with a code).
    used by: dungeon-rewards.js / dungeon-items.js (the ids and records), server/rolls.js (stones, sacrifice, reroll, the effects: rlP), game/economy/rolls.js (the forge tabs, the details panel).
    test:    tools/rolls-smoke.js.
-   An id carries its roll: 'sword8-e+3~a57k12c90' is an epic level-40 sword at +3 with three lines: stat a (attack) at quality 57 of 99, stat k at 12, stat c at 90. Quality 00..99 maps
+   An id carries its roll: 'sword8-e+3~a57k12c90' is an epic level-40 sword at +3 with its one line (level 50 two, level 60 three; the id's digit 8/9/10 says which): stat a (attack) at quality 57 of 99, stat k at 12, stat c at 90. Quality 00..99 maps
    linearly onto the stat's range for the slot kind; the lines are three DIFFERENT stats. Enhancing keeps the lines and does not scale them (+10% of the piece's own fixed stats a step, dungeon-rewards.js).
    Weapons roll the offensive stats higher (RL_KIND_K.weapon.off = 1.6), armour the defensive ones (1.3); the utility stats are the same for both. */
-const RL_LINES=3;
+const RL_LINES_MAX=3;   // the most lines a piece carries (level 60); a piece's own count is rlLinesFor(eq digit): level 30 none, 40 one, 50 two, 60 three (docs/DUNGEON-REVAMP.md section 4)
+const rlLinesFor=t=>t>=8?Math.min(RL_LINES_MAX,t-7):0;   // t = the id's level digit (7 / 8 / 9 / 10)
 // kind: off (offensive), def (defensive), util. lo / hi: the range of one line on a piece of kind x 1 (a fraction: 0.05 = 5%); u: how the text says it
 const RL_STATS=[
   {id:'atk',    k:'a',name:'Attack',               kind:'off', lo:0.04, hi:0.10, text:'% attack'},
@@ -30,26 +31,29 @@ const RL_KIND_K={weapon:{off:1.6,def:1,util:1},armor:{off:1,def:1.3,util:1},ring
 // totals over the whole worn set (weapon + 4 armour pieces, 5 x 3 lines): cooldown reduction from gear stops at 40% (and passives add up to the old 60% overall cap in abilityCd);
 // attack speed (x1.6 at most) and charge gain (twice as fast at most) are also capped over the whole set
 const RL_CAPS={cdr:0.40,aspd:0.60,chg:1.00};
-const RL_SAC=[1,2,4,8,16];   // reroll stones from sacrificing a level-30+ weapon / armour / ring, by rarity (common..legendary)
+const RL_SAC=[1,2,4,8,16];
+const RL_SAC_LV={30:1,40:1.5,50:2,60:3};   // x this by the piece's level (D2): a higher level pays more
+const rlSacFor=it=>Math.max(1,Math.round(RL_SAC[it.rar]*(RL_SAC_LV[it.lv]||1)));   // reroll stones from sacrificing a level-30+ weapon / armour / ring, by rarity (common..legendary)
 const RL_COST=1;             // stones one roll (the first or a reroll) costs: of the kind of the piece (weapon pieces use weapon stones)
 const RL_STONE_KIND={weapon:'rsw',armor:'rsa',ring:'rsr',pendant:'rsr',talisman:'rsr'}, RL_STONE_NAME={rsw:'Weapon Reroll Stone',rsa:'Armor Reroll Stone',rsr:'Accessory Reroll Stone'}, RL_STONE_MAX=9999;   // rsr: the ring's own stone (gear.rsr), made by sacrificing level-30+ rings or dropped by world bosses
 const RL_STONE_ORDER=['rsw','rsa','rsr'];   // the gear.* fields of the three stone kinds (a boss drop picks one at random; the forge lists them in this order)
-const RL_CODE_RE=/^~(?:[a-m]\d\d){3}$/;
-// one roll: three different stats, each a quality 0..99 (rnd returns [0,1), Math.random on the server)
-function rlRoll(rnd){
-  rnd=rnd||Math.random; const keys=RL_STATS.map(s=>s.k); let out='~';
-  for(let i=0;i<RL_LINES;i++){ const j=Math.min(keys.length-1,Math.floor(rnd()*keys.length)), k=keys.splice(j,1)[0], q=Math.min(99,Math.floor(rnd()*100)); out+=k+(q<10?'0':'')+q; }
+const RL_CODE_RE=/^~(?:[a-m]\d\d){1,3}$/;
+// one roll: n (1-3, default 1) different stats, each a quality 0..99 (rnd returns [0,1), Math.random on the server)
+function rlRoll(rnd,n){
+  rnd=rnd||Math.random; n=n>=1?Math.min(RL_LINES_MAX,n|0):1; const keys=RL_STATS.map(s=>s.k); let out='~';
+  for(let i=0;i<n;i++){ const j=Math.min(keys.length-1,Math.floor(rnd()*keys.length)), k=keys.splice(j,1)[0], q=Math.min(99,Math.floor(rnd()*100)); out+=k+(q<10?'0':'')+q; }
   return out;
 }
-// '~a57k12c90' -> [{s: stat record, q: 57}, ...], or null when the code is not three different stats
-function rlParseCode(code){
+// '~a57k12c90' -> [{s: stat record, q: 57}, ...], or null when the code is not 1-3 different stats (or, when n is given, not exactly n of them: a piece's code must match its level)
+function rlParseCode(code,n){
   if(typeof code!=='string'||!RL_CODE_RE.test(code)) return null;
-  const out=[]; for(let i=0;i<RL_LINES;i++){ const s=RL_BY_KEY[code[1+i*3]], q=+code.slice(2+i*3,4+i*3); if(!s||out.some(l=>l.s===s)) return null; out.push({s,q}); }
+  const cnt=(code.length-1)/3; if(n!==undefined&&cnt!==n) return null;
+  const out=[]; for(let i=0;i<cnt;i++){ const s=RL_BY_KEY[code[1+i*3]], q=+code.slice(2+i*3,4+i*3); if(!s||out.some(l=>l.s===s)) return null; out.push({s,q}); }
   return out;
 }
 // the lines of a code on a piece of kind 'weapon' | 'armor' | 'ring': [{stat, q, v}] with v the value as a fraction (critdmg: added to the multiplier)
-function rlLinesOf(code,kind){
-  const L=rlParseCode(code), K=RL_KIND_K[kind]; if(!L||!K) return null;
+function rlLinesOf(code,kind,n){
+  const L=rlParseCode(code,n), K=RL_KIND_K[kind]; if(!L||!K) return null;
   return L.map(({s,q})=>({stat:s.id,q,v:Math.round((s.lo+(s.hi-s.lo)*q/99)*K[s.kind]*10000)/10000}));
 }
 const rlPct=v=>String(Math.round(v*1000)/10);

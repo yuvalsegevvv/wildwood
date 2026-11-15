@@ -294,7 +294,7 @@ Decided by the owner; the data and the rules are in `src/shared/dungeon-rewards.
 | Bonefrost Barrow (the Reach) | a **ring**, a new piece of equipment | 7 types: no element and the six elements |
 | The Blackseam (the Greyspine) | a **pendant**, the necklace (`docs/PENDANTS.md`) | 5 kinds: exp, drop, coin, crit rate, crit damage |
 
-**One item a clear.** Its rarity is rolled first: **Common 70% / Rare 25% / Epic 4% / Unique 0.8% / Legendary 0.2%** (`DG_REWARD_W`), then one piece of the pool with equal chance. The whole party gets the same
+**Pieces a clear (D2, `docs/DUNGEON-REVAMP.md`).** A clear at tier T pays a count of pieces drawn evenly from `DG_TIERS[T].n` (`dgClearRewards`); each piece rolls its own equipment level (30 / 40 / 50 / 60, `DG_TIERS[T].eq`) and its own rarity, fixed at every tier: **Common 65% / Rare 25% / Epic 7% / Unique 2.5% / Legendary 0.5%** (`DG_REWARD_W`; the per-step luck is gone), then one piece of the dungeon's pool with equal chance. (Older text below says one item at 70 / 25 / 4 / 0.8 / 0.2%: that was the level-30 only rule.) The whole party gets the same
 item (the all-loot rule; the same sword reaches a mage too: see decision 8).
 
 **Level-30 gear is a seventh tier** above the six of `items.js` (whose levels stop at 25). It is not in `TIER_LV` / `ITEM_LIST`, so shops, tools, drops and `tierFor` do not change; only a dungeon pays it. Each stat

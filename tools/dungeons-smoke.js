@@ -281,7 +281,7 @@ const R=loadShared(['DG_THEMES','DG_REWARDS','DG_REWARD_W','DG_GEAR_LV','DG_TIER
   'ITEM','ITEM_LIST','TIERS','tierFor','TIER_ATK','ARMOR_HP','ARMOR_DEF','RAR_MULT','WEAPON_SLOTS','ARMOR_SLOTS','ALL_SLOTS','CLASS_OF','ELEM_LIST','ELEMS','TOOL_LIST','rollMonsterRarity']);
 const mulberry=a=>()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
 const within=(obs,n,p)=>Math.abs(obs-n*p)<=4*Math.sqrt(n*p*(1-p))+1;   // 4 sigma
-const ODDS=[0.7,0.25,0.04,0.008,0.002];   // the owner's table, written out here so a change to the code's own table cannot hide
+const ODDS=[0.65,0.25,0.07,0.025,0.005];   // the owner's table, written out here so a change to the code's own table cannot hide
 const RT=Object.values(R.DG_THEMES).filter(t=>!t.dev&&!t.trial), RKINDS={home:'weapon',vale:'armor',hoar:'ring',grey:'pendant',sun:'weapon',gloam:'armor',amber:'ring',isles:'pendant'};
 ok('each of the eight dungeons pays one kind of reward: Wildwood weapons, the Vale armour, the Reach rings, the Greyspine pendants, the Sunscar level-40 weapons, the Gloamhorn level-40 armour, the Amber Reach level-40 rings, the Isles level-40 pendants (a reward for every theme and no other)',
   RT.length===8&&RT.every(t=>R.DG_REWARDS[t.id]&&R.DG_REWARDS[t.id].kind===RKINDS[t.land])&&Object.keys(R.DG_REWARDS).filter(id=>!RT.some(t=>t.id===id)).length===0&&R.DG_REWARDS.sandglass.t===8&&R.DG_REWARDS.gloamvault.t===8&&R.DG_REWARDS.termitecathedral.t===8&&R.DG_REWARDS.cenote.t===8);
@@ -289,8 +289,8 @@ ok('each of the eight dungeons pays one kind of reward: Wildwood weapons, the Va
   ok('the pools are "all kinds": the weapons of all three classes, the four armour pieces, 7 rings (no element and the six elements) and the 5 pendants',
     P('hollowroots').join()===R.WEAPON_SLOTS.join()&&new Set(P('hollowroots').map(s=>R.CLASS_OF[s])).size===3&&P('jadesprings').join()===R.ARMOR_SLOTS.join()&&
     P('bonefrostbarrow').length===7&&new Set(P('bonefrostbarrow')).size===7&&P('bonefrostbarrow')[0]==='basic'&&R.ELEM_LIST.length===6&&R.ELEM_LIST.every(e=>P('bonefrostbarrow').includes(e)&&R.ELEMS[e])&&P('blackseam').join()===R.PENDANT_STATS.join()&&P('blackseam').length===5); }
-{ const B=[0,0.6999,0.70,0.9499,0.95,0.9899,0.99,0.9979,0.998,0.99999].map(v=>R.dgRewardRarity(v)).join();
-  ok('the rarity of a clear is 70 / 25 / 4 / 0.8 / 0.2% (the table adds up to 100% and every boundary falls in the right rarity)',R.DG_REWARD_W.reduce((a,b)=>a+b,0)===1000&&B==='0,0,1,1,2,2,3,3,4,4',B); }
+{ const B=[0,0.6499,0.65,0.8999,0.90,0.9699,0.97,0.9949,0.995,0.99999].map(v=>R.dgRewardRarity(v)).join();
+  ok('the rarity of a clear is 65 / 25 / 7 / 2.5 / 0.5% (the table adds up to 100% and every boundary falls in the right rarity)',R.DG_REWARD_W.reduce((a,b)=>a+b,0)===1000&&B==='0,0,1,1,2,2,3,3,4,4',B); }
 { const N=200000, rnd=mulberry(7), cnt=[0,0,0,0,0]; for(let i=0;i<N;i++) cnt[R.dgRewardRarity(rnd())]++;
   ok('over '+N+' rolls the rarities come out at their odds (within 4 sigma)',cnt.every((c,r)=>within(c,N,ODDS[r])),cnt.map(c=>(c/N*100).toFixed(2)+'%').join(' / ')); }
 { const rnd=mulberry(11), N=60000, bad=[];

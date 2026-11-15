@@ -137,7 +137,7 @@ function dgWinS(run){
   const chests=dgChestFlushS(run); if(chests) run.endLen=DG_CHEST_END_S;   // dungeons: the reward chests the kit earned appear now, and the exit waits longer so they can be opened
   for(const m of [...run.mons]) if(!(run.boss&&m===run.boss.m)) dgRemoveS(run,m);
   const key=run.th+':'+run.mission, secs=Math.max(1,Math.round(run.t)), saved=dgSaveKeyOk(key);
-  const prize=dgClearReward(run.th,null,run.theme.land?Math.min(5,run.tier):0);   // (D1: rarity luck still takes 0-5 steps; step D2 replaces it with the fixed rarity)   // the clear's own reward (docs/DUNGEON-THEMES.md section 7): one level-30 piece rolled once, handed to every member present (null for the test set)
+  const prizes=dgClearRewards(run.th,null,run.tier);   // dgrev: the clear's own reward (docs/DUNGEON-THEMES.md section 7): DG_TIERS[tier].n pieces, each with its own equipment level and rarity, rolled once and handed to every member present (none for the test set)
   for(const p of dgPresentS(run)){
     const mb=dgMemberOf(run,p);
     if(p.dead){ p.dead=false; p.deadT=0; p.hp=Math.max(1,Math.round(p.maxHp*DG_REVIVE_HP)); p.lastHit=S.t; ev('up',p.id); }
@@ -145,7 +145,7 @@ function dgWinS(run){
     if(!run.dev&&run.theme.land){ const g=dgSaveOf(p); g.top=Math.max(dgtTop(p.gear),Math.min(DG_TIERS.length,(run.tier|0)+1)); p.dirty=true; }   // dgrev: clearing tier N opens tier N+1 (gear.dg.top)
     bdStirDungeonP(p,run);   // bond: the hour's stirring dungeon opens orbs
     ssDungeonClearP(p,run);   // skillsets: the land's dungeon set, rolled once for each member present
-    if(prize&&dgGrantItemP(p,prize)&&mb) mb.got.items.push(prize);   // (a full bag loses it: dgGrantItemP says so)
+    for(const prize of prizes) if(dgGrantItemP(p,prize)&&mb) mb.got.items.push(prize);   // (a full bag loses it: dgGrantItemP says so)
     dgEndEvS(run,p,1,'');
   }
   toastTo(null,(run.theme.name||'The dungeon')+' cleared in '+dgClock(secs)+'! Back at the door in '+(run.endLen||DG_END_S)+' s.','good');

@@ -81,8 +81,8 @@ ok('and it comes off (back in the bag); the ring stays',A.gear.eq.pendant===null
   ok('a pendant at its rarity\'s limit (a common at +2) cannot be tempered further',A.gear.inv.includes('pendant-xp+2')&&A.gear.temper===99); }
 
 // ---- what the Greyspine's dungeon pays ----
-{ const R=x.DG_REWARDS.blackseam; ok('the Greyspine\'s dungeon (blackseam) pays a pendant: one of the five kinds with equal chance, the rarity from the same 70 / 25 / 4 / 0.8 / 0.2% as every clear',
-    R&&R.kind==='pendant'&&R.pool.join()===x.PENDANT_STATS.join()&&x.DG_REWARD_W.join()==='700,250,40,8,2');
+{ const R=x.DG_REWARDS.blackseam; ok('the Greyspine\'s dungeon (blackseam) pays a pendant: one of the five kinds with equal chance, the rarity from the same 65 / 25 / 7 / 2.5 / 0.5% as every clear',
+    R&&R.kind==='pendant'&&R.pool.join()===x.PENDANT_STATS.join()&&x.DG_REWARD_W.join()==='650,250,70,25,5');
   const got=new Set(), rars=new Set(); for(let k=0;k<400;k++){ const id=x.dgClearReward('blackseam'); got.add(x.dgParse(id).stat); rars.add(x.dgParse(id).rar); if(!id.startsWith('pendant-')||x.dgParse(id).n!==0) got.add('bad'); }
   ok('a clear rolls only +0 pendants, all five kinds come up, and the other dungeons still pay what they paid (weapons, armour, rings)',!got.has('bad')&&got.size===5&&rars.has(0)&&rars.has(1)&&
     x.dgParse(x.dgClearReward('hollowroots',()=>0.3)).slot.match(/sword|bow|wand/)&&x.dgParse(x.dgClearReward('jadesprings',()=>0.3)).slot.match(/helmet|top|bottom|shoes/)&&x.dgParse(x.dgClearReward('bonefrostbarrow',()=>0.3)).el);

@@ -11,7 +11,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>
   const un=G.GEAR.inv.find(id=>/^sword8$/.test(id)||(G.ITEM[id]&&G.ITEM[id].roll0&&!G.ITEM[id].roll)), ro=G.GEAR.inv.find(id=>G.ITEM[id]&&G.ITEM[id].roll);
   ok('an unrolled and a rolled piece are in the bag',!!un&&!!ro);
   ok('unrolled details say to use a Reroll Stone',/Unrolled: use a Reroll Stone/.test(G.dgInfoHtml(G.ITEM[un])));
-  ok('rolled details list three lines',(G.dgInfoHtml(G.ITEM[ro]).match(/rl-line"/g)||[]).length===3);
+  ok('rolled details list one line (level 40)',(G.dgInfoHtml(G.ITEM[ro]).match(/rl-line"/g)||[]).length===1);
   ok('statDiff works on a rolled piece',typeof G.statDiff(G.ITEM[ro],G.ITEM[G.GEAR.eq.weapon])==='string');
   ok('the stone chips show',/Weapon Reroll Stone/.test(G.rlUiStoneChipHtml())&&/Armor Reroll Stone/.test(G.rlUiStoneChipHtml()));
   const roll=G.rlUiRollHtml(); ok('Roll tab lists pieces with Roll and Reroll buttons',/data-reroll=/.test(roll)&&/Reroll:|Roll:/.test(roll));

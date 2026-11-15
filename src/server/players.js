@@ -4,6 +4,7 @@
    the server sends back a "you" message whenever it changes so the client can store it again. */
 function sanitizeGear(g,cls){
   const base=newGearFor(cls);
+  dgvMigrate(g);   // dgrev: old three-line level-40 ids keep their first line (gear.dgv, before inv is filtered through ITEM)
   if(!g||typeof g!=='object'){ const fresh=sanitizeGear({},cls); delete fresh.skills.v; return fresh; }   // no save at all (a moved guest, an account with no gear yet): a clean one has every field (gear.cos, fr, sq, rd... were missing, so cosmake threw), minus skills.v so that newPlayer equips the free skills
   const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>typeof id==='string'&&ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.min(COINS_MAX,Math.max(0,Math.floor(+g.coins||0))),q:null,startAll:!!g.startAll,caveFull:!!g.caveFull,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),redgate:clampInt(g.redgate,0,1,0),amber:g.amber>=1||g.redgate>=1?1:0,wv:WORLD_VER,sun:clampInt(g.sun,0,2,0),gloam:clampInt(g.gloam,0,2,0),tall:clampInt(g.tall,0,2,0),isles:clampInt(g.isles,0,2,0),mats:{}}   // (an old save's `soul` is not copied: the soul was removed);
   if(g.mats&&typeof g.mats==='object') for(const id in g.mats){ const n=MATS[id]?clampInt(g.mats[id],0,MAT_MAX,0):0; if(n) out.mats[id]=n; }
@@ -31,6 +32,7 @@ function sanitizeGear(g,cls){
   out.pre=prSanitize(g.pre);   // presets: the ten saved loadouts (an old save has none)
   out.ss=ssSanitizeSave(g.ss);   // skillsets: the pity counts of the sources (an old save has none)
   out.dg=dgSanitizeSave(g.dg,g);   // dungeons: clears and best times per '<theme>:<mission>' (an old save has none)
+  out.dgv=DGV_VER;   // dgrev: migrated (dungeon-gear.js dgvMigrate)
   rlSanitizeStones(g,out);   // rolls: the weapon / armour reroll stones (an old save has none)
   out.temper=clampInt(g.temper,0,DG_STONE_MAX,0);   // dungeons: the Tempering Stones (a count; an old save has none)
   if(out.north<1&&out.mq.s>MQ_BY_ID.V10.i) out.north=1;   // saves that already got past Akaoni: the ice wall is open for them

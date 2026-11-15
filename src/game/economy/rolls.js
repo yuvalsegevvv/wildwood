@@ -42,7 +42,7 @@ function rlUiRows(pred){
 const rlUiKindOk=it=>(it.kind==='weapon'||it.kind==='armor'||it.kind==='ring'||it.kind==='pendant'||it.kind==='talisman')&&it.dg;   // a ring has its own stone (gear.rsr)
 function rlUiRollHtml(){
   const rows=rlUiRows(it=>rlUiKindOk(it)&&it.roll0);
-  let h=`<p class="fg-intro">Level-40 gear and rings carry three rolled lines out of 13 stats. A roll costs ${RL_COST} Reroll Stone of the piece's kind (weapon, armour or ring) and replaces all three lines. Weapons roll higher offence, armour higher defence. Make stones in the other tab.</p>`+rlUiStoneBarHtml();
+  let h=`<p class="fg-intro">Level-40 gear and accessories carry one rolled line out of 13 stats, level 50 two and level 60 three. A roll costs ${RL_COST} Reroll Stone of the piece's kind (weapon, armour or ring) and replaces all its lines. Weapons roll higher offence, armour higher defence. Make stones in the other tab.</p>`+rlUiStoneBarHtml();
   if(!rows.length) h+='<p class="muted">You have no level-40 weapon, armour or ring yet.</p>';
   for(const r of rows){
     const it=ITEM[r.id], kind=RL_STONE_KIND[it.kind], have=rlUiStones(kind), can=have>=RL_COST;
@@ -55,7 +55,7 @@ function rlUiRollHtml(){
 }
 function rlUiSacHtml(){
   const rows=rlUiRows(it=>rlUiKindOk(it)&&it.lv>=30).filter(r=>!r.worn);
-  let h=`<p class="fg-intro">Break a level-30 or level-40 weapon, armour piece or ring from your bag into Reroll Stones of its kind: ${RL_SAC.join(' / ')} by rarity (common to legendary). Worn pieces stay safe; take them off first.</p>`+rlUiStoneBarHtml();
+  let h=`<p class="fg-intro">Break a level-30 or level-40 weapon, armour piece or ring from your bag into Reroll Stones of its kind: ${RL_SAC.join(' / ')} by rarity (common to legendary), x1.5 at level 40, x2 at level 50, x3 at level 60. Worn pieces stay safe; take them off first.</p>`+rlUiStoneBarHtml();
   if(!rows.length) h+='<p class="muted">No spare level-30 or level-40 weapon, armour or ring in your bag.</p>';
   for(const r of rows){
     const it=ITEM[r.id], kind=RL_STONE_KIND[it.kind], n=RL_SAC[it.rar];

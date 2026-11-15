@@ -60,7 +60,7 @@ W.receive('a',{t:'dg',a:'leave'}); tick(3);
   for(let i=0;i<N2;i++){ const id=x.dgClearReward('termitecathedral',rnd), q=x.dgParse(id), it=x.dgItem(id);
     if(!q||!it||q.t!==8||q.n!==0||q.roll||it.lv!==40||it.kind!=='ring'||!R.pool.includes(q.el)||!it.roll0||it.rcode||!/^ring8-(basic|fire|water|earth|air|dark|light)(-[reul])?$/.test(id)) bad++; seen[q.el]=(seen[q.el]||0)+1; rar[q.rar]++; }
   const within=(o,n,p)=>Math.abs(o-n*p)<=4*Math.sqrt(n*p*(1-p))+1;
-  ok('a clear rolls a +0, UNROLLED level-40 ring (ring8-<type>, no ~roll code, waiting for a Ring Reroll Stone) of the seven types, each equally often, at 70 / 25 / 4 / 0.8 / 0.2%',bad===0&&R.kind==='ring'&&R.t===8&&R.pool.join()===x.RING_ELS.join()&&x.RING_ELS.every(s=>within(seen[s],N2,1/x.RING_ELS.length))&&rar.every((c,r)=>within(c,N2,[0.7,0.25,0.04,0.008,0.002][r])),JSON.stringify(seen)+' '+rar); }
+  ok('a clear rolls a +0, UNROLLED level-40 ring (ring8-<type>, no ~roll code, waiting for a Ring Reroll Stone) of the seven types, each equally often, at 65 / 25 / 7 / 2.5 / 0.5%',bad===0&&R.kind==='ring'&&R.t===8&&R.pool.join()===x.RING_ELS.join()&&x.RING_ELS.every(s=>within(seen[s],N2,1/x.RING_ELS.length))&&rar.every((c,r)=>within(c,N2,[0.65,0.25,0.07,0.025,0.005][r])),JSON.stringify(seen)+' '+rar); }
 
 // ---- a purge won through Queen Ortha by a party of two: the Egg Clusters, then both get the same level-40 ring ----
 const K=join('k','Kai',{level:45,gear:Object.assign({},AG)}), L2=join('l','Lea',{level:45,gear:Object.assign({},AG)}); tick(2);
@@ -100,7 +100,7 @@ W.receive('k',{t:'dg',a:'leave'}); W.receive('l',{t:'dg',a:'leave'}); tick(3);
     ok('the eggs left standing hatch: whoever stands among them is hurt, each egg leaves a broodling (five hatched here, at most '+x.DG_BROOD_MAX+' in the hall) and no clutch counts as lost',hurt&&hatched===5&&B.k.eggs.length===0&&B.k.lost===1,'hatched '+hatched);
     IMM.add('w'); IMM.add('v'); for(const p of [W2,W3]){ p.hp=p.maxHp; } B.stunT=0;
     const i2=W2.gear.inv.length, i3=W3.gear.inv.length; clear(); withRandom(0.0005,()=>x.killMonsterS(B.m,W2)); tick(3);
-    const n2=W2.gear.inv.slice(i2), n3=W3.gear.inv.slice(i3), w2=n2.find(id=>/^ring8-/.test(id)), d2=last('w','dge');
-    ok('the win pays EVERY member the same level-40 ring through dgGrantItemP (unrolled: no ~ code), listed in the results, and is saved as a clear',r.phase==='won'&&!!w2&&n3.includes(w2)&&x.dgParse(w2).t===8&&!x.dgParse(w2).roll&&x.ITEM[w2].lv===40&&x.ITEM[w2].roll0===true&&x.ITEM[w2].kind==='ring'&&!!d2&&d2[6].includes(w2)&&W2.gear.dg.clear['termitecathedral:purge']===1&&W3.gear.dg.clear['termitecathedral:purge']===1,n2+' / '+n3);
+    const n2=W2.gear.inv.slice(i2), n3=W3.gear.inv.slice(i3), w2=n2.find(id=>/^ring-/.test(id)), d2=last('w','dge');
+    ok('the win (tier I: one level-30 piece, D2) pays EVERY member the same ring through dgGrantItemP (unrolled: no ~ code), listed in the results, and is saved as a clear',r.phase==='won'&&!!w2&&n3.includes(w2)&&x.dgParse(w2).t===7&&!x.dgParse(w2).roll&&x.ITEM[w2].lv===30&&x.ITEM[w2].kind==='ring'&&!!d2&&d2[6].includes(w2)&&W2.gear.dg.clear['termitecathedral:purge']===1&&W3.gear.dg.clear['termitecathedral:purge']===1,n2+' / '+n3);
     secs(x.DG_END_S+0.5); } }
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

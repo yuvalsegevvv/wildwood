@@ -6,7 +6,7 @@ const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev.map(e=>[pid,...e])); }},
   ['MONS','BOSSES','BOSS_DEFS','MON_DEFS','DEF_BY_ID','VIL','VIL2','VIL3','S','damageMonsterS','killMonsterS','rewardKill','hurtP','monK','recalcP','sanitizeGear','newGearFor',
-   'zoneTierK','zoneTierLv','defAt','awkHpK','landAt','symbolBonus','symbolPoints','ZTIER_SYMBOL_LANDS','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','ztBossLand','SAV_BOSS_ROWS','ARENA_A41','ARENA_A45','ZONES','monTierOf','SKILLS','skillLvOf','rlBossStoneChance','rlBossStoneCount','dgRewardWeights','dgRewardRarity','DG_REWARD_W','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','mobHpK','BOSS_DEFS','DG_BOSS_DEFS','LATE_CREEP_LV','LATE_CREEP_BOSS','LATE_CREEP_MOB','lvDmgK','LV_DMG_MIN']);
+   'zoneTierK','zoneTierLv','defAt','awkHpK','landAt','symbolBonus','symbolPoints','ZTIER_SYMBOL_LANDS','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','ztBossLand','SAV_BOSS_ROWS','ARENA_A41','ARENA_A45','ZONES','monTierOf','SKILLS','skillLvOf','rlBossStoneChance','rlBossStoneCount','dgRewardRarity','DG_REWARD_W','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','mobHpK','BOSS_DEFS','DG_BOSS_DEFS','LATE_CREEP_LV','LATE_CREEP_BOSS','LATE_CREEP_MOB','lvDmgK','LV_DMG_MIN']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
@@ -174,6 +174,6 @@ ok('Reroll Stone chance and number rise with the tier played (25% / 1 stone at t
   Math.random=()=>0.9; A.gear.rsw=0; A.gear.rsa=0; fell(A,'boss'); const none=(A.gear.rsw|0)+(A.gear.rsa|0);
   Math.random=real;
   ok('a world boss drops stones when the roll is under the chance and none when it is over',lowGot===1&&none===0,lowGot+' / '+none); }
-ok('dungeon clears roll luckier with every difficulty step: Common falls and every better rarity rises, the weights still add up to 1000',(()=>{ const W0=x.DG_REWARD_W, W5=x.dgRewardWeights(5); return W5.reduce((a,b)=>a+b,0)===1000&&W5[0]<W0[0]&&W5.slice(1).every((w,i)=>w>W0[i+1])&&x.dgRewardRarity(0.5,0)===0&&x.dgRewardRarity(0.5,5)<=x.dgRewardRarity(0.5,0)+1&&x.dgRewardRarity(0.999,0)===4; })());
+ok('dungeon clears have one fixed rarity table at every tier (D2: no luck per difficulty step): 65 / 25 / 7 / 2.5 / 0.5, summing to 1000, and dgRewardWeights is gone',x.DG_REWARD_W.join()==='650,250,70,25,5'&&x.DG_REWARD_W.reduce((a,b)=>a+b,0)===1000&&typeof x.dgRewardWeights==='undefined'&&x.dgRewardRarity(0.5)===0&&x.dgRewardRarity(0.999)===4);
 
 console.log(fails?'\n'+fails+' FAILED':'\nall passed'); process.exit(fails?1:0);
