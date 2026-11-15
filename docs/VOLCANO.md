@@ -13,8 +13,8 @@ Reading of "twice the hp of a full overworld boss": a part = 2 x the health of o
 
 **Three lives**: a knock-out inside the arena wakes on the spot after 3 s (60% health, 2.5 s grace) up to 3 times a hiker a fight; the fourth is the normal respawn. The fight is not reset while a hiker waits to revive. Hooks: `// volcano:` in `boss.js`, `combat.js`, `players.js`.
 
-## Reward: the talisman (new level-40 slot `eq.talisman`)
-One fixed bonus, one of five: attack speed, buff duration, charge gain, cooldown reduction, flat attack (added with the weapon's and ring's). Common +0: 5% / 8% / 8% / 5% / +30; x rarity, +10% a tempering step, plus three rolled lines like other level-40 gear. Ids `talisman8-<kind>[-r|e|u|l][+n][~roll]`. Each hiker who hit the boss rolls one: the kind at random, the rarity by the zone tier fought at: **80/15/4/0.8/0.2 at +0, 50/25/15/7/3 at +5**, linear between, tiers above 5 as 5 (`talRarityWeights`).
+## The talisman (slot `eq.talisman`; since D4 it comes from the Sandglass, not from Pyrrhax)
+One fixed bonus, one of five: attack speed, buff duration, charge gain, cooldown reduction, flat attack (added with the weapon's and ring's). Common +0: 5% / 8% / 8% / 5% / +30; x rarity, +10% a tempering step, plus three rolled lines like other level-40 gear. Ids `talisman8-<kind>[-r|e|u|l][+n][~roll]`. **D4**: Pyrrhax no longer drops one (his drop is gone; `vbRewardP` only shows the ending toast). Talismans exist at equipment level 30 / 40 / 50 / 60 (ids `talisman7-` / `8-` / `9-` / `10-`; the old `talisman8-` ids are level 40 and unchanged), the fixed bonus x1.25 per step above 40 (level 30 = level 40 / 1.25), 0 / 1 / 2 / 3 rolled lines; the Sandglass pays them (`DG_REWARDS.sandglass`, all five kinds at the rolled level). Wearable from hiker level 30 (the item's own `lv`; the unused `TAL_LV` and the drop table `talRarityWeights` are gone).
 
 **One stone for all accessories**: rings, level-40 pendants and talismans roll with `gear.rsr`, now the **Accessory Reroll Stone**; sacrificing a level-30+ ring, pendant or talisman pays it (1/2/4/8/16). Level-40 pendants can now be rolled (they were never rolled before).
 

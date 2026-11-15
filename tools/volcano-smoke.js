@@ -2,7 +2,7 @@
 // Usage: node tools/volcano-smoke.js
 const {loadServer}=require('./load');
 const evs=[];
-const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['MONS','BOSSES','getH','SINK_DEF','SINK_GUARD_DEF','ITEM','dgParse','dgItem','dgTalismanId','dgPendantId40','TAL_STATS','talRarityWeights','talRarityOf','RL_STONE_KIND','zoneAt','ewZoneAt','MON_DEFS','vbBossS','VB_LIVES','rlRefreshP','dgAllTalismanIds','recalcP','ARENAS']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['MONS','BOSSES','getH','SINK_DEF','SINK_GUARD_DEF','ITEM','dgParse','dgItem','dgTalismanId','dgPendantId40','TAL_STATS','RL_STONE_KIND','zoneAt','ewZoneAt','MON_DEFS','vbBossS','VB_LIVES','rlRefreshP','dgAllTalismanIds','recalcP','ARENAS']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const B=x.BOSSES.find(b=>b.bd.def.id==='sinkwarden'), m=B.m, A=B.A, H=x.SINK_DEF.hp;
@@ -13,8 +13,6 @@ ok('the volcano has common monsters in e49 and e50',['e49','e50'].every(z=>x.MON
 { const ids=x.dgAllTalismanIds(), it=x.ITEM[x.dgTalismanId('cdr',2,3)], r=x.ITEM[x.dgTalismanId('cdr',2,3)+'~a10'];
   ok('175 talisman ids, level 40, a fixed bonus; rolling adds one line and keeps the tempering',ids.length===175&&it.lv===40&&it.kind==='talisman'&&it.v>0.05&&it.roll0&&!it.roll&&r&&r.roll.length===1&&r.n===3); }
 ok('rings, pendants and talismans share one stone (rsr)',['ring','pendant','talisman'].every(k=>x.RL_STONE_KIND[k]==='rsr'));
-{ const w0=x.talRarityWeights(0), w5=x.talRarityWeights(5), w9=x.talRarityWeights(9);
-  ok('drop table: 80/15/4/0.8/0.2 at +0, 50/25/15/7/3 at +5, in between linear, beyond +5 the same',w0.join()==='80,15,4,0.8,0.2'&&w5.join()==='50,25,15,7,3'&&w9.join()===w5.join()&&Math.abs(x.talRarityWeights(1)[0]-74)<1e-9&&x.talRarityOf(0.999,0)===4&&x.talRarityOf(0,5)===0); }
 // the fight
 W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:60}}); W.join('b',{name:'Second',look:{cls:'archer'},save:{level:60}});
 const P=W.players.get('a'), Q=W.players.get('b'), py=x.getH(A.x,A.z);
@@ -49,7 +47,7 @@ ok('after the window it takes off again',B.mode===1||B.k.air||B.k.groundT!==unde
 // the kill and the drop
 { const Pb=P; Pb.dead=false; Pb.hp=Pb.maxHp; m.immune=false; B.mode=0; B.stunT=0; B.busy=0; B.mv=null; B.part=3; m.hp=1; const inv0=Pb.gear.inv.length; m.hitters.set('a',99999);
   for(let i=0;i<60&&!m.dead;i++){ P.x=m.x+m.T.rad+1.2; P.z=m.z; W.receive('a',{t:'atk',k:'basic',tg:m.id,face:Math.PI/2}); tick(1); keep(); B.stunT=0; m.immune=false; }
-  ok('the boss can be killed and pays one talisman (level 40, unrolled)',m.dead&&Pb.gear.inv.slice(inv0).some(id=>/^talisman8-(aspd|buffdur|chg|cdr|atk)/.test(id)),Pb.gear.inv.slice(inv0).join()); }
+  ok('the boss can be killed and pays NO talisman (D4: they come from the Sandglass)',m.dead&&!Pb.gear.inv.slice(inv0).some(id=>/^talisman/.test(id)),Pb.gear.inv.slice(inv0).join()); }
 // a worn talisman: flat attack and the rolled sums
 { const atk0=P.dmg; P.gear.inv.push('talisman8-atk-l'); W.receive('a',{t:'equip',id:'talisman8-atk-l'}); tick(1);
   ok('flat attack talisman raises attack',P.gear.eq.talisman==='talisman8-atk-l'&&P.dmg>atk0,atk0+' -> '+P.dmg);

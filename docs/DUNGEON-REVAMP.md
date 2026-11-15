@@ -190,7 +190,7 @@ The travel window (`game/ui/travel.js`: `openTravel`, `renderTravel`, it has no 
 | D1 **(built)** | `shared/dungeon-tiers.js`: `DG_TIERS`, run level = tier level, the board's tier picker, `gear.dg.top`, the unlock rule, zone tiers unhooked, the old entry locks removed | new `dungeon-tiers-smoke`, `dungeon-runs-smoke`, `dungeon-board-client-smoke`, `dungeons-smoke`, `tiers-smoke`, `skillset-sources-smoke`, `entrances-client-smoke`, the four `<name>-dungeon-smoke` |
 | D2 **(built)** | Eq 50 / 60 ids, 1 / 2 / 3 lines, the old level-40 migration, sacrifice, the fixed rarity, the eq table and piece count in `dgWinS` (it calls `dgClearReward(theme,rnd,steps)` once and grants the one id with `dgGrantItemP`; the fixed rarity replaces `DG_REWARD_W` 70 / 25 / 4 / 0.8 / 0.2 and the per-step luck `DG_REWARD_LUCK` / `dgRewardWeights`) | `rewards-smoke`, `rolls-smoke`, `rolls-client-smoke`, `pendants-smoke`, `server-smoke`, the four `<name>-dungeon-smoke` (`sandglass`, `gloamvault`, `termite`, `cenote`: they pin `DG_REWARDS`) |
 | D3 **(built)** | Rings need their kit or path | `rewards-smoke`, `skillsets-smoke`, `bond-smoke`, `testworld-smoke` (its kit wears a plain ring) |
-| D4 | Talismans at all levels from the Sandglass; Pyrrhax's list emptied; the slot at 30 | `volcano-smoke`, `rewards-smoke`, `sandglass-dungeon-smoke`, `testworld-smoke` |
+| D4 (built) | Talismans at all levels from the Sandglass; Pyrrhax's list emptied; the slot at 30 | `volcano-smoke`, `rewards-smoke`, `sandglass-dungeon-smoke`, `testworld-smoke` |
 | D5 | Capes: slot, the 8 combos, plus and minus growth, caps; the Gloamvault pays them | new `capes-smoke` |
 | D6 | Gloves: slot, the 6 kinds, combat hooks; the Termite Cathedral | new `gloves-smoke`, `skills-smoke` |
 | D7 | Shields: slot, the 7 kinds, hurt hooks; the Cenote | new `shields-smoke`, `server-smoke` |
@@ -216,7 +216,13 @@ The main files touched: `shared/dungeon-rewards.js`, `dungeon-items.js`, `rolls.
 - **Sacrifice**: `rlSacFor(it)` = `RL_SAC[rar]` x `RL_SAC_LV` (1 / 1.5 / 2 / 3), rounded (a common level-40 piece pays 2).
 - **Migration** (`gear.dgv` = 1, `dgvMigrate` in `server/dungeon-gear.js`, called first in `sanitizeGear`, before `inv` is filtered through `ITEM`): walks the whole raw save and cuts every id that ends in a three-line code to its first line (bag, worn, carried weapons, `gear.psh`). A save that already has `dgv` is never walked again (a level-60 piece has three lines).
 - **Clears**: `DG_REWARD_W` = 650 / 250 / 70 / 25 / 5; `DG_REWARD_LUCK` and `dgRewardWeights` are gone; `dgClearReward(theme,rnd,eq)` makes one piece (eq index 0-3, default the theme's `t`), `dgClearRewards(theme,rnd,tier)` the whole clear; `dgWinS` grants every piece to every member present (`dgGrantItemP`, a full bag loses the piece with a toast). The results card already lists several ids (`dge` carries the last 40), so the client is unchanged. Dungeons 5-8 pay their current kinds at the rolled level.
-- Not done (later steps): talisman levels (D4), capes / gloves / shields.
+- Not done (later steps): talisman levels (D4, now built), capes / gloves / shields.
+
+### D4 as built (decisions)
+
+- `dgParse` takes `talisman(7|8|9|10)-<kind>`; `dgTalismanId(stat,r,n,roll,t)` (t default 8, so every old `talisman8-` id and call is unchanged), `dgAllTalismanIds(t)`, `dgPieceId('talisman',stat,t,r,n)`; `dungeon-items.js` registers 7-10 (175 each). Value = `TAL_BASE` x `dgEqK(t)` (level 30: / 1.25, so atk is 24 / 30 / 37.5 / 46.9); price x3 per step above 40; name suffix ` Lv50` / ` Lv60`; look tier stays 40's. Lines 0 / 1 / 2 / 3 as every kind.
+- `DG_REWARDS.sandglass` = `{kind:'talisman',pool:TAL_STATS,t:8}`: one of the five kinds, the rolled level, unrolled. The slot's gate is the item's own `lv` (a level-30 talisman is wearable from 30); `TAL_LV` was read by nothing and is deleted.
+- Pyrrhax: `vbRewardP` keeps the ending toast only; `talRarityWeights` / `talRarityOf` / `TAL_W0` / `TAL_W5` are deleted. Rerolls and sacrifice are unchanged (`gear.rsr`, per level as D2). Tests: `rolls-smoke` (levels, values, old ids), `sandglass-dungeon-smoke`, `volcano-smoke`.
 
 ### D3 as built (decisions)
 

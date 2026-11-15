@@ -9,7 +9,7 @@
    test:    tools/rewards-smoke.js (server), tools/rewards-client-smoke.js (client). */
 for(const id of dgAllIds()) ITEM[id]=dgItem(id);
 for(const t of [8,9,10]) for(const id of [...dgAllRingIds40(t),...dgAllPendantIds40(t),...dgAllIds40(t)]) ITEM[id]=dgItem(id);   // rolls: the unrolled level-40 / 50 / 60 rings (245 each), pendants (175) and gear (245); the rolled ones are made on demand (ITEM's Proxy)
-for(const id of dgAllTalismanIds()) ITEM[id]=dgItem(id);   // the 175 unrolled level-40 talismans (the volcano boss)
+for(const t of [7,8,9,10]) for(const id of dgAllTalismanIds(t)) ITEM[id]=dgItem(id);   // the 175 unrolled talismans of each level (D4: 30 / 40 / 50 / 60; the Sandglass pays them)
 // ITEM only, never ITEM_LIST or TOOL_LIST (like the tools): shops, drops, "give every item" and tierFor leave them alone
 const DG_STONE_MAX=9999;
 const DG_LOOK_TIER=5;   // the Shogun's (tier 5) look, icon and weapon model stand in for level 30 until it has art of its own

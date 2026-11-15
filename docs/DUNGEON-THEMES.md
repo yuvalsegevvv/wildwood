@@ -443,7 +443,7 @@ The level-5 practice copy of the Hollow Roots and its Trial Gate in the home vil
 ## 11. The Sandglass and Khet, the Hourkeeper (the Sunscar's dungeon, the fifth; version 3)
 
 **Status: built and tested** (`tools/sandglass-dungeon-smoke.js`, plus `dungeons-smoke`, `dungeon-client-smoke`, `entrances-client-smoke`; the dressing seen only in the headless client). The owner asked for the Sunscar's dungeon behind the door the Sunscar agent reserved
-(`SUN_DG_DOOR`), a **base level 40 boss**, entry from level 35 or higher, and **a level-40 weapon** as the clear's pay. It is made in the framework the four others use: one theme file, one boss row and one kit, one door, one reward row (`DG_REWARDS.sandglass`, already there).
+(`SUN_DG_DOOR`), a **base level 40 boss**, entry from level 35 or higher, and **a talisman** (D4; was a level-40 weapon) as the clear's pay. It is made in the framework the four others use: one theme file, one boss row and one kit, one door, one reward row (`DG_REWARDS.sandglass`, already there).
 
 **The place.** A sun-temple and glassworks buried under **The Whitefloor** (the Sunscar's zone s34, 230 m south of Glasswell): sandstone halls, cold kilns, amphorae, braziers still burning, a line of black glass let into the flags, glass spikes. Theme `src/shared/dungeons/themes/sandglass.js`, land `sun`
 (`DG_LANDS.sun`: base +0, unlock `{sun:2}` = **Glasswell walked into** (`gear.sun` 2), hint "Walk into Glasswell..."). The Sunscar has zone tiers already (`ZTIER_LANDS`, opened by the Sand Wyrm), so the dungeon is level **40 at +0 and rises 10 a tier**: +0 ... +5 = 40 ... 90.
@@ -489,7 +489,7 @@ The bar shows "Turns of the glass: n" (the number of High Noons).
 
 ### 11.2 What a clear pays
 
-One random **level-40 weapon** (`DG_REWARDS.sandglass`, `t:8`): sword, bow or wand with equal chance, rarity 70 / 25 / 4 / 0.8 / 0.2%, the same piece for the whole party (the all-loot rule), granted by the same path as every theme (`dgClearReward` in `dgWinS`, then `dgGrantItemP`). The id is `sword8`, `bow8` or `wand8` (+ rarity),
+One random **talisman** (D4; `DG_REWARDS.sandglass`, `t:8`) of one of the five kinds with equal chance, at the clear's rolled equipment level (revamp D2; it was a level-40 weapon: sword, bow or wand), rarity 70 / 25 / 4 / 0.8 / 0.2%, the same piece for the whole party (the all-loot rule), granted by the same path as every theme (`dgClearReward` in `dgWinS`, then `dgGrantItemP`). The id is `talisman<7-10>-<kind>` (+ rarity),
 +0 and **unrolled**: it carries no `~` roll code (`it.roll0`) until the player spends a Weapon Reroll Stone on it (`docs/ROLLS.md`). No skill set has this land as a source yet (`SS_SOURCES` has no `sun` key), so a clear rolls none.
 
 ### 11.3 Hooks into existing files

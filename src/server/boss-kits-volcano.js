@@ -1,7 +1,7 @@
 //@ Pyrrhax, the Sinkwarden (level 50, the volcano isle's end boss): a three-part fight (four Guarding Wardens, the crater, the eruption with landing windows), three lives that revive on the spot, and the talisman drop
 /* Agent map (design and numbers: docs/VOLCANO.md; data: shared/emberwake-bosses.js SINK_*, shared/talisman.js; the boss contract: boss.js)
    owns:    BOSS_KITS.sinkwarden (init / start / tick / phase), vbPartDownS (damageMonsterS asks it when the boss' pool reaches 0: part 2 ends in the eruption), vbReviveP (the player tick: a knock-out inside the arena
-            wakes on the spot while the hiker has lives left), vbRewardP (rewardKill: the talisman), VB_LIVES.
+            wakes on the spot while the hiker has lives left), vbRewardP (rewardKill: the ending toast, no drop), VB_LIVES.
    parts:   B.part 1 = the four Guarding Wardens (the boss is hidden and immune; its bar mirrors the wardens' health), 2 = the crater (the boss itself), 3 = the eruption (berserk: it flies, immune, bombards; it lands for a
             window of VB_WINDOW seconds in which it is stunned and takes x1.5, then fights on the ground a while and takes off again). Each part's pool is SINK_PART_K x a full boss's health (m.hpDiv halves every hit, so the bar reads 100% a part; m.maxHp).
    hooks:   boss.js (parts bosses skip the shared 60% / 30% phases; a fight is not reset while a knocked-out hiker waits to revive), combat.js (damageMonsterS, rewardKill), players.js (hurtP grace, the dead tick).
@@ -132,9 +132,7 @@ function vbWaitingS(B){
   for(const p of S.players.values()) if(p.dead&&!p.pv&&Math.hypot(p.x-B.A.x,p.z-B.A.z)<B.A.r+6&&(B.lives.get(p.id)||0)<VB_LIVES) return true;
   return false;
 }
-// rewardKill: each hiker who hit the boss rolls one talisman: the kind at random, the rarity by the zone tier fought at (80/15/4/0.8/0.2 at +0 to 50/25/15/7/3 at +5)
+// rewardKill: each hiker who hit the boss gets the ending toast. His talisman drop is gone (dungeon revamp D4: talismans come from the Sandglass); his drop list is empty
 function vbRewardP(q,m){
-  const t=monTierOf(q.gear,m), rar=talRarityOf(Math.random(),t), stat=TAL_STATS[Math.floor(Math.random()*TAL_STATS.length)];
-  dgGrantItemP(q,dgTalismanId(stat,rar,0));
   toastTo(q.id,'Pyrrhax has fallen: you have beaten Wildwood!','good');
 }

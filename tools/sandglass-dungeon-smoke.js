@@ -1,4 +1,4 @@
-// Headless test of the Sandglass (shared/dungeons/themes/sandglass.js, boss Khet): the Sunscar's dungeon, level 40 at +0, entered from level 36 once Glasswell has been walked into (gear.sun 2), paying a level-40 weapon.
+// Headless test of the Sandglass (shared/dungeons/themes/sandglass.js, boss Khet): the Sunscar's dungeon, level 40 at +0, entered from level 36 once Glasswell has been walked into (gear.sun 2), paying a level-40 talisman (D4).
 // Server straight from src/ (no build): the theme and its boss at level 40, the door at SUN_DG_DOOR, the entry rules, the offer and the board, a run's monsters (Sunscar kinds with res / acc), the reward (a level-40, unrolled
 // weapon of the pool, the odds), and a won run in a party of two giving the same piece to both. Usage: node tools/sandglass-dungeon-smoke.js
 const {loadServer}=require('./load');
@@ -57,9 +57,9 @@ W.receive('a',{t:'dg',a:'leave'}); tick(3);
 { const R=x.DG_REWARDS.sandglass, rnd=(()=>{ let a=7; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; })();
   const seen={}, rar=[0,0,0,0,0], N2=30000; let bad=0;
   for(let i=0;i<N2;i++){ const id=x.dgClearReward('sandglass',rnd), q=x.dgParse(id), it=x.dgItem(id);
-    if(!q||!it||q.t!==8||q.n!==0||q.roll||it.lv!==40||it.kind!=='weapon'||!R.pool.includes(q.slot)||!it.roll0||it.rcode||!/^(sword|bow|wand)8(-[reul])?$/.test(id)) bad++; seen[q.slot]=(seen[q.slot]||0)+1; rar[q.rar]++; }
+    if(!q||!it||q.t!==8||q.n!==0||q.roll||it.lv!==40||it.kind!=='talisman'||!R.pool.includes(q.stat)||!it.roll0||it.rcode||!/^talisman8-(aspd|buffdur|chg|cdr|atk)(-[reul])?$/.test(id)) bad++; seen[q.stat]=(seen[q.stat]||0)+1; rar[q.rar]++; }
   const within=(o,n,p)=>Math.abs(o-n*p)<=4*Math.sqrt(n*p*(1-p))+1;
-  ok('a clear rolls a +0, UNROLLED level-40 weapon (sword8 / bow8 / wand8, no ~roll code, waiting for a Weapon Reroll Stone) of the pool, each kind equally often, at 65 / 25 / 7 / 2.5 / 0.5%',bad===0&&R.pool.join()==='sword,bow,wand'&&R.t===8&&['sword','bow','wand'].every(s=>within(seen[s],N2,1/3))&&rar.every((c,r)=>within(c,N2,[0.65,0.25,0.07,0.025,0.005][r])),JSON.stringify(seen)+' '+rar); }
+  ok('a clear rolls a +0, UNROLLED level-40 talisman (talisman8-<kind>, no ~roll code, waiting for an Accessory Reroll Stone) of the pool, each kind equally often, at 65 / 25 / 7 / 2.5 / 0.5%',bad===0&&R.pool.join()==='aspd,buffdur,chg,cdr,atk'&&R.t===8&&R.pool.every(s=>within(seen[s],N2,1/5))&&rar.every((c,r)=>within(c,N2,[0.65,0.25,0.07,0.025,0.005][r])),JSON.stringify(seen)+' '+rar); }
 
 // ---- a purge won through Khet by a party of two: both get the same level-40 weapon ----
 const K=join('k','Kai',{level:40,gear:{sun:2,zt:sunZt(0,0)}}), L2=join('l','Lea',{level:40,gear:{sun:2,zt:sunZt(0,0)}}); tick(2);
@@ -81,7 +81,7 @@ W.receive('k',{t:'dg',a:'leave'}); W.receive('l',{t:'dg',a:'leave'}); tick(3);
     const A3=r.boss.A; W2.x=A3.x+3; W2.z=A3.z+3; W2.dgX=W2.x; W2.dgZ=W2.z; secs(1);
     ok('he engages when a member steps into the hall and the kit ticks through the first moves without a fault',r.boss.engaged&&(secs(8),true));
     const i2=W2.gear.inv.length, i3=W3.gear.inv.length; clear(); withRandom(0.0005,()=>x.killMonsterS(r.boss.m,W2)); tick(3);
-    const n2=W2.gear.inv.slice(i2), n3=W3.gear.inv.slice(i3), w2=n2.find(id=>/^(sword|bow|wand)7/.test(id)), d2=last('w','dge');
-    ok('the win (tier I: one level-30 piece, D2) pays EVERY member the same weapon through dgGrantItemP (unrolled: no ~ code), listed in the results, and is saved as a clear',r.phase==='won'&&!!w2&&n3.includes(w2)&&x.dgParse(w2).t===7&&!x.dgParse(w2).roll&&x.ITEM[w2].lv===30&&!!d2&&d2[6].includes(w2)&&W2.gear.dg.clear['sandglass:purge']===1&&W3.gear.dg.clear['sandglass:purge']===1,n2+' / '+n3);
+    const n2=W2.gear.inv.slice(i2), n3=W3.gear.inv.slice(i3), w2=n2.find(id=>/^talisman7-/.test(id)), d2=last('w','dge');
+    ok('the win (tier I: one level-30 talisman, D4) pays EVERY member the same talisman through dgGrantItemP (unrolled: no ~ code), listed in the results, and is saved as a clear',r.phase==='won'&&!!w2&&n3.includes(w2)&&x.dgParse(w2).t===7&&!x.dgParse(w2).roll&&x.ITEM[w2].lv===30&&!!d2&&d2[6].includes(w2)&&W2.gear.dg.clear['sandglass:purge']===1&&W3.gear.dg.clear['sandglass:purge']===1,n2+' / '+n3);
     secs(x.DG_END_S+0.5); } }
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

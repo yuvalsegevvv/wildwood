@@ -18,7 +18,7 @@ Level-40 weapons (the Sunscar's dungeon, `sandglass`) and armour (the Gloamhorn'
 
 **Hooks** (`// rolls:`): `recalcP` / `hurtP` / `sanitizeGear` (players.js), `rollDmgS` / `damageMonsterS` / `statusS` / `applyBuffS` / `handleAttack` / `rewardKill` (combat.js), `rxHitS` (reactions.js), `drinkP` (crafting.js), `ssAllyS` (skillsets.js), `abilityCd` (classes.js), the Proxy in items.js.
 
-**Accessories (volcano)**: `gear.rsr` is the **Accessory Reroll Stone** for rings, level-40 pendants (`pendant8-<kind>[...][~roll]`, now rollable) and talismans (`docs/VOLCANO.md`); sacrificing any level-30+ ring, pendant or talisman pays it.
+**Accessories (volcano)**: `gear.rsr` is the **Accessory Reroll Stone** for rings, level-40+ pendants (`pendant8-<kind>[...][~roll]`, now rollable) and talismans of every level, 30-60 (`docs/VOLCANO.md`); sacrificing any level-30+ ring, pendant or talisman pays it.
 
 **Version 3 follow-up**: world bosses now drop Reroll Stones too (more the higher the zone tier fought at: `rlBossStoneChance`), see `docs/areas/tiers.md` (last section).
 
