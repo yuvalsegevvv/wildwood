@@ -7,7 +7,7 @@
 // Usage: node tools/abyss-smoke.js
 const {loadServer}=require('./load');
 const sent=[];
-const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['getH','recalcP','abShardsOf','abClearBonus','abShopRow','abShopPrice','AB_SHOP','AB_SH_DIFF','AB_ROUND_S','AB_SPECIAL_GROWTH','AB_BUY_MAX','abDayS','abShopP','abBuyP','abPayRoundP','isGuestP','gsDayOf','essOf','RL_STONE_MAX','AB_PRISM_MAX','AB_ELITE_HP','AB_CHAMP_HP','RIFT_HERALD_HP','RIFT_GAUNT_S','RIFT_THAW_S','abKindDev','abDrawKindsS','abTileOfferP','abTileSendP','AB_CURSE_MAX','AB_KIND_W','AB_KIND_IDS','AB_KIND_PICKS','AB_TRIAL_MODES','AB_EVENTS','AB_EVENT_BAD','AB_CURSES','abEncWindow','abIsEvent','abEvWhyP','abShrineOfferS','abRoundWonS','abRunNewS','RIFT_DEFS','riftDefOf',  'AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K','abP','AB_ARTS','AB_ART_BAD','defineAbArt','abArtStat','AB_CAPS','rollDmgS','hurtP','healP','damageMonsterS','abDrawOfferS','AB_CURSES','AB_CURSE_BAD','defineAbCurse','abCurseStat','abIsCurse','abHitS','abKillP','abThornsS','abShieldS','abCurseAddP','abGiveArtP','abSpawnS','DEF_BY_ID','AB_NTH','monK','AB_TILES','AB_TILE_IDS','AB_TILE_BAD','defineAbTile','abTileOf','abLayout','dgBake','dgFlow','CAVE_FLOOR_DEFS','abRandTileS','AB_TILE_OFFER_N','AB_BOSS_ALL','AB_BOSS_OK','AB_BOSS_OUT','AB_BOSS_LAND','abBossOk','abBossRowOf','abBossDrawS','AB_BOSS_CELLS','abStartRoundS','dgSolid','MONS','abIsBossRound','abTileBase','abTileLayout','DG_BOSS_R','DG_BOSS_DEFS','BOSS_DEFS','clearBossFxS']);
+const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['getH','abDevP','recalcP','abShardsOf','abClearBonus','abShopRow','abShopPrice','AB_SHOP','AB_SH_DIFF','AB_ROUND_S','AB_SPECIAL_GROWTH','AB_BUY_MAX','abDayS','abShopP','abBuyP','abPayRoundP','isGuestP','gsDayOf','essOf','RL_STONE_MAX','AB_PRISM_MAX','AB_ELITE_HP','AB_CHAMP_HP','RIFT_HERALD_HP','RIFT_GAUNT_S','RIFT_THAW_S','abKindDev','abDrawKindsS','abTileOfferP','abTileSendP','AB_CURSE_MAX','AB_KIND_W','AB_KIND_IDS','AB_KIND_PICKS','AB_TRIAL_MODES','AB_EVENTS','AB_EVENT_BAD','AB_CURSES','abEncWindow','abIsEvent','abEvWhyP','abShrineOfferS','abRoundWonS','abRunNewS','RIFT_DEFS','riftDefOf',  'AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K','abP','AB_ARTS','AB_ART_BAD','defineAbArt','abArtStat','AB_CAPS','rollDmgS','hurtP','healP','damageMonsterS','abDrawOfferS','AB_CURSES','AB_CURSE_BAD','defineAbCurse','abCurseStat','abIsCurse','abHitS','abKillP','abThornsS','abShieldS','abCurseAddP','abGiveArtP','abSpawnS','DEF_BY_ID','AB_NTH','monK','AB_TILES','AB_TILE_IDS','AB_TILE_BAD','defineAbTile','abTileOf','abLayout','dgBake','dgFlow','CAVE_FLOOR_DEFS','abRandTileS','AB_TILE_OFFER_N','AB_BOSS_ALL','AB_BOSS_OK','AB_BOSS_OUT','AB_BOSS_LAND','abBossOk','abBossRowOf','abBossDrawS','AB_BOSS_CELLS','abStartRoundS','dgSolid','MONS','abIsBossRound','abTileBase','abTileLayout','DG_BOSS_R','DG_BOSS_DEFS','BOSS_DEFS','clearBossFxS']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefined?'  ('+i+')':'')); if(!c) fails++; };
 const K=(id,s)=>x.AB_ARTS[id].k[s];   // the numbers are tuned by tools/abyss-sim.js: the tests read them from the rows
 // a hit of a size where rounding cannot matter: the damage a plain 50 does depends on the monster's kind (a weak kind made 7 -> 12 and a 5% rounding error), so the size is calibrated to about 800 taken (at most a fifth of max health) with no artifact on the bar
@@ -40,6 +40,7 @@ ok('a clean save stays as it is',(()=>{ const g={top:3,best:21,clears:[4,3,2,0,0
 W.join('a',{name:'Alice',look:{cls:'warrior'},save:{level:40}}); W.join('b',{name:'Bob',look:{cls:'warrior'},save:{level:39}}); tick(2);
 const A=W.players.get('a'), B=W.players.get('b'), abm=pid=>sent.filter(s=>s[0]===pid&&s[1].t==='abyss').map(s=>s[1]);
 ok('the flag is off by default (and the deploy-like server has no dev tools)',x.abOnS()===false);
+x.abSwitch(false); ok('abSwitch(false) turns it off (the deploy-like server has no dev tools)',x.abOnS()===false);
 W.receive('a',{t:'abyss',a:'open'}); tick(2); ok('flag off: open is silence',abm('a').length===0);
 x.abSwitch(true); ok('abSwitch(true) turns the flag on',x.abOnS()===true);
 W.receive('a',{t:'abyss',a:'open'}); const inf=abm('a').pop();
@@ -592,6 +593,30 @@ const worldOf=q=>J(Object.assign({},q.gear,{ab:0}))+'|'+q.exp+'|'+q.level+'|'+q.
   off=0; SP.gear.ab.as=5000; buy('rsw',1); const rt=x.sanitizeGear(JSON.parse(J(SP.gear)),'warrior'); ok('today\'s purchases and the Abyss goods survive a save (sanitizeGear)',J(rt.ab.sh)===J(SP.gear.ab.sh)&&rt.ab.as===SP.gear.ab.as&&rt.ab.prism===SP.gear.ab.prism&&rt.ab.lock===SP.gear.ab.lock&&(rt.awm.abyss|0)===(SP.gear.awm.abyss|0),J(rt.ab.sh));
   const wk=x.sanitizeGear({awm:{abyss:1e12,__proto__:{x:1}},ab:{prism:1e12}},'warrior'); ok('the Heart and the Prism are capped by the sanitizer',wk.awm.abyss===99999&&wk.ab.prism===x.AB_PRISM_MAX,J([wk.awm,wk.ab.prism]));
   }finally{ Date.now=realNow; }
+}
+// B12: Infinite has no end (rounds past 13 and the boss rounds' climb), it opens only after V, the best round is saved on a fall / leave / out, and the Abyss ranking shows it
+{
+  const IN=mk('in',60); IN.gear.ab.top=4; W.receive('in',{t:'abyss',a:'go',d:5}); tick(2);
+  ok('Infinite is closed until Difficulty V is cleared (top 5)',!IN.inst);
+  IN.gear.ab.top=5; W.receive('in',{t:'abyss',a:'go',d:5}); tick(2); ok('...and open at top 5, round 1 at level 90',!!IN.inst&&runOf(IN).abR===1&&runOf(IN).L===90);
+  x.abDevP(IN,{r:13}); tick(2); { const run=runOf(IN); ok('dev skip: round 13, level 130, no round cap',run&&run.abR===13&&run.L===x.abRoundLv(5,13)&&x.abRounds(5)===0&&x.abIsBossRound(5,13)&&x.abIsBossRound(5,19)&&x.abIsBossRound(5,25)&&!x.abIsBossRound(5,14),run&&run.abR);
+    upto(run,600); ok('a won round 13 of Infinite: best 13, the run goes on (no clear, top stays 5)',run.abWon&&!run.endT&&IN.gear.ab.best===13&&IN.gear.ab.top===5&&IN.gear.ab.clears[5]===0,J(IN.gear.ab.best)); }
+  W.receive('in',{t:'abyss',a:'skip'}); W.receive('in',{t:'abyss',a:'skip'}); W.receive('in',{t:'abyss',a:'skip'}); W.receive('in',{t:'abyss',a:'next',i:0}); tick(2);
+  { const run=runOf(IN); ok('round 14 follows at level '+x.abRoundLv(5,14),run&&run.abR===14&&run.L===x.abRoundLv(5,14)&&run.L>130,run&&run.abR+' '+(run&&run.L)); upto(run,600); }
+  ok('best is 14 after winning it',IN.gear.ab.best===14);
+  // a fall in round 15 keeps best 14
+  x.abDevP(IN,{r:15}); tick(2); { const run=runOf(IN); tick(Math.ceil(5/0.05)); IN.hp=0; IN.dead=true; IN.deadT=0; tick(Math.ceil(4/0.05));
+    ok('a fall ends Infinite and keeps the best round (14)',!IN.inst&&!x.DG_RUNS.has(run.id)&&IN.gear.ab.best===14&&IN.gear.ab.run===null,J(IN.gear.ab.best)); }
+  // a lower run never lowers the best; out and leave
+  W.receive('in',{t:'abyss',a:'go',d:5}); tick(2); { const run=runOf(IN); upto(run,600); W.receive('in',{t:'abyss',a:'out'}); tick(2); ok('round 1 then out: best stays 14',!IN.inst&&IN.gear.ab.best===14); }
+  W.receive('in',{t:'abyss',a:'go',d:5}); tick(2); tick(Math.ceil(5/0.05)); IN.hp=IN.maxHp; W.receive('in',{t:'dg',a:'leave'}); tick(2); ok('leaving mid-round keeps the best round',!IN.inst&&IN.gear.ab.best===14);
+  // the ranking
+  const R2=mk('r2',60); R2.gear.ab.best=30; const R3=mk('r3',60); sent.length=0;
+  W.receive('in',{t:'fr',a:'abrank'}); tick(2);
+  { const r=evs('in','rnb').pop(); ok('the Abyss ranking lists the best rounds, highest first, with your place',r&&r[2][0][1]==='Pr2'&&r[2][0][2]===30&&r[2].some(w=>w[1]==='Pin'&&w[2]===14&&w[0]===r[3])&&r[2].every((w,i)=>!i||w[2]<=r[2][i-1][2])&&r[4]===r[2].length,J(r&&r.slice(2))); }
+  ok('a hiker with no best round is not listed',!(evs('in','rnb').pop()||[0,0,[]])[2].some(row=>row[1]==='Pr3'));
+  x.abSwitch(false); W.receive('r3',{t:'fr',a:'abrank'}); tick(2); ok('flag off: the Abyss ranking is empty',((evs('r3','rnb').pop()||[0,0,[1]])[2]).length===0); x.abSwitch(true);
+  for(const id of ['in','r2','r3']) W.leave(id);
 }
 x.abKindDev.force=''; x.abKindDev.mode=''; x.abKindDev.boss='';
 // the Test: kill the code and the test fails (see the usage note at the top)

@@ -1,28 +1,31 @@
 //@ Friends and the ranking: a mutual friend list (gear.fr, names; added by a request the other player accepts), who of them is online, and the top of the level ranking
 /* agent map
-   message in:  fr{a:'add'|'accept'|'decline'|'remove'|'list'|'rank', name}   (MSG.fr)
+   message in:  fr{a:'add'|'accept'|'decline'|'remove'|'list'|'rank'|'abrank', name}   (MSG.fr)
    events out (each to one player: e[1] is their pid):
      frl [pid, rows]            rows = [[name, online 0|1, level, class], ...] online first, then by name; sent on 'list' and after every change
      fri [pid, fromName, secs]  a friend request from fromName: answer with fr{a:'accept'|'decline', name:fromName} within secs
      rnk [pid, rows, myRank, total]   rows = [[rank, name, level, class, online 0|1], ...] the best FR_RANK_TOP, myRank 0 = not ranked
+     rnb [pid, rows, myRank, total]   (abyss, B12) the Abyss ranking: rows = [[rank, name, best Infinite round, class, online 0|1, level], ...], only hikers with a best round; asked by fr{a:'abrank'}
    exports: frSanitize(g.fr) (players.js sanitizeGear), frNoteP(p) (a leaving player's place in the ranking, api.js leave), FR_MAX
    the ranking: live players, plus RANK, the offline players' last (level, exp), loaded once from io.store.ranks() (node/main.js); level, then exp
    users: server/api.js (leave), server/players.js (sanitizeGear)   test: tools/friends-smoke.js   Panel: game/ui/friends.js */
 const FR_MAX=50, FR_REQ_S=60, FR_RANK_TOP=50;
-const RANK=new Map();   // lowercase name -> {n: name, l: level, x: exp, c: class}
+const RANK=new Map();   // lowercase name -> {n: name, l: level, x: exp, c: class, b: best Infinite round of the Abyss (gear.ab.best)}
 /* The ranking is read from the saves once at start. A free Postgres that is still waking (Neon suspends when idle, and a Render redeploy restarts us cold) can fail that
    first read; with no retry the ranking then showed only whoever logged in since, as if it had reset. So a failed read is tried again, 5 s, 10 s... up to 5 min apart. */
 function frRankLoad(wait){
-  Promise.resolve().then(()=>io.store.ranks()).then(list=>{ for(const r of list||[]) frRankPut(r.n,r.l,r.x,r.c); })
+  Promise.resolve().then(()=>io.store.ranks()).then(list=>{ for(const r of list||[]) frRankPut(r.n,r.l,r.x,r.c,r.b); })
     .catch(e=>{ if(io.log) io.log('could not load the ranking, trying again in '+wait+' s',e&&e.message); const t=setTimeout(()=>frRankLoad(Math.min(300,wait*2)),wait*1000); if(t.unref) t.unref(); });
 }
 if(io.store&&io.store.ranks) frRankLoad(5);
-function frRankPut(n,l,x,c){
-  n=String(n||'').slice(0,16); l=clampInt(l,1,PLAYER_MAX_LV,1); if(!n) return; x=Math.max(0,+x||0);
-  const k=n.toLowerCase(), o=RANK.get(k); if(o&&(o.l>l||(o.l===l&&o.x>=x))) return;
-  RANK.set(k,{n,l,x,c:String(c||'').slice(0,12)});
+function frRankPut(n,l,x,c,b){
+  n=String(n||'').slice(0,16); l=clampInt(l,1,PLAYER_MAX_LV,1); if(!n) return; x=Math.max(0,+x||0); b=clampInt(b,0,999999,0);
+  const k=n.toLowerCase(), o=RANK.get(k); if(o&&b<o.b) b=o.b;   // abyss: the best round only ever rises
+  if(o&&(o.l>l||(o.l===l&&o.x>=x))){ o.b=b; return; }
+  RANK.set(k,{n,l,x,c:String(c||'').slice(0,12),b});
 }
-const frNoteP=p=>frRankPut(p.name,p.level,p.exp,p.look&&p.look.cls);
+const frAbBestP=p=>(p.gear.ab&&p.gear.ab.best)|0;
+const frNoteP=p=>frRankPut(p.name,p.level,p.exp,p.look&&p.look.cls,frAbBestP(p));
 function frSanitize(a){
   const out=[]; if(!Array.isArray(a)) return out;
   for(const n of a){ if(typeof n!=='string') continue; const s=n.trim().slice(0,16); if(s&&!out.some(m=>m.toLowerCase()===s.toLowerCase())) out.push(s); if(out.length>=FR_MAX) break; }
@@ -45,9 +48,19 @@ function frRankP(p){
   const rows=list.slice(0,FR_RANK_TOP).map((r,i)=>[i+1,r.n,r.l,r.c,frFind(r.n)?1:0]);
   ev('rnk',p.id,rows,me+1,list.length).to=p.id;
 }
+// abyss: the Abyss ranking, the best Infinite round (gear.ab.best); offline hikers come from RANK (the stores' ranks() carry the field)
+function frAbRankP(p){
+  if(io.test||!abOnS()){ ev('rnb',p.id,[],0,0).to=p.id; return; }
+  const all=new Map(); for(const [k,r] of RANK) if(r.b>0) all.set(k,{n:r.n,l:r.l,c:r.c,b:r.b});
+  for(const q of S.players.values()){ const b=frAbBestP(q), k=q.name.toLowerCase(), o=all.get(k); if(b>0&&(!o||o.b<=b)) all.set(k,{n:q.name,l:q.level,c:(q.look&&q.look.cls)||'',b}); }
+  const list=[...all.values()].sort((a,b)=>b.b-a.b||b.l-a.l||a.n.localeCompare(b.n));
+  const me=list.findIndex(r=>r.n.toLowerCase()===p.name.toLowerCase());
+  ev('rnb',p.id,list.slice(0,FR_RANK_TOP).map((r,i)=>[i+1,r.n,r.b,r.c,frFind(r.n)?1:0,r.l]),me+1,list.length).to=p.id;
+}
 function frMsgP(p,msg){
   const a=msg&&msg.a, name=typeof msg.name==='string'?msg.name.trim().slice(0,16):'';
   if((a==='list'||a==='rank')&&S.t-((p.frT||(p.frT={}))[a]||-99)<0.5) return;   // (a client polling faster than twice a second)
+  if(a==='abrank'){ const T=p.frT||(p.frT={}); if(S.t-(T.abrank||-99)<0.5) return; T.abrank=S.t; frAbRankP(p); return; }   // abyss:
   if(a==='list'||a==='rank'){ p.frT[a]=S.t; if(a==='list') frSendP(p); else frRankP(p); return; }
   if(a==='add'){
     const q=frFind(name);

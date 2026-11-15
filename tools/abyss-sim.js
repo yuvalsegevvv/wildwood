@@ -14,7 +14,7 @@
    weight, nothing at rank 5). Pickers: 'none', 'random' (any of the three; a full bar throws a random copy away), 'greedy' (the card that lowers the damage taken in a reference fight the most, a full bar throws away
    the copy that hurts least; Last Breath is valued by hand). Full health at the start of every round. Not modelled: a real player's moves, elites / trials / events (B8), the boss kits (B9), potions of the world. */
 const {loadShared}=require('./load');
-const X=loadShared(['defAt','ALL_MON_DEFS','BOSS_DEFS','RIFT_DEFS','lvDmgK','AB_DIFFS','AB_INF','abRoundLv','abRounds','abIsBossRound','abWaveSize','AB_WAVES','AB_ARTS','AB_CURSES','AB_ART_BAD','AB_CURSE_BAD','abArtStat','abCurseStat',
+const X=loadShared(['AB_KIND_W','AB_KIND_IDS','AB_KIND_PICKS','defAt','ALL_MON_DEFS','BOSS_DEFS','RIFT_DEFS','lvDmgK','AB_DIFFS','AB_INF','abRoundLv','abRounds','abIsBossRound','abWaveSize','AB_WAVES','AB_ARTS','AB_CURSES','AB_ART_BAD','AB_CURSE_BAD','abArtStat','abCurseStat',
   'AB_RANK_MAX','AB_ART_MAX','AB_RAR_W','AB_OFFER_N','AB_NTH','AB_EXEC_HP','AB_DEF_MIN']);
 const arg=(k,d)=>{ const i=process.argv.indexOf('--'+k); return i>0?+process.argv[i+1]:d; }, flag=k=>process.argv.includes('--'+k);
 const CHECK=flag('check'), RUNS=arg('runs',CHECK?60:300), INF_RUNS=arg('inf',CHECK?30:60);
@@ -86,7 +86,11 @@ function pick(kind,bar,cur,cards,d,r,L){
   if(base===null){ const cur0=badness(bar,cur,d,r,L); if(bs>cur0) return; bar.splice(best.rm,1); }
   bar.push(best.c);
 }
-const PICKS=arg('picks',-1), picksAfter=(d,r)=>X.abIsBossRound(d,r)?3:PICKS>=0?PICKS:(u=>u<0.15?0:u<0.6?1:2)(rnd());   // --picks n: n a plain round instead of the plan's 0 / 1 / 2 (the code before B8 gives exactly 1)
+const PICKS=arg('picks',-1), picksAfter=(d,r)=>X.abIsBossRound(d,r)?3:PICKS>=0?PICKS:abKindPicks();   // --picks n: n a plain round instead of the real mix (B12: the kinds' own pay)
+// B12: the picks the code really gives: a Fight 1, an Elite / Trial 2, a Boss 3 (AB_KIND_PICKS); an Event 0 or 1 (half of its choices hand an artifact, the curses it also deals are not modelled: a little generous), a Shrine 0.
+// The kind is drawn with AB_KIND_W as the next-tile offer does (one card of three, so the draw is the weights); the forced boss rounds pay 3 as above
+function abKindPicks(){ const W=X.AB_KIND_W, ids=X.AB_KIND_IDS; let t=0; for(const k of ids) t+=W[k]; let u=rnd()*t, k=ids[0]; for(const id of ids){ if((u-=W[id])<0){ k=id; break; } }
+  return k==='event'?(rnd()<0.5?1:0):X.AB_KIND_PICKS[k]|0; }
 // returns {rounds won, cleared}
 function run(d,kind,opts){
   opts=opts||{}; const bar=[], cur=opts.curses||[], n=X.abRounds(d)||CAP; let won=0;
