@@ -11,6 +11,7 @@ for(const id of dgAllIds()) ITEM[id]=dgItem(id);
 for(const t of [8,9,10]) for(const id of [...dgAllRingIds40(t),...dgAllPendantIds40(t),...dgAllIds40(t)]) ITEM[id]=dgItem(id);   // rolls: the unrolled level-40 / 50 / 60 rings (245 each), pendants (175) and gear (245); the rolled ones are made on demand (ITEM's Proxy)
 for(const t of [7,8,9,10]) for(const id of dgAllTalismanIds(t)) ITEM[id]=dgItem(id);   // the 175 unrolled talismans of each level (D4: 30 / 40 / 50 / 60; the Sandglass pays them)
 for(const t of [7,8,9,10]) for(const id of dgAllCapeIds(t)) ITEM[id]=dgItem(id);   // dgrev D5: the 280 unrolled capes of each level (the Gloamvault pays them)
+for(const t of [7,8,9,10]) for(const id of dgAllGlovesIds(t)) ITEM[id]=dgItem(id);   // dgrev D6: the 210 unrolled gloves of each level (the Termite Cathedral pays them)
 // ITEM only, never ITEM_LIST or TOOL_LIST (like the tools): shops, drops, "give every item" and tierFor leave them alone
 const DG_STONE_MAX=9999;
 const DG_LOOK_TIER=5;   // the Shogun's (tier 5) look, icon and weapon model stand in for level 30 until it has art of its own

@@ -192,7 +192,7 @@ The travel window (`game/ui/travel.js`: `openTravel`, `renderTravel`, it has no 
 | D3 **(built)** | Rings need their kit or path | `rewards-smoke`, `skillsets-smoke`, `bond-smoke`, `testworld-smoke` (its kit wears a plain ring) |
 | D4 (built) | Talismans at all levels from the Sandglass; Pyrrhax's list emptied; the slot at 30 | `volcano-smoke`, `rewards-smoke`, `sandglass-dungeon-smoke`, `testworld-smoke` |
 | D5 **(built)** | Capes: slot, the 8 combos, plus and minus growth, caps; the Gloamvault pays them | new `capes-smoke` |
-| D6 | Gloves: slot, the 6 kinds, combat hooks; the Termite Cathedral | new `gloves-smoke`, `skills-smoke` |
+| D6 **(built)** | Gloves: slot, the 6 kinds, combat hooks; the Termite Cathedral | new `gloves-smoke`, `skills-smoke` |
 | D7 | Shields: slot, the 7 kinds, hurt hooks; the Cenote | new `shields-smoke`, `server-smoke` |
 | D8 | Client: inventory slots and icons, forge tabs, details text, the board, a results card with several pieces; the docs | `rewards-client-smoke`, `client-smoke`, `phone-layout-smoke` |
 | D8b | The Delves rewards menu (7b) | new `dungeon-rewards-menu-smoke`, `phone-layout-smoke` |
@@ -231,6 +231,14 @@ The main files touched: `shared/dungeon-rewards.js`, `dungeon-items.js`, `rolls.
 - Server: `rlSumOf` adds a cape's plus beside the lines (inside `RL_CAPS`; crit and crit damage go through `rlP('crit' / 'critdmg')`, so `CRIT_CAP` / `CRIT_MULT_CAP` in `rollDmgS` still cap them; attack % is `rlP('atk')` in `recalcP`). The minus (`rlMinusOf`) is taken off in `rlRefreshP` after the caps with `capeNet(sum,minus)`: **a real cost**, the bonus total may go negative (`p.rl[stat]<0`), so -5% attack speed makes a bare hero x0.95. The resulting stat is floored at its consumer: attack speed and charge gain x0.5 (`bhSpeedK` / `bhChargeK`), attack x0.5 (`recalcP`, `CAPE_FLOOR_K`), the cooldown rate x0.5 (`abilityCd`'s clamp at -1: cooldowns at most doubled), crit chance 0 and crit multiplier 1.0 (`rollDmgS`). A cape above your level counts for nothing; the Proving Isle ignores it like every rolled line. Hooks marked `// dgrev:`.
 - Client minimum: `BODY_SLOTS` + the doll's grid area `cape`, `capeIconArt`, details / tempering text, `rlUiSum` mirrors the minus, `rlUiKindOk` and `pshKinds` list capes (`PSHOP_KINDS` too). Forge tabs and full polish stay D8. The test world's kit holds all eight and wears the Headsman.
 - `gloamvault` pays capes (the tests of D2 / D3 were updated: `dungeons-smoke`, `rolls-smoke`, `gloamvault-dungeon-smoke`); `tools/capes-smoke.js` is new.
+
+### D6 as built (decisions)
+
+- `shared/gloves.js` (`GLV_KINDS`, `glvVal`, `glvText`). Ids `gloves<7|8|9|10>-<crit|critdmg|atk|streak|over|echo>[-rarity][+n][~roll]` (`dgGlovesId`, `dgAllGlovesIds(t)` = 210 a level, `dgParse` returns `stat` = the kind); records `kind:'gloves'`, `slot:'gloves'`, `stat`, `v`, lines 0 / 1 / 2 / 3, price like a talisman. `RL_STONE_KIND` / `RL_KIND_K` have a `gloves` row (stone `rsr`). The test world's kit holds all six and wears Keen.
+- `v` = base (0.04, 0.20, 25, 0.015, 0.03, 0.40) x `RAR_MULT` (a legendary x3, no cape exception) x (1 + 0.1 n) x 1.15^(level step above 30). Echo's chance is the constant `GLV_ECHO_CHANCE` (15%); Hot Streak's `v` is the crit chance of one stack.
+- Server (`server/dungeon-gear.js`, hooks marked `// dgrev:`): `rollDmgS` builds the raw crit chance `cr0` (with `glvP(p,'crit')` and `glvStreakP`), caps it at `CRIT_CAP`, and adds `glvP(p,'critdmg')` and `glvOverP(p,cr0)` (`(cr0 - CRIT_CAP) x 100 x v`, only above the cap) to the multiplier before `CRIT_MULT_CAP`; `recalcP` adds `glvAtkP` beside the talisman's flat attack; `damageMonsterS` calls `glvHitS` after a crit's event: Hot Streak (`p.glvS`, one expiry time per stack, 4 s, at most 5, not saved, cleared on death and gone with the player) and Echo (15%: a second hit of `v` x the crit's damage straight off the monster's health; it is no roll, so it cannot crit, echo or stack). Nothing counts on the Proving Isle (`p.pv`, like the pendant) and a glove above your level counts for nothing. The hit on another fighter (`pvpHitS`) never reaches `damageMonsterS`.
+- Client minimum: `BODY_SLOTS` + the doll's grid area `gloves` (left of the feet), `glovesIconArt`, details / tempering text, `rlUiKindOk` and `pshKinds` (`PSHOP_KINDS`) list gloves. Forge tabs and polish stay D8.
+- `termitecathedral` pays gloves (`dungeons-smoke`, `termite-dungeon-smoke` updated); `tools/gloves-smoke.js` is new.
 
 ### D3 as built (decisions)
 

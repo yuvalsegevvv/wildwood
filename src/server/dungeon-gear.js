@@ -8,6 +8,17 @@
    hooks:   the lines marked `// dungeons:` in players.js (recalcP, sanitizeGear), economy.js (mergeP, buyP) and combat.js (rewardKill); listed in docs/DUNGEON-THEMES.md section 7.
    test:    tools/rewards-smoke.js */
 const talAtkP=p=>{ if(p.pv) return 0; const it=ITEM[p.gear.eq.talisman]; return it&&it.kind==='talisman'&&it.stat==='atk'&&p.level>=it.lv?it.v:0; };   // volcano: the worn talisman's flat attack (the other kinds are rolled-sum lines, rolls.js)
+// dgrev D6: the worn gloves (D5's pattern: none on the Proving Isle, none below the piece's own level). glvP: crit / critdmg lines of rollDmgS; glvAtkP: recalcP; Hot Streak, Overflow and Echo below
+const glvOfP=(p,kind)=>{ if(p.pv) return null; const it=ITEM[p.gear.eq.gloves]; return it&&it.kind==='gloves'&&it.stat===kind&&p.level>=it.lv?it:null; };
+const glvP=(p,kind)=>{ const it=glvOfP(p,kind); return it?it.v:0; };
+const glvAtkP=p=>glvP(p,'atk');
+const glvStreakP=p=>{ const it=glvOfP(p,'streak'); if(!it||!p.glvS) return 0; let n=0; for(const t of p.glvS) if(t>S.t) n++; return n*it.v; };   // p.glvS: the expiry times of the live stacks (not saved, cleared on death)
+const glvOverP=(p,raw)=>{ const it=glvOfP(p,'over'); return it&&raw>CRIT_CAP?(raw-CRIT_CAP)*100*it.v:0; };   // raw: the crit chance before the cap; every 1% above it adds it.v to the crit multiplier (the multiplier's own cap still holds)
+// one crit landed on m (damageMonsterS, after the hit's event): Hot Streak adds a stack, Echo may hit again for a share of the crit. The echo is no roll, so it can never crit, echo or stack
+function glvHitS(m,p,d){
+  const st=glvOfP(p,'streak'); if(st){ const a=(p.glvS||(p.glvS=[])).filter(t=>t>S.t); a.push(S.t+GLV_STREAK_SECS); while(a.length>GLV_STREAK_MAX) a.shift(); p.glvS=a; }
+  const ec=glvOfP(p,'echo'); if(ec&&Math.random()<GLV_ECHO_CHANCE){ const v=Math.max(1,Math.round(d.v*ec.v)); m.hp-=v/monK(m,p).hp/(m.hpDiv||1); if(m.tr) troomHitS(m,p,v); ev('dmg',m.id,v,0,p.id); }
+}
 const dgKitElP=p=>dgKitEl(p.gear,bdMainOf(p));   // dgrev: the element of what p wears now: the character played (bdMainOf, server/bond.js: a set, or the Wanderer and his path)
 const dgRingAtkP=p=>p.gear.eq.ring?dgRingAtkOf(p.gear,dgKitElP(p)):0;   // what the worn ring adds to p's attack right now (0 without a ring, or one whose element is not the kit's)
 // stones: a count in the save, not items in the bag

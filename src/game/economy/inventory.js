@@ -1,7 +1,7 @@
 //@ Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
 /* Drag an item from the bag onto its place on the body to put it on; drag a worn item back to the bag to take it off.
    Works with mouse and touch (pointer events). Tap an item to see its details and a button; double-click equips. */
-const BODY_SLOTS=[['helmet','head'],['weapon','hand'],['top','chest'],['bottom','legs'],['shoes','feet'],['pick','pick'],['axe','axe'],['sickle','sickle'],['ring','ring'],['pendant','neck'],['talisman','charm'],['cape','cape']];   // dgrev D5: the stat cape (eq.cape)   // dungeons: the ring slot; pendants.js: the pendant slot (pick, axe and sickle are the profession tools)
+const BODY_SLOTS=[['helmet','head'],['weapon','hand'],['top','chest'],['bottom','legs'],['shoes','feet'],['pick','pick'],['axe','axe'],['sickle','sickle'],['ring','ring'],['pendant','neck'],['talisman','charm'],['cape','cape'],['gloves','gloves']];   // dgrev D5: the stat cape (eq.cape)   // dungeons: the ring slot; pendants.js: the pendant slot (pick, axe and sickle are the profession tools)
 const INV={sel:null};   // selected item: {id, from:'bag'|slot}
 const slotOf=it=>it.kind==='weapon'?'weapon':it.slot;
 function bagCounts(){ // items in the bag that are not being worn (one copy of each worn item is on the body)
@@ -49,6 +49,7 @@ function invExtraStats(){
 function statDiff(it,cur){
   if(it.kind==='talisman') return cur&&cur.kind==='talisman'&&cur.stat===it.stat?(it.v===cur.v?'':`<span class="${it.v>cur.v?'up':'down'}">${it.v>cur.v?'+':'-'}${it.stat==='atk'?Math.round(Math.abs(it.v-cur.v))+' attack':pendantPct(Math.abs(it.v-cur.v))+'%'}</span>`):'<span class="muted">a different bonus</span>';
   if(it.kind==='cape') return cur&&cur.kind==='cape'?(it.id===cur.id?'':`<span class="muted">${capeText(it)} instead of ${capeText(cur)}</span>`):'<span class="muted">a different wildcard</span>';   // dgrev D5
+  if(it.kind==='gloves') return cur&&cur.kind==='gloves'?(it.id===cur.id?'':`<span class="muted">${glvText(it)} instead of ${glvText(cur)}</span>`):'<span class="muted">a new glove effect</span>';   // dgrev D6
   if(it.kind==='ring') return dgRingDiffHtml(it,cur);   // dungeons: a ring's difference is in attack
   if(it.kind==='pendant') return cur&&cur.kind==='pendant'&&cur.stat===it.stat?(it.v===cur.v?'':`<span class="${it.v>cur.v?'up':'down'}">${it.v>cur.v?'+':'-'}${it.stat==='critdmg'?(Math.round(Math.abs(it.v-cur.v)*100)/100)+' crit multiplier':pendantPct(Math.abs(it.v-cur.v))+'%'}</span>`):'<span class="muted">a different bonus</span>';
   const k=it.kind==='tool'?[['tier','tier'],['rar','rarity']]:it.kind==='weapon'?[['atk','attack']]:[['hp','health'],['def','defense']];

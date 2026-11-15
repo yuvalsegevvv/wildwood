@@ -14,6 +14,7 @@ function dgStatChange(it,next){
   if(it.kind==='weapon') return `+${next.atk} attack ${up(it.atk,next.atk)}`;
   if(it.kind==='armor') return `+${next.hp} health, +${next.def} defense ${up(it.hp,next.hp)}`;
   if(it.kind==='cape') return `${capeText(next)} <span class="up">(plus +${dgPct(next.plus.v-it.plus.v)}${it.plus.stat==='critdmg'?'x':'%'}, minus ${dgPct(next.minus.v-it.minus.v)}${it.minus.stat==='critdmg'?'x':'%'} deeper)</span>`;   // dgrev D5
+  if(it.kind==='gloves') return `${glvText(next)} <span class="up">(+${it.stat==='atk'?Math.round(next.v-it.v):it.stat==='critdmg'||it.stat==='over'?Math.round((next.v-it.v)*10000)/10000:dgPct(next.v-it.v)+'%'})</span>`;   // dgrev D6
   if(it.kind==='talisman') return `${talText(next)} <span class="up">(+${it.stat==='atk'?Math.round(next.v-it.v):dgPct(next.v-it.v)+'%'})</span>`;
   if(it.kind==='pendant') return `${pendantText(next)} <span class="up">(+${it.stat==='critdmg'?Math.round((next.v-it.v)*100)/100:dgPct(next.v-it.v)+'%'})</span>`;
   return `+${next.ratk} attack ${up(it.ratk,next.ratk)}`;

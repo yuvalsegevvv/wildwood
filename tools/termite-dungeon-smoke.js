@@ -1,11 +1,11 @@
-// Headless test of the Termite Cathedral (shared/dungeons/themes/termitecathedral.js, boss Queen Ortha): the Amber Reach's dungeon, level 45 at +0, entered from level 42 once the Ashbed Gate is open (gear.amber 1), paying a level-40 ring.
+// Headless test of the Termite Cathedral (shared/dungeons/themes/termitecathedral.js, boss Queen Ortha): the Amber Reach's dungeon, level 45 at +0, entered from level 42 once the Ashbed Gate is open (gear.amber 1), paying gloves (D6).
 // Server straight from src/ (no build): the theme and its boss at level 45, the door at the atlas's amber door (SAV_DOOR), the entry rules, the offer and the board, a run's monsters (the Reach's kinds), the reward (a level-40, unrolled
 // ring of the seven types, the odds), the Egg Clusters (an egg popped in time takes its hatching with it, a clutch popped whole stuns her, an egg left alone hatches and hurts), and a won run in a party of two giving the same ring to both.
 // Usage: node tools/termite-dungeon-smoke.js
 const {loadServer}=require('./load');
 const got={}, msgs={};
 const {api:W,x}=loadServer({dev:true,log(){},send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (msgs[pid]=msgs[pid]||[]).push(c); if(c.t==='snap'&&c.ev) (got[pid]=got[pid]||[]).push(...c.ev); }},
-  ['DG_RUNS','DG_THEMES','DG_BAD','DG_ENTRANCES','DG_LANDS','DG_ENTRY_LV','DG_LV','DG_END_S','DG_BOSS_DEFS','DG_BOSSES','DG_REWARDS','SAV_DOOR','ROADS','RING_ELS','ITEM','MON_DEFS',
+  ['GLV_IDS','DG_RUNS','DG_THEMES','DG_BAD','DG_ENTRANCES','DG_LANDS','DG_ENTRY_LV','DG_LV','DG_END_S','DG_BOSS_DEFS','DG_BOSSES','DG_REWARDS','SAV_DOOR','ROADS','RING_ELS','ITEM','MON_DEFS',
    'dgEntranceNear','dgApron','dgUnlocked','dgGateOpen','dgLevel','dgOffer','dgPoolS','dgClearReward','dgParse','dgItem','dgBossDefOf','killMonsterS','BOSS_KITS','DG_EGG_WARN','DG_EGG_R','DG_EGG_PER','DG_EGG_STUN','DG_BROOD_MAX']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const IMM=new Set(), tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const pid of IMM){ const p=W.players.get(pid); if(p&&!p.dead) p.hp=p.maxHp; } } };
@@ -54,15 +54,15 @@ W.receive('a',{t:'dg',a:'leave'}); tick(3);
 { W.receive('a',{t:'dev',cmd:'dg',v:'termitecathedral:hunt:5'}); tick(3); const r=A.inst?x.DG_RUNS.get(A.inst):null;
   ok('a hunt run\'s quarry is the Locust Cloud (a Reach kind slipping through the galleries)',!!r&&!!r.k&&!!r.k.q&&r.k.q.def.id==='locusts'); W.receive('a',{t:'dg',a:'leave'}); tick(3); }
 
-// ---- what a clear pays: a level-40 ring ----
+// ---- what a clear pays: level-40 gloves (D6) ----
 { const R=x.DG_REWARDS.termitecathedral, rnd=(()=>{ let a=7; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; })();
   const seen={}, rar=[0,0,0,0,0], N2=30000; let bad=0;
   for(let i=0;i<N2;i++){ const id=x.dgClearReward('termitecathedral',rnd), q=x.dgParse(id), it=x.dgItem(id);
-    if(!q||!it||q.t!==8||q.n!==0||q.roll||it.lv!==40||it.kind!=='ring'||!R.pool.includes(q.el)||!it.roll0||it.rcode||!/^ring8-(basic|fire|water|earth|air|dark|light)(-[reul])?$/.test(id)) bad++; seen[q.el]=(seen[q.el]||0)+1; rar[q.rar]++; }
+    if(!q||!it||q.t!==8||q.n!==0||q.roll||it.lv!==40||it.kind!=='gloves'||!R.pool.includes(q.stat)||!it.roll0||it.rcode||!/^gloves8-(crit|critdmg|atk|streak|over|echo)(-[reul])?$/.test(id)) bad++; seen[q.stat]=(seen[q.stat]||0)+1; rar[q.rar]++; }
   const within=(o,n,p)=>Math.abs(o-n*p)<=4*Math.sqrt(n*p*(1-p))+1;
-  ok('a clear rolls a +0, UNROLLED level-40 ring (ring8-<type>, no ~roll code, waiting for a Ring Reroll Stone) of the seven types, each equally often, at 65 / 25 / 7 / 2.5 / 0.5%',bad===0&&R.kind==='ring'&&R.t===8&&R.pool.join()===x.RING_ELS.join()&&x.RING_ELS.every(s=>within(seen[s],N2,1/x.RING_ELS.length))&&rar.every((c,r)=>within(c,N2,[0.65,0.25,0.07,0.025,0.005][r])),JSON.stringify(seen)+' '+rar); }
+  ok('a clear rolls a +0, UNROLLED level-40 pair of gloves (gloves8-<kind>, no ~roll code, waiting for an Accessory Reroll Stone) of the six kinds, each equally often, at 65 / 25 / 7 / 2.5 / 0.5%',bad===0&&R.kind==='gloves'&&R.t===8&&R.pool.join()===x.GLV_IDS.join()&&x.GLV_IDS.every(s=>within(seen[s],N2,1/x.GLV_IDS.length))&&rar.every((c,r)=>within(c,N2,[0.65,0.25,0.07,0.025,0.005][r])),JSON.stringify(seen)+' '+rar); }
 
-// ---- a purge won through Queen Ortha by a party of two: the Egg Clusters, then both get the same level-40 ring ----
+// ---- a purge won through Queen Ortha by a party of two: the Egg Clusters, then both get the same gloves ----
 const K=join('k','Kai',{level:45,gear:Object.assign({},AG)}), L2=join('l','Lea',{level:45,gear:Object.assign({},AG)}); tick(2);
 W.receive('k',{t:'party',a:'invite',name:'Lea'}); tick(2); W.receive('l',{t:'party',a:'accept'}); tick(2);
 K.x=near.x; K.z=near.z; L2.x=near.x+0.5; L2.z=near.z; clear();
@@ -100,7 +100,7 @@ W.receive('k',{t:'dg',a:'leave'}); W.receive('l',{t:'dg',a:'leave'}); tick(3);
     ok('the eggs left standing hatch: whoever stands among them is hurt, each egg leaves a broodling (five hatched here, at most '+x.DG_BROOD_MAX+' in the hall) and no clutch counts as lost',hurt&&hatched===5&&B.k.eggs.length===0&&B.k.lost===1,'hatched '+hatched);
     IMM.add('w'); IMM.add('v'); for(const p of [W2,W3]){ p.hp=p.maxHp; } B.stunT=0;
     const i2=W2.gear.inv.length, i3=W3.gear.inv.length; clear(); withRandom(0.0005,()=>x.killMonsterS(B.m,W2)); tick(3);
-    const n2=W2.gear.inv.slice(i2), n3=W3.gear.inv.slice(i3), w2=n2.find(id=>/^ring-/.test(id)), d2=last('w','dge');
-    ok('the win (tier I: one level-30 piece, D2) pays EVERY member the same ring through dgGrantItemP (unrolled: no ~ code), listed in the results, and is saved as a clear',r.phase==='won'&&!!w2&&n3.includes(w2)&&x.dgParse(w2).t===7&&!x.dgParse(w2).roll&&x.ITEM[w2].lv===30&&x.ITEM[w2].kind==='ring'&&!!d2&&d2[6].includes(w2)&&W2.gear.dg.clear['termitecathedral:purge']===1&&W3.gear.dg.clear['termitecathedral:purge']===1,n2+' / '+n3);
+    const n2=W2.gear.inv.slice(i2), n3=W3.gear.inv.slice(i3), w2=n2.find(id=>/^gloves7-/.test(id)), d2=last('w','dge');
+    ok('the win (tier I: one level-30 piece, D2) pays EVERY member the same gloves through dgGrantItemP (unrolled: no ~ code), listed in the results, and is saved as a clear',r.phase==='won'&&!!w2&&n3.includes(w2)&&x.dgParse(w2).t===7&&!x.dgParse(w2).roll&&x.ITEM[w2].lv===30&&x.ITEM[w2].kind==='gloves'&&!!d2&&d2[6].includes(w2)&&W2.gear.dg.clear['termitecathedral:purge']===1&&W3.gear.dg.clear['termitecathedral:purge']===1,n2+' / '+n3);
     secs(x.DG_END_S+0.5); } }
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

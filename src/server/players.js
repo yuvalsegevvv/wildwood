@@ -132,7 +132,7 @@ function newPlayer(pid,hello){
 function recalcP(p){
   if(p.pv){ pvpRecalcP(p); return; }   // pvp: on the Proving Isle everyone has the same numbers (server/pvp.js)
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
-  g.atk+=talAtkP(p);
+  g.atk+=talAtkP(p)+glvAtkP(p);   // dgrev D6: Heavy Gloves' flat attack beside the talisman's
   wpnSyncG(p.gear,p.level);   // wpn: eq.weapon always matches the active class, whatever changed it
   wdSyncG(p.gear);   // wanderer: the active path's passive and burst are his while pa1 / bu1 are bought
   awkRefreshP(p);   // awakening: the trees' skill levels and the played character's stat nodes (gear.skills.aw, read by passiveSum)
@@ -224,7 +224,7 @@ function hurtP(p,v,m,by){   // returns the damage taken; by: the fighter who hit
   if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(p.shield.v<=0&&!p.shield.done){ p.shield.done=true; ssShieldBreakS(p); } if(v<=0){ p.lastHit=S.t; return 0; } }   // skillsets: a shield soaks the hit first
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
-    p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id); gsStatP(p,'die'); mqHardHintP(p);   // gems: the knock-out counter; main quest: a step that is hard for your level says to explore first
+    p.hp=0; p.dead=true; p.deadT=0; p.act=null; p.glvS=null; ev('down',p.id); gsStatP(p,'die'); mqHardHintP(p);   // gems: the knock-out counter; main quest: a step that is hard for your level says to explore first
     for(const mm of MONS) if(mm.tgt===p.id){ mm.aggro=false; mm.tgt=null; mm.state='return'; mm.pendingHit=-1; }
     if(p.pv) pvpDownS(p,by);   // pvp: knocked out on the island
   }

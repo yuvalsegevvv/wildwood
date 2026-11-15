@@ -5,7 +5,7 @@
    messages out: pshop{a:'mine'|'add'|'unlist'|'open'|'close'|'browse'|'view'|'buy'} (server/pshop.js)
    markup: #pshop (a panel, in PANELS), #invShops in index.html   test: tools/pshop-smoke.js (server side), client-smoke */
 const pshState={tab:'browse',mine:{open:0,items:[]},shops:[],view:null};
-const pshKinds=['weapon','armor','ring','pendant','talisman','cape'];
+const pshKinds=['weapon','armor','ring','pendant','talisman','cape','gloves'];
 EVH.pshm=e=>{ if(e[1]!==NET.pid) return; pshState.mine={open:e[2]?1:0,items:Array.isArray(e[3])?e[3]:[]}; if(!$('#pshop').hidden) pshRender(); };
 EVH.pshl=e=>{ if(e[1]!==NET.pid) return; pshState.shops=Array.isArray(e[2])?e[2]:[]; if(!$('#pshop').hidden) pshRender(); };
 EVH.pshv=e=>{ if(e[1]!==NET.pid) return; pshState.view=e[3]?{name:String(e[2]),items:e[3]}:null; if(!e[3]) netSend({t:'pshop',a:'browse'}); if(!$('#pshop').hidden) pshRender(); };

@@ -65,7 +65,8 @@ function itemIcon(it){
   else if(it.kind==='pendant') g=pendantIconArt(it);
   else if(it.kind==='talisman') g=talismanIconArt(it);
   else if(it.kind==='cape') g=capeIconArt(it);   // dgrev D5
-  if(it.dg&&it.kind!=='ring'&&it.kind!=='pendant'&&it.kind!=='talisman'&&it.kind!=='cape') g+=it.roll0?RL_SPARK:DG_SPARK;   // rolls: level-40 gear sparkles gold   // dungeons: a jade sparkle marks level-30 gear (a ring and a pendant draw theirs when tempered)
+  else if(it.kind==='gloves') g=glovesIconArt(it);   // dgrev D6
+  if(it.dg&&it.kind!=='ring'&&it.kind!=='pendant'&&it.kind!=='talisman'&&it.kind!=='cape'&&it.kind!=='gloves') g+=it.roll0?RL_SPARK:DG_SPARK;   // rolls: level-40 gear sparkles gold   // dungeons: a jade sparkle marks level-30 gear (a ring and a pendant draw theirs when tempered)
   return `<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${g}</g></svg>`;
 }
 // the three tools: a wooden haft and a head in the colour of the tier's ore (ORE_GRADES)
@@ -112,6 +113,12 @@ function capeIconArt(it){
   const m=PENDANT_METAL[it.rar], c=CAPE_GLYPH[it.plus.stat], d=icoShade(m,0.6);
   return `<path d="M9 6Q16 9 23 6L28 27Q16 31 4 27Z" fill="${d}" ${OUT}/><path d="M10 8Q16 11 22 8L25 26Q16 29 7 26Z" fill="${m}" ${OUT}/><path d="M16 11V27M12 10L11 26.5M20 10L21 26.5" stroke="${d}" stroke-width=".8" opacity=".7"/><circle cx="16" cy="9.5" r="2.6" fill="${c}" ${OUT}/>`;
 }
+// the gloves (Termite Cathedral): a gauntlet in the rarity's leather with a cuff in the kind's colour
+const GLV_GLYPH={crit:'#e0384a',critdmg:'#b77cf5',atk:'#ff6a3a',streak:'#ffb02e',over:'#4fc3f7',echo:'#62d6a0'};
+function glovesIconArt(it){
+  const m=PENDANT_METAL[it.rar], c=GLV_GLYPH[it.stat], d=icoShade(m,0.6);
+  return `<path d="M9 17V8.5Q9 6.5 11 6.5T13 8.5V14V6Q13 4 15 4T17 6V14V6.5Q17 4.5 19 4.5T21 6.5V15V9Q21 7.5 22.8 7.5T24.5 9.5V20Q24.5 25 20.5 26.5H13Q9 24 9 17Z" fill="${m}" ${OUT}/><path d="M13 14V8.5M17 14V6M21 15V7" stroke="${d}" stroke-width=".8" opacity=".7"/><rect x="11" y="26" width="11" height="4" rx="1" fill="${c}" ${OUT}/>`;
+}
 // bag icons for what is not equipment: a monster drop (a faceted shard in the monster's colour), ore (a rock), a log, a herb (a sprig)
 function matIconArt(col,kind){
   const d=icoShade(col,0.62), l=icoShade(col,1.3);
@@ -137,5 +144,5 @@ const btIcon=col=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g fi
 const matIcon=(col,kind,id,name)=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${kind==='drop'&&id?dropIconArt(id,col,name):matIconArt(col,kind)}</g></svg>`;
 // faint outline for an empty equipment slot
 function slotIcon(slot){
-  const fake=slot==='weapon'?ITEM.sword1:slot==='ring'?ITEM['ring-basic']:slot==='pendant'?ITEM['pendant-xp']:slot==='talisman'?ITEM['talisman8-atk']:slot==='cape'?ITEM['cape8-al']:ITEM[slot+'1'];  return itemIcon(fake).replace('class="ico"','class="ico ghost"');
+  const fake=slot==='weapon'?ITEM.sword1:slot==='ring'?ITEM['ring-basic']:slot==='pendant'?ITEM['pendant-xp']:slot==='talisman'?ITEM['talisman8-atk']:slot==='cape'?ITEM['cape8-al']:slot==='gloves'?ITEM['gloves8-atk']:ITEM[slot+'1'];  return itemIcon(fake).replace('class="ico"','class="ico ghost"');
 }

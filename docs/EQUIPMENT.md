@@ -23,11 +23,11 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:219 |
 | Wearing an item (level check, slot) | `equipP` src/server/economy.js:24 |
 | Shops: common items only, +20% per copy bought | `buyP` src/server/economy.js:38, `shopPrice` src/shared/items.js:49, shop panel src/game/economy/shops.js:20 |
-| Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:53, used in `rewardKill` src/server/combat.js:83 |
+| Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:53, used in `rewardKill` src/server/combat.js:84 |
 | Quest board rewards (item rarity) | `rollQuestItemRarity` src/shared/quests.js:69 |
 | Merging three identical items into the next rarity (Greta's forge) | `mergeP` src/server/economy.js:15, `mergedId` src/shared/items.js:50 |
 | Crafting from ore / logs (rarity common to epic) | `craftCost` src/shared/crafting.js:12, `craftP` src/server/crafting.js:12 |
-| The level-30 dungeon pieces and rings: stats, ids, rewards, enhancing | `dgItem` src/shared/dungeon-rewards.js:60, registered in `ITEM` by src/shared/dungeon-items.js:10; the drop of the Tempering Stone and tempering `dgTemperP` src/server/dungeon-gear.js:29 |
+| The level-30 dungeon pieces and rings: stats, ids, rewards, enhancing | `dgItem` src/shared/dungeon-rewards.js:60, registered in `ITEM` by src/shared/dungeon-items.js:10; the drop of the Tempering Stone and tempering `dgTemperP` src/server/dungeon-gear.js:40 |
 | How a piece looks on the character | `ARMOR_LOOK` src/shared/items.js:56 |
 | The inventory icon of every piece and tool | src/game/ui/item-icons.js:1 (the file) |
 | A save's gear (what is worn, what is in the bag) | `newGearFor` src/shared/items.js:64, `sanitizeGear` src/server/players.js:5 |
@@ -457,4 +457,4 @@ Names `RING_NAMES` src/shared/dungeon-rewards.js:27; a common ring adds `RING_AT
 | `ring-light-u` | Unique Dawnbound Ring | 30 | Unique | +44 | 972000 | 388800 | +8 | +44, +48, +53, +57, +62, +66, +70, +75, +79 | Bonefrost Barrow | RING_NAMES.light |
 | `ring-light-l` | Legendary Dawnbound Ring | 30 | Legendary | +60 | 2916000 | 1166400 | +10 | +60, +66, +72, +78, +84, +90, +96, +102, +108, +114, +120 | Bonefrost Barrow | RING_NAMES.light |
 
-What each dungeon pays: The Hollow Roots: weapon (sword, bow, wand); Jade Spring Grottoes: armor (helmet, top, bottom, shoes); Bonefrost Barrow: ring (basic, water, fire, air, earth, dark, light); The Blackseam: pendant (xp, drop, coin, crit, critdmg); The Sandglass: talisman (aspd, buffdur, chg, cdr, atk); The Gloamvault: cape (al, ai, la, gh, hg, ia, mi, ml); The Termite Cathedral: ring (basic, water, fire, air, earth, dark, light); The Cenote of Hollow Stars: pendant (xp, drop, coin, crit, critdmg) (`DG_REWARDS` src/shared/dungeon-rewards.js:30; odds `DG_REWARD_W` src/shared/dungeon-rewards.js:39; enhancing `ENH_MAX` / `ENH_STEP` / `ENH_DROP` src/shared/dungeon-rewards.js:40).
+What each dungeon pays: The Hollow Roots: weapon (sword, bow, wand); Jade Spring Grottoes: armor (helmet, top, bottom, shoes); Bonefrost Barrow: ring (basic, water, fire, air, earth, dark, light); The Blackseam: pendant (xp, drop, coin, crit, critdmg); The Sandglass: talisman (aspd, buffdur, chg, cdr, atk); The Gloamvault: cape (al, ai, la, gh, hg, ia, mi, ml); The Termite Cathedral: gloves (crit, critdmg, atk, streak, over, echo); The Cenote of Hollow Stars: pendant (xp, drop, coin, crit, critdmg) (`DG_REWARDS` src/shared/dungeon-rewards.js:30; odds `DG_REWARD_W` src/shared/dungeon-rewards.js:39; enhancing `ENH_MAX` / `ENH_STEP` / `ENH_DROP` src/shared/dungeon-rewards.js:40).

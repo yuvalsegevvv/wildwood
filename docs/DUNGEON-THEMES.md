@@ -564,7 +564,7 @@ One random **talisman** (D4; `DG_REWARDS.sandglass`, `t:8`) of one of the five k
 | 3 | **Brood Thrum** (`thrum`) | eight slowing bursts round the rim, 0.35 s apart; eggs come sooner |
 
 ### 13.2 What a clear pays
-One random **level-40 ring** (`DG_REWARDS.termitecathedral`, `kind:'ring'`, `t:8`): one of the seven types (no element and the six), rarity 70 / 25 / 4 / 0.8 / 0.2%, the same ring for the whole party. Ids `ring8-<type>`, +0 and **unrolled** until a Ring Reroll Stone is spent (`docs/ROLLS.md`).
+Since the dungeon revamp (D6) one random piece of **gloves** at the rolled equipment level (`DG_REWARDS.termitecathedral`, `kind:'gloves'`, `t:8`): one of six kinds (Keen, Brutal, Heavy, Hot Streak, Overflow, Echo; `docs/DUNGEON-REVAMP.md` section 5c), the same pair for the whole party. Ids `gloves<7|8|9|10>-<kind>`, +0 and **unrolled** until an Accessory Reroll Stone is spent (`docs/ROLLS.md`). (It paid a level-40 ring before.)
 
 ### 13.3 Decisions (my picks)
 23. Entry level 42 and `gear.amber >= 1`; the Reach has no tier row yet, so `+0` is the only difficulty until it does. 24. Eggs reuse the `shroom` model (cream-and-amber pal) instead of a new model family. 25. The egg numbers are constants at the top of the kit file. 26. The door faces down The Amber Door Road, which ends at it.
