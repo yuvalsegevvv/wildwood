@@ -44,6 +44,9 @@ ok('level 39: no info, a refusal toast',abm('b').length===0&&sent.some(s=>s[1].t
 ok('garbage messages do nothing and do not throw',(()=>{ try{ for(const m of [{t:'abyss'},{t:'abyss',a:'constructor'},{t:'abyss',a:7},{t:'abyss',a:null}]) W.receive('a',m); return abm('a').length===0; }catch(e){ return false; } })());
 x.abSwitch(false); sent.length=0; W.receive('a',{t:'abyss',a:'open'}); ok('switched off again: silence',abm('a').length===0);
 
+// B3: the client learns the flag from one field of the welcome
+{ const wel=pid=>sent.filter(q=>q[0]===pid&&q[1].t==='welcome').map(q=>q[1]).pop(); x.abSwitch(false); W.join('wf',{name:'Wf',look:{cls:'warrior'},save:{level:40}}); tick(1); const off=wel('wf'); x.abSwitch(true); W.join('wn',{name:'Wn',look:{cls:'warrior'},save:{level:40}}); tick(1); const on=wel('wn');
+  ok('the welcome carries ab:1 when the flag is on and nothing when it is off',off&&on&&off.ab===undefined&&on.ab===1,J(off&&off.ab)+' '+J(on&&on.ab)); W.leave('wf'); W.leave('wn'); }
 // ---- B2: the run
 x.abSwitch(true);
 ok('a saved run is kept while valid and young, dropped when old, malformed or past the last round',(()=>{ const now=Date.now(), c=r=>clean({run:r}).run;

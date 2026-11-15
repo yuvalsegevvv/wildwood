@@ -41,6 +41,7 @@ styles
   33-puzzles.css                     Puzzles (puzzles/panel.js, rootlines.js, ice.js, scrolls.js): the board panel, the pad, the chest window, the Sigil track
   34-dip.css                         The Dark Infection Pipe panel (game/dip/dip.js)
   36-rift.css                        The rift's window (game/rift/rift.js): the blurb, the energy bar, the Double checkbox
+  42-abyss.css                       The Abyss's window (game/abyss/abyss.js): the difficulty rows, and the between-rounds bar
   34-presets.css                     Presets panel (economy/presets.js): ten cards in a grid, the worn one highlighted, an empty one dimmed
   32-ult.css                         The set burst (5th slot): its action-bar tile, the cast popup card and the skills panel row (game/ult/slot.js, popup.js)
   35-movement.css                    Movement slot: the movement slot's tile (#abMov) and its tab in the skills panel (game/movement/slot.js)
@@ -718,6 +719,7 @@ game
   rift/glass.js                      The rift's glass monsters on the client: the glass material (see-through, the kind's tint mixed into its colours, a bright rim in the rift's blue / purple / pink, a soft glow) and the shatter when one dies
   rift/view.js                       The rift's void world on the client: frosted glass platforms and clear glass bridges with glowing rims, crystals hanging under them, the tears the waves come through, the hub's portal, an aura sky of drifting blue / purple / pink veils, floating shards, the light and fog, the music
   rift/rift.js                       Rifts on the client: the tear in the wild (a crack of light in a ring of glass shards, glassed trees round its clearing), the talk key, the rift window (energy bar and time to full, the Double, Enter), the wave banner
+  abyss/abyss.js                     The Abyss on the client (behind the server's flag, NET.ab): the gate in Glasswell (a dark tear), the talk key, the difficulty window, the round banner and the between-rounds bar (Next round / Leave)
   bond/orbs.js                       Bond Orbs on the client: the orb stall's panel (24 characters, buy 1 or 10, the pouch's pick), the hour's Stirrings picks (BDC_STIR), the orb and stir events (the Bonds panel, the map glow and the pop-up are in bond/panel.js, stir.js, popup.js)
   bond/stir.js                       The hour's Stirrings on the client: the picks made drawable once (zone outlines, the boss's arena, the door, the raid), their glow on the land map, the minimap and the world map, and the "Stirrings this hour" box
   bond/popup.js                      The orb pop-up: a small card in the character's colour when stones arrive (the stones, the next Bond step's progress), stacked and merged while orbs keep opening

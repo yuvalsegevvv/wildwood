@@ -40,7 +40,7 @@ function join(pid,hello,auth,srvLook){
   if(io.test) testKitP(p);   // testworld: level 60 and the whole kit, before the first 'you'
   if(auth){ p.auth=auth; p.user=auth.user; }
   else { const n=freeName(p.name,p); if(n!==p.name){ toastTo(pid,'Someone already has the name '+p.name+', so you are '+n+'. Change it in Settings.',''); p.name=n; } }
-  sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,stir:bdStirMsg(),players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth||srvLook?p.look:undefined});
+  sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,ab:abOnS()?1:undefined,stir:bdStirMsg(),players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth||srvLook?p.look:undefined}); // abyss: the flag, the client's one field
   const ros=MONS.filter(m=>!m.remove&&!m.inst).map(monRoster);   // dungeons: the world's monsters only (a run's reach its members on entry)
   for(let i=0;i<ros.length;i+=40) sendTo(pid,{t:'mons',list:ros.slice(i,i+40)});
   for(const B of BOSSES.concat(rdBossesS())){   // what a boss has set up right now, for someone who arrives in the middle of the fight

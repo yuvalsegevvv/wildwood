@@ -4,7 +4,7 @@
             abLeaveP(run,p) (dgLeaveP hook), abCloseS(run) (dgCloseS hook), abDevP(p,msg) (devP 'abyss'), DG_KITS.abyss
    hooks marked `// abyss:` (docs/ABYSS.md section 3): dungeons/runs.js dgSetupS, dgDownTickS, dgCloseS; dungeons/lobby.js dgLeaveP; dungeons/mobs.js rewardAllS; economy.js devP; game/dungeon/run.js (the client's layout)
    save: gear.ab.run = {d, r, at (ms)} while a run is on (cleared at its end; a saved run with no live instance is cleaned up by the next abyss message, never resumed)
-   events: abr [pid, round, of, lv] when a round starts, plus the dungeons' tp (dg {m:'abyss', th:AB_THEME, seed}), spawn, dge at the end; the snapshot's dg tuple: run.hud (shared/abyss.js DG_HUD.abyss)
+   events: abr [pid, round, of, lv] when a round starts, abw [pid, round] when a (not the last) round is won, plus the dungeons' tp (dg {m:'abyss', th:AB_THEME, seed}), spawn, dge at the end; the snapshot's dg tuple: run.hud (shared/abyss.js DG_HUD.abyss)
    test: tools/abyss-smoke.js.   A run: run.ab=true, run.mission='abyss', run.abD (difficulty index), run.abR (round), run.L = abRoundLv, run.back = where the hiker entered; run.abWon between rounds (the hiker waits in it for next / out). */
 const AB_TXT_SHARED='The Abyss needs Solo mode or a server: a shared room cannot keep a run apart from the world.';
 const abRunOf=p=>{ const r=dgRunOf(p); return r&&r.ab?r:null; };
@@ -100,7 +100,7 @@ function abRoundWonS(run){
     const g=abSaveOf(p);
     if(d===AB_INF) g.best=Math.max(g.best|0,Math.min(999999,run.abR));
     if(last){ g.top=Math.max(g.top|0,Math.min(5,d+1)); g.clears[d]=Math.min(999999,(g.clears[d]|0)+1); g.run=null; dgEndEvS(run,p,1,''); toastTo(p.id,AB_DIFFS[d].name+' cleared! '+AB_DIFFS[d+1].name+' is open.','good'); }
-    else toastTo(p.id,'Round '+run.abR+' won. Go on to the next round, or leave with everything you earned.','good');
+    else { dgEvTo('abw',p.id,run.abR); toastTo(p.id,'Round '+run.abR+' won. Go on to the next round, or leave with everything you earned.','good'); }
     p.dirty=true;
   }
   if(last) run.endT=S.t;   // the dungeons' end timer closes the run (dgRunTickS) and puts everyone back

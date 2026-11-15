@@ -1,0 +1,11 @@
+/*@ The Abyss's window (game/abyss/abyss.js): the difficulty rows, and the between-rounds bar */
+#abyss{ width:min(440px,calc(100vw - 24px)); }
+@media (max-width:719px){ #abyss{ width:auto; } }
+.ab-line{ margin:0 0 10px; line-height:1.4; color:var(--ink-dim); }
+.ab-diffs{ display:flex; flex-direction:column; gap:6px; }
+.ab-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border-radius:8px; background:rgba(120,60,200,.12); box-shadow:inset 0 0 0 1px rgba(170,110,255,.3); }
+.ab-row.locked{ opacity:.5; filter:grayscale(.7); }
+.ab-t{ display:flex; flex-direction:column; gap:2px; font-size:13px; min-width:0; }
+.ab-note{ font-size:12px; color:var(--ink-dim); }
+#abBar{ position:fixed; top:86px; left:50%; transform:translateX(-50%); z-index:60; display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; background:rgba(18,6,34,.92); box-shadow:0 0 0 1px rgba(170,110,255,.5); color:#eadcff; font-size:14px; max-width:calc(100vw - 32px); }
+#abBar[hidden]{ display:none; }
