@@ -38,9 +38,9 @@ OUTFITS.atuqa=(function(){
 
     /* ---- the hair: parted and drawn back under the cap, two long braids over the shoulders tied with gold thread ---- */
     const braids=(F,T)=>{ T.crown(0.113,0.5,0.3); T.fringe(3,0.3,0.2); T.sideLocks(0.03); T.backLocks(sg(12),0,15);
-      const out=[]; for(const sd of [-1,1]){ const P=[[sd*0.1,-0.12,-0.02],[sd*0.114,-0.2,-0.05],[sd*0.12,-0.3,-0.065],[sd*0.112,-0.4,-0.06],[sd*0.104,-0.48,-0.05]];
-        T.add(sweepTube(P,[0.017,0.019,0.018,0.014,0.004],sg(7),{cap:'point',rings:sg(28)}),(x,y,z,c)=>{ T.hp(x,y,z,c); c.multiplyScalar(0.88+0.14*Math.sin(y*170)); });
-        out.push(solid(ofRingAt(P[3],[0,1,0],0.0165,0.0045,sg(6)),GOLD),solid(csph(0.008,sg(7),sg(5)).translate(P[3][0],P[3][1]-0.018,P[3][2]),RED)); }
+      const out=[]; for(const sd of [-1,1]){ const P=[[sd*0.097,-0.03,-0.012],[sd*0.103,-0.12,-0.02],[sd*0.114,-0.2,-0.05],[sd*0.12,-0.3,-0.065],[sd*0.112,-0.4,-0.06],[sd*0.104,-0.48,-0.05]];
+        T.lock(P,[0.012,0.017,0.019,0.0185,0.0145,0.0045],{k:3,amp:0.3,tw:0.7,rings:sg(30)});   // a plait: round, tapering, its strands twisting round it (T.lock: the hair's colour, the gradient down it)
+        out.push(solid(ofRingAt(P[4],[0,1,0],0.0165,0.0045,sg(6)),GOLD),solid(csph(0.008,sg(7),sg(5)).translate(P[4][0],P[4][1]-0.018,P[4][2]),RED)); }
       return out; };
 
     /* ---- the face: two gold stripes across each cheekbone, a cream one below ---- */

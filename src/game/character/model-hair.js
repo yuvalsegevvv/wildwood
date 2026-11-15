@@ -73,9 +73,24 @@ function buildHair(X,F){
     g.scale(1.55,1,0.5); g.applyMatrix4(new THREE.Matrix4().makeBasis(w,d,n)); g.translate(a[0],a[1],a[2]); return g; };
   // wisps: thin strands that leave a thick lock a little way down and end at different lengths, so a tail frays into a tip instead of ending in one clean point (not on phones)
   const wisps=(P,w,n,spread)=>{ if(sg(100)<50) return; const rng=mulberry32(5000+Math.round(P[1][1]*1000)+Math.round(P[2][0]*1000));
-    for(let j=0;j<n;j++){ const R0=P.slice(1+Math.floor(rng()*2)), ox=(rng()-0.5)*2, oz=(rng()-0.5)*2; if(rng()<0.5) R0.pop();
+    for(let j=0;j<n;j++){ const s0=1+Math.floor(rng()*2), R0=P.slice(s0), ox=(rng()-0.5)*2, oz=(rng()-0.5)*2; if(rng()<0.5) R0.pop();
       if(R0.length<3) continue;
-      add(swing(sweepTube(R0.map((q,i)=>{ const f=(i+1)/R0.length; return [q[0]+ox*spread*f*f,q[1]-0.01*f,q[2]+oz*spread*f*f]; }),[w*0.33,w*0.3,w*0.22,0.0012],5,{cap:'point',rings:10}))); } };
+      const g=sweepTube(R0.map((q,i)=>{ const f=(i+1)/R0.length; return [q[0]+ox*spread*f*f,q[1]-0.01*f,q[2]+oz*spread*f*f]; }),[w*0.33,w*0.3,w*0.22,0.0012],5,{cap:'point',rings:10});
+      if(hangPaint) alongU(g,5,s0/(P.length-1),(s0+R0.length-1)/(P.length-1));   // a tail's wisp: the gradient by its place along the tail
+      add(swing(g)); } };
+  // hgu (read by hgApply): a sweepTube's root-to-tip value by its ring (rings of seg+1 vertices), u0 at the first ring and u1 at the last, so a gradient runs ALONG a tail
+  // that rises before it falls (by the height alone a high tail's arc took the root colour and its fall restarted); setU: a value from a function of the position
+  const alongU=(g,seg,u0,u1)=>{ const n=g.attributes.position.count, W=seg+1, nr=n/W, a=new Float32Array(n); for(let i=0;i<n;i++) a[i]=u0+(u1-u0)*Math.floor(i/W)/Math.max(1,nr-1); g.setAttribute('hgu',new THREE.BufferAttribute(a,1)); return g; };
+  const setU=(g,f)=>{ const p=g.attributes.position, a=new Float32Array(p.count); for(let i=0;i<p.count;i++) a[i]=f(p.getX(i),p.getY(i),p.getZ(i)); g.setAttribute('hgu',new THREE.BufferAttribute(a,1)); return g; };
+  // a hair tie as a band round the tail's root (a torus whose axis is `dir`), so the tie reads as a ring and not as a bead
+  const tieBand=(o,dir,r,tube)=>{ const g=new THREE.TorusGeometry(r,tube,sg(6),sg(16)), d=new THREE.Vector3(...dir).normalize(), q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),d);
+    g.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(q)); g.translate(o[0],o[1],o[2]); add(hang(g),(xx,yy,zz,c)=>c.set(0xc83a4a)); };
+  // hair swept from the hairline to a tie at B: strands from azimuth a0 to a1 (0 = the front), each starting just above the real hairline (scalp's line) and running a great
+  // arc over the scalp into the tie, a little lifted; tied styles wear them instead of a bare cap, so the sides read tight and pulled toward the tail
+  const tieSweep=(n,B,a0,a1,seed)=>{ const Bv=new THREE.Vector3(...B).normalize(), rng=mulberry32(seed), hiQ=sg(100)>=50;
+    for(let i=0;i<n;i++){ const th=lerp(a0,a1,(i+0.5)/n)+0.08*(rng()-0.5), a=Math.abs(Math.atan2(Math.sin(th),Math.cos(th))), q=(0.27+0.18*smoothstep(0.75,1.15,a)+0.19*smoothstep(1.7,2.3,a))*Math.PI;
+      const A=new THREE.Vector3(...sp(th,q,1)), Q=[]; for(let k=0;k<=6;k++){ const u=k/6, d=A.clone().lerp(Bv,u).normalize().multiplyScalar(R+0.003+0.004*Math.sin(u*Math.PI)+0.0015*(i%2)); Q.push([d.x,d.y,d.z]); }
+      const w=0.011+0.003*rng(), g=sweepTube(Q,[0.003,w,w*1.1,w,w*0.85,w*0.6,0.004],sg(5),{cap:'point',rings:hiQ?7:5}); flat(g,0.5); add(fit(g)); } };
   const tie=(x,y,z,r)=>add(csph(r,sg(10),sg(8)).scale(1,0.8,1).translate(x,y,z),(xx,yy,zz,c)=>c.set(0xc83a4a));
   // tied tails: `offs` are [sideways shift, thickness, shorter-by-one-point 0/1] per lock; a shift grows toward the tip so the tail fans out and frays (z for twintails: `zs`)
   // (v3.5) a tail or a plait is painted by its OWN length, not by the head's height: hp darkens everything below the jaw (the nape's underlayer, down to x0.45 at
@@ -85,17 +100,19 @@ function buildHair(X,F){
   const strandHp=(g,o)=>{ o=o||{}; const p=g.attributes.position; let t0=1e9, t1=-1e9; for(let i=0;i<p.count;i++){ const y=p.getY(i); if(y<t0) t0=y; if(y>t1) t1=y; }
     const E=Math.max(0.01,t1-t0), tone=0.92+0.16*h3(lockN++*7,13,5), tc=new THREE.Color(), lx=o.lx===undefined?1:o.lx, lz=o.lz===undefined?0.7:o.lz, al=o.al||0, ay=o.ay===undefined?1:o.ay;
     return (x,y,z,c)=>{ hp(x,Math.max(y,0.012),z,c); const u=clamp((t1-y)/E,0,1), q=(x*lx+z*lz)*ay-y*al;
-      const s=0.5+0.5*Math.sin(q*340+2.2*Math.sin(y*37)+3*h3(Math.round(q*90),3,lockN)), band=o.lobe?0.7+0.44*Math.sin(u*Math.PI):0.9+0.14*Math.sin(Math.min(1,u*1.6)*Math.PI)+0.05*u;
-      c.multiplyScalar(tone*band*(0.84+0.28*s)); c.lerp(tc.set(0xffffff),o.lobe?0.07*Math.sin(u*Math.PI)*s:0.1*G(u,0.2,0.08)*s); c.lerp(tc.set(0xffe2b0),0.12*u*u*u); }; };
+      const s=0.5+0.5*Math.sin(q*340+2.2*Math.sin(y*37)+3*h3(Math.round(q*90),3,lockN)), band=o.lobe?(o.soft?0.86+0.2*Math.sin(u*Math.PI):0.7+0.44*Math.sin(u*Math.PI)):0.9+0.14*Math.sin(Math.min(1,u*1.6)*Math.PI)+0.05*u;
+      c.multiplyScalar(tone*band*(0.84+0.28*s)*(o.k||1)); c.lerp(tc.set(0xffffff),o.lobe?0.07*Math.sin(u*Math.PI)*s:0.1*G(u,0.2,0.08)*s); c.lerp(tc.set(0xffe2b0),0.12*u*u*u); }; };
   const asStrands=f=>{ hangPaint=strandHp; f(); hangPaint=null; };
   // strand grooves: every ring of a sweepTube pulled in at k places round it (the tube's vertices are rings of seg+1), so a tail is a bundle of locks, not a pipe
   const groove=(g,seg,k,amp,tw)=>{ const p=g.attributes.position, W=seg+1, n=p.count/W; tw=tw||0;   // tw: the grooves turn round the tube by tw radians a ring (a twisted rope, a plait)
     for(let i=0;i<n;i++){ let cx=0, cy=0, cz=0; for(let j=0;j<seg;j++){ cx+=p.getX(i*W+j); cy+=p.getY(i*W+j); cz+=p.getZ(i*W+j); } cx/=seg; cy/=seg; cz/=seg;
       for(let j=0;j<=seg;j++){ const id=i*W+j, f=1-amp*(0.5-0.5*Math.cos(k*j/seg*TAU+tw*i)); p.setXYZ(id,cx+(p.getX(id)-cx)*f,cy+(p.getY(id)-cy)*f,cz+(p.getZ(id)-cz)*f); } }
     return smoothN(g); };
-  const tail=(P,rad,offs,zs)=>{ const span=[Math.max(...P.map(q=>q[1])),Math.min(...P.map(q=>q[1]))-0.01], seg=sg(14), k=Math.max(3,Math.floor(seg/2));
-    for(const [dx,w,cut] of offs){ const Q=P.slice(0,P.length-(cut?1:0)).map((q,i)=>{ const f=i/(P.length-1), d=dx*f*(0.4+f); return zs?[q[0],q[1],q[2]+d]:[q[0]+d,q[1],q[2]]; });
-      const g=groove(sweepTube(Q,rad.map(r=>r*(w>0.9?1:w)),w>0.9?seg:sg(10),{cap:'point',rings:sg(18)}),w>0.9?seg:sg(10),w>0.9?k:3,w>0.9?0.26:0.18); g.hgSpan=span; add(swing(g),strandHp(g)); } };
+  // (v3.6) an entry may carry a 4th value, a shift the other way (z, or x for `zs`), so the locks also fan front to back and the tail is a round bundle; every lock carries
+  // hgu (its place along the tail), so a gradient runs tie to tip even round a high tail's arc; the strands are painted a little brighter (k), lit like the cap
+  const tail=(P,rad,offs,zs,rg)=>{ const span=[Math.max(...P.map(q=>q[1])),Math.min(...P.map(q=>q[1]))-0.01], seg=sg(14), k=Math.max(3,Math.floor(seg/2));
+    for(const [dx,w,cut,dz] of offs){ const Q=P.slice(0,P.length-(cut?1:0)).map((q,i)=>{ const f=i/(P.length-1), d=dx*f*(0.4+f), e=(dz||0)*f*(0.4+f); return zs?[q[0]+e,q[1],q[2]+d]:[q[0]+d,q[1],q[2]+e]; });
+      const sq=w>0.9?seg:sg(10), g=groove(sweepTube(Q,rad.map(r=>r*(w>0.9?1:w)),sq,{cap:'point',rings:rg||sg(18)}),sq,w>0.9?k:3,w>0.9?0.26:0.18); g.hgSpan=span; alongU(g,sq,0,(Q.length-1)/(P.length-1)); add(swing(g),strandHp(g,{k:1.1})); } };
   // one hanging rope of hair for an outfit's side tail or braid (T.lock): rounded, tapered to a point, grooved into strands that twist round it (o.tw), painted along its own
   // length (strandHp: the hair's colour, a sheen under the root) and sharing one root-to-tip height (hgSpan) so a gradient runs down the whole tail; it swings
   const hairLock=(P,rad,o)=>{ o=o||{}; const seg=sg(10), g=groove(sweepTube(P,rad,seg,{cap:'point',rings:o.rings||sg(22)}),seg,o.k||4,o.amp===undefined?0.24:o.amp,o.tw===undefined?0.45:o.tw);
@@ -105,12 +122,12 @@ function buildHair(X,F){
   // a plait along the path fn(t): a core rope from inside the nape (so it is attached, and no gap shows between crossings), then segments that each run slanted from
   // one outer edge down to the middle, left and right in turn (the chevrons of a three-strand braid), each dark at both ends; a tie and a tuft at the end.
   // All its pieces share one tie-to-tip height (hgSpan), so a gradient runs down the whole plait instead of restarting in every segment
-  const plait=(fn,len)=>{ const n=sg(100)>=50?12:8, s0=fn(0), e=fn(1), span=[s0[1]+0.04,e[1]-0.05], mk=g=>{ g.hgSpan=span; return swing(g); };
-    const core=[[s0[0]*0.82,s0[1]+0.05,s0[2]*0.78],s0,fn(0.33),fn(0.66),e]; { const g=mk(sweepTube(core,[0.014,0.017,0.015,0.012,0.009],sg(8),{cap:'round',rings:sg(14)})); add(g,strandHp(g)); }
-    for(let i=0;i<n;i++){ const t=(i+0.5)/n, p=fn(t), s=i%2?1:-1, w=0.017*(1-0.38*t), h=len/n*0.95, ol=Math.hypot(p[0],p[2])||1, ox=p[0]/ol, oz=p[2]/ol, lx=oz, lz=-ox;   // out of the head, and across the plait
-      const P=[[p[0]+lx*s*w,p[1]+h,p[2]+lz*s*w],[p[0]+lx*s*w*0.35+ox*0.006,p[1],p[2]+lz*s*w*0.35+oz*0.006],[p[0]-lx*s*w*0.45,p[1]-h,p[2]-lz*s*w*0.45]], a=Math.hypot(1.45*w,2*h);
-      const g=mk(sweepTube(P,[0.005,0.0125*(1-0.3*t),0.011*(1-0.3*t),0.003],sg(7),{cap:'point',rings:sg(8)})); add(g,strandHp(g,{lobe:true,lx,lz,al:-s*1.45*w/a,ay:2*h/a})); }
-    for(let k=-1;k<=1;k++){ const g=mk(sweepTube([[e[0]+k*0.004,e[1],e[2]],[e[0]+k*0.012,e[1]-0.02,e[2]],[e[0]+k*0.02,e[1]-0.045,e[2]-0.004]],[0.008,0.006,0.001],5,{cap:'point',rings:6})); add(g,strandHp(g)); }
+  const plait=(fn,len)=>{ const n=sg(100)>=50?12:8, s0=fn(0), e=fn(1), span=[s0[1]+0.04,e[1]-0.07], mk=g=>{ g.hgSpan=span; return swing(g); };
+    const core=[[s0[0]*0.82,s0[1]+0.05,s0[2]*0.78],s0,fn(0.33),fn(0.66),e]; { const g=mk(sweepTube(core,[0.017,0.021,0.019,0.015,0.011],sg(8),{cap:'round',rings:sg(14)})); add(g,strandHp(g)); }
+    for(let i=0;i<n;i++){ const t=(i+0.5)/n, p=fn(t), s=i%2?1:-1, w=0.022*(1-0.34*t), h=len/n*1.0, ol=Math.hypot(p[0],p[2])||1, ox=p[0]/ol, oz=p[2]/ol, lx=oz, lz=-ox;   // out of the head, and across the plait
+      const P=[[p[0]+lx*s*w,p[1]+h,p[2]+lz*s*w],[p[0]+lx*s*w*0.35+ox*0.011,p[1],p[2]+lz*s*w*0.35+oz*0.011],[p[0]-lx*s*w*0.45,p[1]-h,p[2]-lz*s*w*0.45]], a=Math.hypot(1.45*w,2*h);
+      const g=mk(sweepTube(P,[0.006,0.0165*(1-0.3*t),0.0145*(1-0.3*t),0.004],sg(8),{cap:'point',rings:sg(8)})); add(g,strandHp(g,{lobe:true,soft:true,lx,lz,al:-s*1.45*w/a,ay:2*h/a})); }
+    for(let k=-1;k<=1;k++){ const g=mk(sweepTube([[e[0]+k*0.004,e[1]-0.004,e[2]],[e[0]+k*0.011,e[1]-0.026,e[2]],[e[0]+k*0.019,e[1]-0.055,e[2]-0.004],[e[0]+k*0.024,e[1]-0.07,e[2]-0.006]],[0.011,0.0105,0.0075,0.0015],6,{cap:'point',rings:10})); add(g,strandHp(g)); }
     tie(e[0],e[1]+0.002,e[2],0.016); };
   // a wound bun: a rounded ball (axis z, turned by `ry`) with strands spiralling out of its centre, so it reads as hair wrapped round itself. hgSpan far above it makes a hair gradient
   // reach its tip colour here: the hair runs from the hairline up into the bun
@@ -126,11 +143,21 @@ function buildHair(X,F){
   // a signature outfit's hair item and head item (docs/CHARACTER.md section 9): kH.hair(F, T) composes the pieces above (T) and its own geometry (T.add paints and collects it), kHat.head(F, T) is the hat, built after the base hats below
   const T={add,swing,wisps,sp,flat,fit,hang,lock:hairLock,scalp,scalpLock,crown,fringe,sideLocks,backLocks,blade,tie,hp,R,hv,hl,bg};
   if(kH&&kH.hair){ const n0=parts.length, ex=kH.hair(F,T); if(ex) parts.push(...ex); ofTintFrom(X,'hair',parts,n0); }
-  if(H==='buzz'){   // velvet stubble: its own flat paint (the lock paint's crown ring read as a hard band under a gradient), darker toward the hairline so the cut fades into the skin, a hint of sideburn at each temple
-    const bzR=0.108*hv, bzP=(x,y,z,c)=>{ const r=Math.hypot(x,y,z)||1, q=Math.acos(clamp(y/r,-1,1)), a=Math.abs(Math.atan2(x,-z)), qr=(0.29+0.18*smoothstep(0.75,1.15,a)+0.2*smoothstep(1.7,2.3,a))*Math.PI, e=1-q/qr;   // e: 0 at the hairline, 1 at the crown
-      c.copy(hairCol).multiplyScalar(0.84+0.12*smoothstep(0.0,0.6,e)+0.1*h3(Math.round(x*420),Math.round(y*420),Math.round(z*420))); c.multiplyScalar(0.7+0.3*smoothstep(-0.02,0.3,e)); };
-    add(fit(scalp(bzR,0.05)),bzP);
-    for(const sd of [-1,1]){ const g=sweepTube([sp(sd*1.2,0.34*Math.PI,bzR),sp(sd*1.3,0.46*Math.PI,bzR),[sd*0.101,-0.012,-0.044],[sd*0.098,-0.03,-0.05]],[0.004,0.0095,0.0085,0.002],sg(5),{cap:'point',rings:sg(7)}); flat(g,0.5); add(fit(g),bzP); } }
+  let hairPost=null;   // a style's last touch after the gradient (the buzz cut's fade into the skin)
+  if(H==='buzz'){   // velvet stubble: its own flat paint (the lock paint's crown ring read as a hard band under a gradient), a hint of sideburn at each temple
+    // (v3.6) bzE: e = 0 on the real hairline (the scalp's line), 1 at the crown, and a = the angle from the front. The gradient (hgu) follows the hairline, not the height
+    // (by the height a dyed buzz had a hard level edge across the back), the nap is fine streaks running down from the crown with a soft sheen over it (velvet), and
+    // after the gradient the edge fades into the skin: a short fade at the nape and the temples, a crisper line over the forehead
+    const bzR=0.108*hv, n0=parts.length, white=new THREE.Color(0xffffff), bzE=(x,y,z)=>{ const r=Math.hypot(x,y,z)||1, q=Math.acos(clamp(y/r,-1,1)), a=Math.abs(Math.atan2(x,-z)), qr=(0.29+0.18*smoothstep(0.75,1.15,a)+0.2*smoothstep(1.7,2.3,a))*Math.PI; return [1-q/qr,a]; };
+    const bzP=(x,y,z,c)=>{ const [e]=bzE(x,y,z), az=Math.atan2(x,z), v=(0.5+0.5*Math.sin(az*72+2.5*Math.sin(y*30+az*3)))*(1-smoothstep(0.7,1,e)), gr=h3(Math.round(x*300),Math.round(y*300),Math.round(z*300));
+      c.copy(hairCol).multiplyScalar((0.84+0.14*smoothstep(0,0.75,e))*(0.94+0.08*v)*(0.97+0.05*gr)); c.lerp(white,0.07*G(e,0.72,0.2)); };
+    const bzU=(x,y,z)=>Math.pow(0.5*clamp((0.115-y)/0.17,0,1)+0.5*clamp(1-bzE(x,y,z)[0],0,1),1.25);
+    add(setU(fit(scalp(bzR,0.05,sg(48),sg(20))),bzU),bzP);
+    for(const sd of [-1,1]){ const g=sweepTube([sp(sd*1.2,0.34*Math.PI,bzR),sp(sd*1.3,0.46*Math.PI,bzR),[sd*0.101,-0.012,-0.044],[sd*0.098,-0.03,-0.05]],[0.004,0.0095,0.0085,0.002],sg(5),{cap:'point',rings:sg(7)}); flat(g,0.5); add(setU(fit(g),bzU),bzP); }
+    const n1=parts.length, sk=new THREE.Color().copy(X.skin).multiplyScalar(0.93), tc=new THREE.Color();
+    hairPost=()=>{ for(let k=n0;k<n1;k++){ const g=parts[k], p=g.attributes.position, col=g.attributes.color; if(!col) continue;
+      for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), [e,a]=bzE(x,y,z), side=smoothstep(0.7,1.5,a), f=k===n0?(1-smoothstep(-0.03,lerp(0.07,0.2,side),e))*lerp(0.45,0.7,side):0.25+0.45*smoothstep(0.03,-0.035,y);   // (the sideburn: half way into the skin like the temple's edge, more at its end)
+        if(f<=0) continue; tc.setRGB(col.getX(i),col.getY(i),col.getZ(i)).lerp(sk,f); col.setXYZ(i,tc.r,tc.g,tc.b); } } }; }
   if(H==='short'){ add(fit(scalp(0.114*hv))); add(fit(band(0.111*hv,0.38*Math.PI,0.17*Math.PI,1.9,sg(30),sg(8)))); fringe(8,1.0,0.14); sideLocks(0.05); backLocks(sg(18),0,11); }
   const hatOver=hat&&!['circlet','bandana','laurel','catphones'].includes(L.hat);   // a hat that covers the crown: the blades standing off the scalp would poke through it
   if(H==='messy'){ add(fit(scalp(0.116*hv))); fringe(8,1.05,0.3); sideLocks(0.05); backLocks(sg(14),0.02,21);
@@ -165,7 +192,15 @@ function buildHair(X,F){
       const q=fit(sweepTube(P,[0.0062,0.0066,0.006,0.005,0.0016],5,{cap:'point',rings:sg(14)})); q.hgSpan=[top,bot]; add(q,(x,y,z,c)=>{ hp(x,Math.max(y,0.005),z,c); c.multiplyScalar(1.05); }); }
   }
   if(H==='bob'||H==='long'||H==='waves'||H==='buns2'||H==='sidebraid'||H==='highpony'||H==='twintail'||H==='braid'||H==='ponytail'||H==='bun') add(fit(scalp((H==='bob'||H==='long'?0.116:0.113)*hv)));
-  if(H==='bob'){ add(fit(band(0.118*hv,0.34*Math.PI,0.2*Math.PI,1.55,sg(36),sg(10)))); fringe(8,1.05,0.12); sideLocks(0.1*hl); backLocks(sg(20),0.09*hl,51); }
+  if(H==='bob'){   // one even bell of hair: over the crown, flaring a little past the ears and curving in at a clean hem at the jaw all round (it rises to the hairline in front); strand grooves, painted crown to hem
+    const Rb=R+0.008, top=Rb*0.995, ns=sg(48), nr=sg(100)>=50?16:10, drop=0.075+0.03*(hl-1), pos=new Float32Array((nr+1)*(ns+1)*3), idx=[], N=sg(100)>=50?26:18;
+    for(let i=0;i<=nr;i++){ const f=i/nr; for(let j=0;j<=ns;j++){ const a=j/ns*TAU, fa=Math.abs(a-Math.PI), yh=lerp(0.07,-drop-0.012*Math.max(0,fa-2.4),smoothstep(0.5,1.25,fa)), y=lerp(top,yh,Math.pow(f,0.85)), d=Math.max(0,-y);
+      let r=y>0?Math.sqrt(Math.max(1e-6,Rb*Rb-y*y)):Rb+0.012*Math.sin(Math.min(1,d/0.07)*Math.PI/2); const q=clamp(1-(y-yh)/0.045,0,1); r-=0.02*q*q;
+      r*=1-0.018*(0.5-0.5*Math.cos(a*N+0.5*Math.sin(y*28)))*smoothstep(0.1,0.45,f); const o=(i*(ns+1)+j)*3; pos[o]=r*Math.sin(a); pos[o+1]=y; pos[o+2]=r*Math.cos(a); } }
+    for(let i=0;i<nr;i++) for(let j=0;j<ns;j++){ const a=i*(ns+1)+j, b=a+1, c=a+ns+1, d=c+1; idx.push(a,c,b,b,c,d); }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setIndex(idx); smoothN(g); g.hgSpan=[0.12,-drop-0.005];
+    add(fit(g),(x,y,z,c)=>{ hp(x,Math.max(y,0.012),z,c); const s=0.5+0.5*Math.cos(Math.atan2(x,z)*N+0.5*Math.sin(y*28)), u=clamp((0.12-y)/(0.12+drop),0,1); c.multiplyScalar((0.84+0.26*s)*(0.9+0.12*Math.sin(u*Math.PI*0.9))); });
+    fringe(8,1.05,0.12); }
   if(H==='long'||H==='waves'){ const wv=H==='waves', hiQ=sg(100)>=50, len=0.5*hl, span=[0.12,0.04-len*0.92];   // span: ONE root-to-tip height for the scalp and every hanging piece (hgApply's hgSpan), so an ombre reaches colour 2 mid-length and colour 3 at the tips on all of them alike
     if(parts.length) parts[parts.length-1].hgSpan=span;   // the scalp just added above (by its own height its back went colour 2 above the curtain's root colour)
     fringe(8,1.1,0.1);
@@ -196,14 +231,23 @@ function buildHair(X,F){
     // in front: a lock over each shoulder from the temple to the chest (and a thinner one behind it), grooved into strands; waves crimp them too
     for(const sd of [-1,1]) for(const [dz,dx,k,w] of hiQ?[[0,0,1,1],[0.024,0.008,0.82,0.7]]:[[0,0,1,1]]){ const P=[[sd*0.104,0.05,0.0],[sd*0.113,-0.04*hl,-0.012],[sd*0.12,-0.16*hl,-0.02],[sd*0.12,-0.28*hl,-0.02],[sd*0.114,-0.4*hl,-0.012]].map((q,i)=>i===0?q:[q[0]+sd*dx+(wv?sd*0.012*Math.sin(q[1]*32+1+dz*40):0),q[1]*(i>2?k:1),q[2]+dz]);
       const seg=w<1?6:sg(8), g=groove(sweepTube(P,[0.026,0.032,0.028,0.02,0.002].map(r=>r*w),seg,{cap:'point',rings:w<1?10:sg(14)}),seg,3,0.24); g.scale(0.75,1,1); g.translate(sd*0.004,0,0); g.hgSpan=span; add(swing(g),flow(g)); } }
-  if(H==='ponytail'){ fringe(8,1.0,0.12); sideLocks(0.05); gather(0,0.2,0.3);
-    // a gathered tail: from the tie at the back of the crown it arcs up and back a little, swells and falls in three locks of different length
-    const P=[[0,0.082,0.088],[0,0.098,0.13],[0,0.06,0.18],[0,-0.05*hl,0.205],[0,-0.17*hl,0.2],[0.008,-0.3*hl,0.175]];
-    tail(P,[0.018,0.036,0.05,0.051,0.045,0.035,0.023,0.01,0.002],[[0,1,0],[-0.034,0.7,1],[0.034,0.6,0]]); asStrands(()=>wisps(P,0.03,3,0.014)); tie(0,0.082,0.09,0.022); }
+  if(H==='ponytail'){ const ns=parts.length-1, hiQ=sg(100)>=50; fringe(8,1.0,0.12); sideLocks(0.04); const n0=parts.length;   // ns: the scalp (added above)
+    // (v3.6) a mid tie at the back of the head (ear height, clearly not the crown's high tail): the hair is swept back to it from the hairline all round, and the tail
+    // puffs out of the tie, falls close along the back of the head and the neck to the shoulder blades, a bundle of locks fanned sideways and front to back, frayed at the tip
+    if(!hat) tieSweep(hiQ?9:6,[0,0.02,0.118],0.2,TAU-0.2,71);
+    for(const k of [ns].concat(parts.slice(n0).map((_,i)=>n0+i))) setU(parts[k],(x,y,z)=>0.08*clamp((0.12-y)/0.2,0,1));   // the cap and the swept hair: root colour (a gradient runs down the tail)
+    const P=[[0,0.022,0.108],[0,0.014,0.14],[0,-0.035,0.153],[0,-0.1,0.14],[0,-0.18*hl,0.12],[0.004,-0.26*hl,0.102],[0.008,-0.33*hl,0.09]];
+    tail(P,[0.016,0.032,0.04,0.041,0.038,0.033,0.025,0.014,0.003],[[0,1,0],[-0.03,0.72,1,0.012],[0.03,0.66,0,0.016]].concat(hiQ?[[0.004,0.58,1,0.03]]:[]),false,sg(18));
+    asStrands(()=>wisps(P,0.03,3,0.014)); tieBand([0,0.02,0.116],[0,0.1,1],0.019,0.0065); }
   if(H==='buns2'){ fringe(8,1.0,0.12); sideLocks(0.05); backLocks(sg(10),-0.02,43); if(!hat) for(const sd of [-1,1]){ gather(sd*1.9,0.46,0.27); bun(sd*0.084,0.092,0.056,0.052,sd*1.1); tie(sd*0.074,0.066,0.062,0.022); } }
-  if(H==='highpony'){ fringe(8,1.0,0.12); sideLocks(0.05); gather(0,0.15,0.2);
-    const hpP=[[0,0.12,0.05],[0,0.172,0.062],[0,0.2,0.105],[0,0.172,0.172],[0,0.085,0.232],[0,-0.04*hl,0.255],[0.006,-0.2*hl,0.245],[0.01,-0.33*hl,0.22]];   // from a high tie it rises, arcs and falls behind the head
-    tail(hpP,[0.02,0.04,0.058,0.06,0.054,0.045,0.032,0.015,0.002],[[0,1,0],[-0.04,0.7,1],[0.04,0.62,0]]); asStrands(()=>wisps(hpP,0.036,3,0.016)); tie(0,0.122,0.05,0.026); }
+  if(H==='highpony'){ const ns=parts.length-1, hiQ=sg(100)>=50; fringe(8,1.0,0.12); sideLocks(0.04); const n0=parts.length;   // ns: the scalp (added above)
+    // (v3.6) a tie high on the crown: the hair is swept up to it from the hairline all round (tight sides and nape), and the tail rises out of it, arcs back over the
+    // crown and falls behind the head to the shoulders; it hangs clear of the head (the side silhouette shows the arc) and tapers, three grooved locks fanned both ways
+    if(!hat) tieSweep(hiQ?9:6,[0,0.124,0.05],0.2,TAU-0.2,73);
+    for(const k of [ns].concat(parts.slice(n0).map((_,i)=>n0+i))) setU(parts[k],(x,y,z)=>0.08*clamp((0.12-y)/0.2,0,1));   // the cap and the swept hair: root colour (a gradient runs along the tail)
+    const hpP=[[0,0.116,0.046],[0,0.156,0.064],[0,0.182,0.1],[0,0.174,0.145],[0,0.122,0.172],[0,0.04,0.174],[0,-0.05,0.16],[0.004,-0.13*hl,0.14],[0.008,-0.2*hl,0.122],[0.01,-0.26*hl,0.11]];
+    tail(hpP,[0.018,0.032,0.04,0.044,0.045,0.042,0.036,0.026,0.014,0.002],[[0,1,0],[-0.034,0.7,1,0.014],[0.034,0.64,0,0.02]],false,sg(22));
+    asStrands(()=>wisps(hpP,0.032,3,0.016)); tieBand([0,0.124,0.05],[0,0.94,0.34],0.02,0.007); }
   if(H==='sidebraid'){ fringe(8,1.0,0.12); sideLocks(0.06); backLocks(sg(12),0.0,61);
     const len=0.42*hl; plait(t=>[0.1-0.012*t,-len*t,0.075+0.04*Math.sin(t*2.6)],len);
     tie(0.1,0.0,0.078,0.02); }
@@ -221,7 +265,7 @@ function buildHair(X,F){
   if(H!=='bald'&&H!=='buzz'&&!hat&&sg(100)>=50){   // (not on phones) a few loose strands standing off the crown (version 3.2), the same ones every build
     const rng=mulberry32(909); for(let i=0;i<5;i++){ const th=rng()*TAU, ph=(0.1+rng()*0.22)*Math.PI, a=sp(th,ph,R*0.99), d=sp(th,ph+0.3,1), k=0.035+0.025*rng();
       add(swing(sweepTube([a,[a[0]+d[0]*k*0.5,a[1]+d[1]*k*0.5+0.012,a[2]+d[2]*k*0.5],[a[0]+d[0]*k+0.012*(rng()-0.5),a[1]+d[1]*k+0.02,a[2]+d[2]*k+0.012*(rng()-0.5)]],[0.0016,0.0013,0.0004],4,{cap:'point',rings:6}))); } }
-  hgApply(X,parts,0,parts.length);   // hair colour gradient (model-hairgrad.js), before any hat is added
+  hgApply(X,parts,0,parts.length); if(hairPost) hairPost();   // hair colour gradient (model-hairgrad.js), before any hat is added
   /* hats: the base hats are in model-hats.js */
   const nHair=parts.length; htBase(X,F,parts); if(hat&&!(kHat&&kHat.head)){ htFit(parts,nHair); hatShape(X,parts,nHair); }   // hair never shows through a base hat; the hat size and tilt sliders come after the fit
   if(kHat&&kHat.head){ const n0=parts.length; parts.push(...kHat.head(F,T)); ofTintFrom(X,'hat',parts,n0); }

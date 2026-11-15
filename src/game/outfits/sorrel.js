@@ -114,7 +114,8 @@ OUTFITS.sorrel=(function(){
     };
 
     /* ================= the hair: a lifted crown, swept fringe, wisps, two feathered braids, a long back curtain; its tails are loose (extras) ================= */
-    const hairFn=T=>(x,y,z,c)=>{ T.hp(x,y,z,c); if(y>0.0&&z>-0.12) c.multiplyScalar(0.9+0.1*(0.5+0.5*Math.sin(Math.atan2(x,z)*13))); const low=sm(-0.08,-0.36,y); c.lerp(cSkyL,0.55*low); const st=0.5+0.5*Math.sin(x*150+z*60); c.lerp(cSn,0.16*st*(1-low)); };
+    const gradOn=X.L&&X.L.hairGrad&&X.L.hairGrad!=='none';   // a picked gradient replaces the design's own sky-blue tips (the tint would make the hair not hair-coloured and hgApply would skip it)
+    const hairFn=T=>(x,y,z,c)=>{ T.hp(x,y,z,c); if(y>0.0&&z>-0.12) c.multiplyScalar(0.9+0.1*(0.5+0.5*Math.sin(Math.atan2(x,z)*13))); const low=sm(-0.08,-0.36,y); c.lerp(cSkyL,(gradOn?0:0.55)*low); const st=0.5+0.5*Math.sin(x*150+z*60); c.lerp(cSn,0.16*st*(1-low)); };
     const hair=(F,T)=>{
       const hf=hairPaintFn=hairFn(T), rng=mulberry32(5), R=T.R, fs=F.fs, out=[];
       T.add(T.fit(shell(0.116*T.hv,0,0.5*PI,0,0.5,sg(34),sg(16))),hf);
@@ -130,16 +131,16 @@ OUTFITS.sorrel=(function(){
         const g=loftRings(rings,seg), p=g.attributes.position;
         for(let i=0;i<=n;i++) for(let j=0;j<=seg;j++){ const k=i*(seg+1)+j, r=rings[i], a=j/seg*TAU, f=1+0.05*Math.sin(CK*a+ph0(i/n)), kd=drift(r.y);
           p.setXYZ(k,r.rx*Math.sin(a)*f-0.035*kd,r.y,r.zc+r.rz*Math.cos(a)*f+0.045*kd); }
-        smoothN(g);
+        smoothN(g); g.hgSpan=[yTop,yEnd-0.01];   // one root-to-tip height, so a gradient runs down the whole curtain
         T.add(T.hang(g),(x,y,z,c)=>{ hf(x,y,z,c); const t=clamp((yTop-y)/(yTop-yEnd)), r=cRing(t), kd=drift(y), rv=Math.sin(CK*Math.atan2((x/fs[0]+0.035*kd)/r.rx,(z-0.045*kd-r.zc)/r.rz)+ph0(t));
           c.multiplyScalar(0.88+0.13*(0.5+0.5*rv)); c.lerp(cSn,0.2*Math.max(0,rv)); }); }
       // a wisp in front of each ear, short and blown back
       for(const sd of [-1,1]){ const P=[T.sp(sd*1.38,0.37*PI,R),[sd*0.119,-0.012,-0.004],[sd*0.122,-0.07,0.008],[sd*0.12,-0.125,0.03]];
-        T.add(T.hang(sweepTube(P,[0.007,0.0145,0.013,0.0075,0.0015],sg(8),{cap:'point',rings:sg(14)})),hf); }
+        { const g=sweepTube(P,[0.007,0.0145,0.013,0.0075,0.0015],sg(8),{cap:'point',rings:sg(14)}); g.hgSpan=[P[0][1],P[3][1]-0.01]; T.add(T.hang(g),hf); } }
       // the temple braids: three strands plaited, tied with sky thread, a small barred feather at the end
       const bl=0.2*Math.pow(S.hairLength,0.5);
       for(const sd of [-1,1]){ const P=[T.sp(sd*1.26,0.43*PI,R),[sd*0.113,0.004,-0.04],[sd*0.111,-0.05,-0.052],[sd*0.106,-0.1-bl*0.3,-0.058],[sd*0.1,-0.16-bl*0.5,-0.062],[sd*0.096,-0.2-bl*0.5,-0.062]];
-        for(const g of plait(P,0.0072,4,sg(5))) T.add(T.hang(g),hf);
+        for(const g of plait(P,0.0072,4,sg(5))){ g.hgSpan=[P[0][1],P[5][1]-0.02]; T.add(T.hang(g),hf); }
         const cv=new THREE.CatmullRomCurve3(P.map(p=>new V3(p[0],p[1],p[2])));
         for(const t of [0.16,0.97]){ const q=cv.getPoint(t), tg=cv.getTangent(t); out.push(solid(ofRingAt([q.x*fs[0],q.y,q.z],[tg.x,tg.y,tg.z],0.0092,0.0026,sg(6)),SKY)); }
         const e=cv.getPoint(1.0); const FP=[[e.x*fs[0],e.y+0.004,e.z],[e.x*fs[0]+sd*0.004,e.y-0.03,e.z-0.004],[e.x*fs[0]+sd*0.006,e.y-0.062,e.z-0.003]];

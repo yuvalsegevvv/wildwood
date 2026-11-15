@@ -36,7 +36,8 @@ OUTFITS.hollis=(function(){
 
     /* ---- the hair: slicked back and long over the collar, parted, with two loose locks ---- */
     const slick=(F,T)=>{ T.crown(0.114,0.6,0.3); T.fringe(4,0.3,0.2); T.sideLocks(0.05); T.backLocks(sg(14),0,21);
-      const out=[]; for(const sd of [-1,1]){ const P=[[sd*0.09,0.0,-0.06],[sd*0.1,-0.05,-0.07],[sd*0.098,-0.1,-0.06]]; out.push(solid(sweepTube(P,[0.008,0.007,0.003],sg(5),{cap:'point',rings:sg(8)}),HAIR)); } return out; };
+      for(const sd of [-1,1]){ const P=[[sd*0.088,0.02,-0.05],[sd*0.1,-0.03,-0.068],[sd*0.101,-0.09,-0.07],[sd*0.095,-0.15,-0.062]]; T.lock(P,[0.006,0.0125,0.0115,0.007,0.0015],{k:3,amp:0.28,tw:0.3,rings:sg(14)}); }   // two loose locks (T.lock: rounded, grooved in the hair's colour, the gradient runs down them)
+      return []; };
 
     /* ---- the coat: long tails to the knee, a white stock with a black bow, an arm band of crape, amber buttons ---- */
     const coat=()=>{ const out=[], s=torsoSize(X,D,0.03), rz=Math.max(s.rz,s.rzBack)+0.012;

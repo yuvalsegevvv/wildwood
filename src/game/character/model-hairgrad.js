@@ -23,11 +23,11 @@ function hgApply(X,parts,n0,n1){
     // A tail or a plait (g.hgSpan = [tie y, tip y], set by model-hair.js) runs by that span for 80%: all its locks and segments share it, so the gradient goes from the root
     // colour at the tie to the tip colours down the whole tail, the place it shows best
     let pt=-1e9, pb=1e9; for(let i=0;i<p.count;i++){ const y=p.getY(i); if(y>pt) pt=y; if(y<pb) pb=y; } const hs=g.hgSpan; if(hs){ pt=hs[0]; pb=hs[1]; }
-    const ps=Math.max(pt-pb,0.01), own=hs?0.8:ps>0.035?0.55:0;
+    const ps=Math.max(pt-pb,0.01), own=hs?0.8:ps>0.035?0.55:0, hu=g.attributes.hgu;   // hgu: a per-vertex root (0) to tip (1) value set by model-hair.js where the height cannot say it (a high tail rises before it falls, a tied cap, the buzz cut's hairline): it is used as it is
     for(let i=0;i<p.count;i++){
       const r=col.getX(i), gg=col.getY(i), b=col.getZ(i), m=Math.max(r,gg,b,0.01);
       if(Math.abs(r/m-c1.r/mx)+Math.abs(gg/m-c1.g/mx)+Math.abs(b/m-c1.b/mx)>0.55) continue;   // not hair-coloured: a tie, a ribbon
-      const ug=Math.min(1,Math.max(0,(top-p.getY(i))/span)), u=own?ug*(1-own)+own*Math.min(1,Math.max(0,(pt-p.getY(i))/ps)):ug;
+      const ug=Math.min(1,Math.max(0,(top-p.getY(i))/span)), u=hu?hu.getX(i):own?ug*(1-own)+own*Math.min(1,Math.max(0,(pt-p.getY(i))/ps)):ug;
       const x=p.getX(i); let t2, t3=0;
       if(mode==='ombre'){ t2=smoothstep(0.12,0.7,u); t3=tri?smoothstep(0.55,1,u):0; }
       else if(mode==='tips'){ t2=smoothstep(0.55,0.75,u); t3=tri?smoothstep(0.8,0.95,u):0; }

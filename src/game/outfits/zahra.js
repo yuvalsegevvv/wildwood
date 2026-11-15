@@ -39,7 +39,7 @@ OUTFITS.zahra=(function(){
     /* ---- the hair: a long braid down the back strung with gold rings ---- */
     const braid=(F,T)=>{ T.crown(0.113,0.55,0.3); T.fringe(7,0.9,0.1); T.sideLocks(0.04); T.backLocks(sg(12),0,13); const out=[], len=0.42*T.hl, P=[];
       for(let i=0;i<=11;i++){ const t=i/11; P.push([0.0,-0.04-len*t,0.1+0.03*Math.sin(t*2)]); }
-      T.add(sweepTube(P,[0.024,0.028,0.028,0.024,0.018,0.003],sg(8),{cap:'point',rings:sg(30)}),(x,y,z,c)=>{ T.hp(x,y,z,c); c.multiplyScalar(0.9+0.12*Math.sin(y*160)); });
+      T.lock(P,[0.022,0.028,0.029,0.026,0.021,0.003],{k:3,amp:0.3,tw:0.7,rings:sg(32)});   // the plait: round, tapering, its strands twisting (T.lock: the hair's colour, the gradient down it)
       for(const t of [0.15,0.45,0.75,0.95]){ const p=P[Math.round(t*11)], q=P[Math.min(11,Math.round(t*11)+1)]; out.push(solid(ofRingAt(p,[q[0]-p[0],q[1]-p[1],q[2]-p[2]],0.026*(1-0.3*t),0.005,sg(6)),t>0.9?LAPIS:GOLD)); }
       return out; };
 
