@@ -10,14 +10,22 @@ const underCol=L=>{ const a=cosQ(L.underColor); return a>=0?a:UNDER_COL; };
 const underBand=L=>{ const b=cosQ(L.underColor2); if(b>=0) return b; const a=cosQ(L.underColor); return a>=0?(((a>>16&255)*0.78)<<16)|(((a>>8&255)*0.78)<<8)|((a&255)*0.78):UNDER_BAND; };
 function clothPaints(L){
   const cb=chestBand(lookSliders(L)), b0=cb.lo, b1=cb.hi;   // the band top's, the bikini's and the halter's edges follow the bust (chestBand)
+  // a woman's underwear top (look.underTop): 'band' the band top, 'sports' a taller one with shoulder straps, 'bandeau' a thin strapless strip, 'triangle' two small cups on a cord with thin straps
+  const uTop=(c,u,v)=>{ const st=L.underTop, ax=Math.abs(u); let on=false, edge=false;
+    if(L.sex!=='female'){ c.set(L.skin); return; }
+    if(st==='sports'){ const hi=b1+0.03; on=(v>b0-0.014&&v<hi)||(v>=hi&&Math.abs(ax-0.058)<0.015); edge=on&&(v<b0+0.002||(v<hi&&v>hi-0.012)||(v>=hi&&Math.abs(ax-0.058)>0.009)); }
+    else if(st==='bandeau'){ on=v>b0+0.014&&v<b1-0.006; edge=on&&v>b1-0.014; }
+    else if(st==='triangle'){ const hi=b1+0.035, t=clamp((v-b0)/(hi-b0)); edge=(v>b0-0.004&&v<b0+0.008)||(v>=hi&&Math.abs(ax-0.052)<0.005); on=edge||(v>=b0&&v<hi&&Math.abs(ax-0.052)<0.05*(1-t)+0.004); }
+    else { on=v>b0&&v<b1; edge=on&&(v>b1-0.015||v<b0+0.015); }
+    if(on) c.set(edge?underBand(L):underCol(L)); else c.set(L.skin); };
   const topPaint=(c,u,v)=>{
-    if(L.top==='none'){ if(L.sex==='female'&&v>b0&&v<b1) c.set(v>b1-0.015||v<b0+0.015?underBand(L):underCol(L)); else c.set(L.skin); }
+    if(L.top==='none') uTop(c,u,v);
     else if(L.top==='flannel') plaid(c,L.topColor,u,v);
     else if(L.top==='vest'||L.top==='jerkin') c.set(0xe8e4dc);   // (the waistcoat and the leather jerkin are geometry over a cream shirt: model-garments.js, model-garments-more.js)
     else if(L.top==='crop'){ if(v<b0+0.03) c.set(L.skin); else c.set(L.topColor); }   // the midriff is bare
     else if(L.top==='bikini'){ if(v>b0+0.002&&v<b1+0.015) c.set(L.topColor); else c.set(L.skin); }   // two small cups, everything else bare
     else if(L.top==='halter'){ if(v>b0-0.006&&v<b1+0.035) c.set(L.topColor); else c.set(L.skin); }   // a wrap round the chest, bare shoulders, back and belly
-    else if(L.top==='harness'){ if(L.sex==='female'&&v>b0&&v<b1) c.set(v>b1-0.015||v<b0+0.015?underBand(L):underCol(L)); else c.set(L.skin); }   // straps over a bare chest (a woman keeps her band top)   // (the waistcoat is geometry over a cream shirt: model-garments.js)
+    else if(L.top==='harness') uTop(c,u,v);   // straps over a bare chest (a woman keeps her band top)   // (the waistcoat is geometry over a cream shirt: model-garments.js)
     else if(gmdIs(L.top)) gmdPaint(L,c,u,v);   // dresses: skin above the bodice (model-dresses.js)
     else if(L.top==='mail'){ c.set(L.topColor).multiplyScalar(0.72+0.38*((Math.floor(u*70)+Math.floor(v*70))&1)); }
     else if(L.top==='plate'){ c.set(L.topColor).multiplyScalar(0.82+0.3*(Math.floor(v*13)&1)); }
@@ -200,7 +208,8 @@ function buildTorso(X,D){
     else if(yd>hem){ if(kT) ofPaint(X,'top','torso',c,x,yd,z,0); else topPaint(c,x,yd); }
     else if(kB) ofPaint(X,'bottom','torso',c,x,yd,z,0);
     else if(yd>hem-0.035 && L.bottom!=='skirt' && L.bottom!=='kilt' && L.bottom!=='pleated' && L.bottom!=='none' && !gmxSkirtKind(L.bottom) && !gmxBareBottom(L.bottom) && hem>0) c.set(0x3a2a1c);
-    else if(bareLeg&&yd<0.02){ const s=Math.pow(clamp(Math.abs(x)/(0.165*B)),1.3), w=sm(-0.03,0.03,z), bk=L.bottom==='bikinibottom', yl=lerp(-0.15+(bk?0.21:fem?0.13:0.1)*s,(bk?-0.13+0.2*s:-0.16+0.05*s),w); skinPaint(c); const sk=c.clone(); botPaint(c,x,yd); c.lerp(sk,1-sm(yl-0.014,yl+0.014,yd)); }   // briefs and a bikini (cut higher: only its strings cross the hip): blended over 2.8 cm (a diagonal line across the lathe's rings snapped to them in steps); the leg opening runs from the crotch up to the hip's side in front, lower and fuller behind
+    else if(bareLeg&&yd<0.02){ const s=Math.pow(clamp(Math.abs(x)/(0.165*B)),1.3), w=sm(-0.03,0.03,z), bk=L.bottom==='bikinibottom', us=bk?'':L.underStyle, yl=us==='trunks'||us==='boxers'?-9:us==='highcut'?lerp(-0.15+0.2*s,-0.15+0.13*s,w):lerp(-0.15+(bk?0.21:fem?0.13:0.1)*s,(bk?-0.13+0.2*s:-0.16+0.05*s),w); skinPaint(c); const sk=c.clone(); botPaint(c,x,yd); c.lerp(sk,1-sm(yl-0.014,yl+0.014,yd)); }   // briefs and a bikini (cut higher: only its strings cross the hip): blended over 2.8 cm (a diagonal line across the lathe's rings snapped to them in steps); the leg opening runs from the crotch up to the hip's side in front, lower and fuller behind
+    // (look.underStyle above: briefs, high-cut briefs, or trunks / boxers: the whole seat, and a leg on the thigh, buildLeg)
     else botPaint(c,x,yd);
     if(!kT&&(L.top==='jacket'||L.top==='hoodie'||L.top==='mail') && yd<hem+0.03 && yd>hem) c.multiplyScalar(0.8);
     if(!kT&&L.top==='plate' && yd>0.02 && yd<0.07) c.set(0x3a2a1c); },
@@ -342,10 +351,11 @@ function buildFoot(X,D,sd,boot){
 }
 function buildLeg(X,D,sd){
   const {L,S,fem,sg,skinPaint,botPaint}=X, kB=X.kit&&X.kit.sl.bottom, kS=X.kit&&X.kit.sl.shoes, {tw,cw,thigh,shin,KR,hx,B,lr}=D, boot=kS?kS.boot!==false:(L.shoes==='boots'||L.shoes==='tallboots'||L.shoes==='furboots'||L.shoes==='sabatons');   // kB / kS: the outfits' bottoms and shoes, when worn
+  const uLeg=!kB&&(L.bottom==='none'||gmxBareBottom(L.bottom))?(L.underStyle==='boxers'?0.4:L.underStyle==='trunks'?0.2:0):0;   // the leg of trunks / boxers, as a part of the thigh's length (look.underStyle)
   const hp=new THREE.Group(); hp.name=sd<0?'hipL':'hipR'; hp.position.set(sd*hx,0,0);
   // thigh: a slimmer ball at the hip joint, shallowest front to back (it turns inside the pelvis, buildTorso: a stride swings its front up into the belly and its back into the seat), full from where it leaves the pelvis's rim (t 0.24), full quads in front, tapering to the knee (radius KR, shared with the shin below)
-  const mp=D.mk.p, th=pc(limb([[0,0.07*tw*(1-0.07*mp),0.064*tw*(1-0.07*mp)],[0.12,0.084*tw*(1-0.03*mp),0.076*tw*(1-0.03*mp)],[0.24,0.089*tw,0.09*tw],[0.45,0.076*tw*(1-0.02*mp),0.08*tw*(1+0.01*mp),-0.004-0.003*mp],[0.76,Math.max(KR*1.1,0.057*tw*(1-0.05*mp)),Math.max(KR*1.12,0.06*tw*(1-0.03*mp)),-0.002],[1,KR,KR*1.04]],thigh,sg(24),sg(28),{cuts:(!kB&&L.bottom==='shorts'?[0.53,0.53-0.03/thigh]:[]).concat(L.bottom==='shortshorts'?[0.2,0.2-0.025/thigh]:[]).concat((kB&&kB.cuts&&kB.cuts.thigh)||[])}),kB?(x,y,z,c)=>ofPaint(X,'bottom','thigh',c,x,y,z,sd):(x,y,z,c)=>{
-    if(L.bottom==='trousers'||L.bottom==='greaves'||L.bottom==='breeches'||L.bottom==='hakama'||(L.bottom==='shorts'&&y>-thigh*0.53)||(L.bottom==='shortshorts'&&y>-thigh*0.2)) botPaint(c,x,y); else skinPaint(c);   // (briefs are the pelvis's: buildTorso paints their leg line, so it stays put when the thigh swings)
+  const mp=D.mk.p, th=pc(limb([[0,0.07*tw*(1-0.07*mp),0.064*tw*(1-0.07*mp)],[0.12,0.084*tw*(1-0.03*mp),0.076*tw*(1-0.03*mp)],[0.24,0.089*tw,0.09*tw],[0.45,0.076*tw*(1-0.02*mp),0.08*tw*(1+0.01*mp),-0.004-0.003*mp],[0.76,Math.max(KR*1.1,0.057*tw*(1-0.05*mp)),Math.max(KR*1.12,0.06*tw*(1-0.03*mp)),-0.002],[1,KR,KR*1.04]],thigh,sg(24),sg(28),{cuts:(!kB&&L.bottom==='shorts'?[0.53,0.53-0.03/thigh]:[]).concat(uLeg>0?[uLeg,uLeg-0.014/thigh]:[]).concat(L.bottom==='shortshorts'?[0.2,0.2-0.025/thigh]:[]).concat((kB&&kB.cuts&&kB.cuts.thigh)||[])}),kB?(x,y,z,c)=>ofPaint(X,'bottom','thigh',c,x,y,z,sd):(x,y,z,c)=>{
+    if(L.bottom==='trousers'||L.bottom==='greaves'||L.bottom==='breeches'||L.bottom==='hakama'||(L.bottom==='shorts'&&y>-thigh*0.53)||(L.bottom==='shortshorts'&&y>-thigh*0.2)) botPaint(c,x,y); else if(uLeg>0&&y>-thigh*uLeg) c.set(y<-thigh*uLeg+0.014?underBand(L):underCol(L)); else skinPaint(c);   // (briefs are the pelvis's: buildTorso paints their leg line, so it stays put when the thigh swings)
     if(L.bottom==='shorts'&&y>-thigh*0.53&&y<-thigh*0.53+0.03) c.multiplyScalar(0.85); if(L.bottom==='shortshorts'&&y>-thigh*0.2&&y<-thigh*0.2+0.025) c.multiplyScalar(0.8); });
   const m1=new THREE.Mesh(th,matChar); m1.castShadow=true; hp.add(m1);
   if(!kB){ const ex=gmxThigh(X,D,sd); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; hp.add(m); } }   // the plated leggings' thigh plates (model-garments-more.js)

@@ -8,7 +8,7 @@ function attachWeapons(){
 // builds the weapon models for a weapon item on a character rig; used for your hiker and for other players
 function weaponsOn(r,weaponId,build){
   const objs=[], res={objs};
-  if(r.sillyS) return res;   // a silly strong-hand item replaces the weapon (character/model-silly.js)
+  if(r.sillyS||r.noWpn) return res;   // look.noWeapon: play with empty hands (looks only)   // a silly strong-hand item replaces the weapon (character/model-silly.js)
   const lf=!!r.left, strongEl=(lf?r.twL:r.twR)||(lf?r.elL:r.elR), weakEl=(lf?r.twR:r.twL)||(lf?r.elR:r.elL);   // left-handed: the weapon is in the left hand, the bow's hand and the quiver swap sides   // (in the forearm's twist group, which turns with the hand: a monster's rig has none)
   const add=(parent,obj)=>{ parent.add(obj); objs.push(obj); obj.traverse(q=>{ if(q.isMesh) q.castShadow=true; }); return obj; };
   const w=ITEM[weaponId], c=w?CLASS_OF[w.slot]:'warrior', tr=w?dgVisTier(w):0;   // dungeons: a level-30 weapon is drawn as the top tier's

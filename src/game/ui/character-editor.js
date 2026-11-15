@@ -23,12 +23,14 @@ const EDIT=[
     {name:'Voice', rows:[{type:'voice'}]}
   ]},
   {tab:'Body', subs:[
-    {name:'Gender', rows:[
+    // Setup: who you are in broad strokes (gender, a recommended body shape, height, build); the skin has its own page
+    {name:'Setup', rows:[
       {k:'sex',type:'grid',kind:'sex',ids:()=>[['male'],['female']]},
+      {type:'setups'},{slider:'height'},{slider:'build'}]},
+    {name:'Skin', rows:[
       {k:'skin',skin:true,type:'color',premium:false,opts:SKINS.concat(SKINS_ODD,KIN_FUR,TINTC)},{slider:'undertone'},
       {k:'furMark',label:'Mixed skin',type:'seg',opts:KIN_MARKS.map(m=>m.slice())},
       {type:'dcolor',k:'furColor2',num:2,hint:'Second skin colour (the mixed pattern, ear and tail tips)',premium:false,none:'As designed',opts:SKINS.concat(SKINS_ODD,KIN_FUR,TINTC)}]},
-    {name:'Build', rows:[{type:'setups'},{slider:'height'},{slider:'build'}]},
     // the Kin features (shared/kin.js, model-kin.js) have no menu of their own: ears are with the hats, tails with the capes, the muzzle with the face, and the fur is the skin tone (any colour plate) with its mixed patterns
     {name:'Upper body', rows:['chest','chestShape','shoulders','waist','belly','muscle','hips','hipCurve','hipTall','chestLift','chestGap','chestJiggle','torso'].map(k=>({slider:k}))},
     {name:'Limbs', rows:['legs','thighs','calves','arms','neck','hands','feet'].map(k=>({slider:k}))}
@@ -46,7 +48,7 @@ const EDIT=[
       {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]}])},
     {name:'Face', rows:[{k:'face',type:'grid',kind:'face',ids:()=>[['round'],['oval'],['angular']]}].concat(['head','jaw','chin','cheeks'].map(k=>({slider:k})))},
     {name:'Eyes', rows:[{k:'eyes',num:1,hint:'Eyes',type:'color',opts:EYEC.concat(EYEC_MORE),base:'face'},{k:'eyes2',num:2,hint:'Second eye',type:'dcolor',opts:EYEC.concat(EYEC_MORE),none:'Same'},{k:'pupil',type:'grid',kind:'pupil',ids:()=>FACE_PUPILS.map(p=>p.slice())}].concat(['eyeSize','eyeOpen','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
-    {name:'Nose & mouth', rows:['noseSize','mouthSize','mouthHeight','lips','blush','smile','earSize','earPoint'].map(k=>({slider:k})).concat([{k:'lipColor',num:1,hint:'Lips',type:'color',opts:[0xb04a52,0xd26a78,0x8a3040,0xc98a7a,0x5a2a4a,0x2a2a36,0xe8b0b8,0xa83a2a],base:'face'}])},
+    {name:'Nose & mouth', rows:['noseSize','mouthSize','mouthHeight','lips','blush','smile','earSize','earPoint'].map(k=>({slider:k})).concat([{k:'lipColor',num:1,hint:'Lips',type:'color',opts:[0xb04a52,0xd26a78,0x8a3040,0xc98a7a,0x5a2a4a,0x2a2a36,0xe8b0b8,0xa83a2a,0xe0527a,0xf08a6a,0x9a5a4a,0x6a1a2a].concat(TINTC)}])},
     {name:'Beard & marks', rows:[
       {k:'facial',type:'grid',kind:'facial',ids:()=>[['none'],['stubble'],['mustache'],['beard']],base:'face'},
       // an outfit's face item: its marks, eye style and eye colour, and its facial hair or glasses (src/game/outfits)
@@ -59,7 +61,7 @@ const EDIT=[
     {name:'Hat', close:true, rows:[{k:'hat',type:'grid',kind:'hat',slot:'h',col:'hatColor',ids:()=>HT_HATS.map(h=>h.slice()).concat(HTX_HATS.map(h=>h.slice()),ofItems('hat'))},{k:'hatColor',label:'',type:'color',base:'hat',opts:TINTC},{type:'palette',slot:'hat'},{k:'kinEars',label:'Ears',type:'grid',kind:'kinEars',slot:'e',ids:()=>[['']].concat(kinList('e').concat(kinSetList('e')).map(p=>[p.id,p.name,p.text]))},{slider:'hatSize',when:()=>LOOK.hat&&LOOK.hat!=='none'&&LOOK.hat!=='outfit'},{slider:'hatTilt',when:()=>LOOK.hat&&LOOK.hat!=='none'&&LOOK.hat!=='outfit'},{type:'armor',slot:'helmet'}]},
     {name:'Top', rows:[{k:'top',type:'grid',kind:'top',slot:'t',col:'topColor',ids:()=>GM_TOPS.map(h=>h.slice()).concat(GMX_TOPS.map(h=>h.slice()),ofItems('top'))},{k:'topColor',label:'',type:'color',base:'top',opts:TINTC},{type:'palette',slot:'top'},{slider:'neckline',when:()=>gmdIs(LOOK.top)},{slider:'skirtLen',when:()=>gmdIs(LOOK.top)},{slider:'skirtFlare',when:()=>gmdIs(LOOK.top)},{type:'armor',slot:'top'}]},
     {name:'Bottom', rows:[{k:'bottom',type:'grid',kind:'bottom',slot:'b',col:'bottomColor',ids:()=>GM_BOTTOMS.map(h=>h.slice()).concat(GMX_BOTTOMS.map(h=>h.slice()),ofItems('bottom'))},{k:'bottomColor',label:'',type:'color',base:'bottom',opts:TINTC},{type:'palette',slot:'bottom'},{slider:'skirtLen',when:()=>edSkirtWorn()},{slider:'skirtFlare',when:()=>edSkirtWorn()},{type:'armor',slot:'bottom'}]},
-    {name:'Underwear', rows:[{type:'dcolor',k:'underColor',num:1,hint:'Cloth',none:'Cream',opts:TINTC},{type:'dcolor',k:'underColor2',num:2,hint:'Waistband and strap',none:'Darker cloth',opts:TINTC}]},   // what shows where a garment is taken off (model-body.js underCol / underBand)
+    {name:'Underwear', rows:[{k:'underStyle',label:'Bottom shape',type:'seg',opts:[['briefs','Briefs'],['highcut','High-cut'],['trunks','Trunks'],['boxers','Boxers']]},{k:'underTop',label:'Top shape',type:'seg',fem:true,opts:[['band','Band'],['sports','Sports'],['bandeau','Bandeau'],['triangle','Triangle']]},{type:'dcolor',k:'underColor',num:1,hint:'Cloth',none:'Cream',opts:TINTC},{type:'dcolor',k:'underColor2',num:2,hint:'Waistband and strap',none:'Darker cloth',opts:TINTC}]},   // what shows where a garment is taken off (model-body.js underCol / underBand)
     {name:'Shoes', rows:[{k:'shoes',type:'grid',kind:'shoes',slot:'s',col:'shoeColor',ids:()=>GM_SHOES.map(h=>h.slice()).concat(GMX_SHOES.map(h=>h.slice()),ofItems('shoes'))},{k:'shoeColor',label:'',type:'color',base:'shoes',opts:TINTC},{type:'palette',slot:'shoes'},{type:'armor',slot:'shoes'}]},
     // version 3.2: the cape (the backpack is the free one) and the aura, each with its own colours; crafted ones are made at a Wayfarers' Lodge (shared/cospieces.js), and every one can be tried on
     {name:'Cape', rows:[
@@ -82,7 +84,7 @@ const EDIT=[
     // an outfit's weapon dressing restyles whatever weapon you hold, whatever your class
     // version 3.1: gloves, the eighth piece: six plain ones and the glove of every set that has one (model-gloves.js)
     {name:'Gloves', rows:[{k:'gloves',type:'grid',kind:'gloves',slot:'g',col:'gloveColor',ids:()=>[['none']].concat(Object.keys(GL_BASE).map(id=>[id,GL_BASE[id].name,GL_BASE[id].text]),ofItems('glove'))},{k:'gloveColor',label:'',type:'color',base:'glove',opts:TINTC},{type:'palette',slot:'glove'}]},
-    {name:'Weapon', rows:[{k:'weaponItem',label:'Outfit weapon look',type:'grid',kind:'weapon',ids:()=>[['']].concat(ofItems('weapon'))},{k:'tintWeapon',label:'',type:'color',base:'weapon',only:true,opts:TINTC},
+    {name:'Weapon', rows:[{k:'noWeapon',label:'Weapon in hand',type:'seg',opts:[[false,'Shown'],[true,'Hidden','Play with empty hands: your weapon still works, it is just not drawn']]},{k:'weaponItem',label:'Outfit weapon look',type:'grid',kind:'weapon',ids:()=>[['']].concat(ofItems('weapon'))},{k:'tintWeapon',label:'',type:'color',base:'weapon',only:true,opts:TINTC},
       // the strong hand (slot v) sits in the weapon's tab: a silly item takes the weapon's place in the right hand, looks only
       {k:'strongItem',label:'Strong hand: replaces the weapon',type:'grid',kind:'strongItem',slot:'v',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='v').map(r=>[r[1],r[2],r[4]]))},
       {type:'dcolor',k:'strongColor',num:1,hint:'Main',need:'strongItem',opts:TINTC},{type:'dcolor',k:'strongTrim',num:2,hint:'Second',need:'strongItem',opts:TINTC}]},
