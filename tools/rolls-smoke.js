@@ -80,7 +80,7 @@ ok('saves keep ring stones and a good rolled ring, drop a bad one',(()=>{ const 
   ok('an old three-line level-40 piece keeps its first line: bag, worn and the player shop; nothing is dropped',g.inv.includes('sword8-e+2~a57')&&g.inv.includes('ring8-fire~g50')&&g.inv.includes('pendant8-xp-r~d10')&&g.inv.includes('helmet8~b10')&&g.eq.weapon==='sword8-e+2~a57'&&g.eq.ring==='ring8-fire~g50'&&g.psh.length===1&&g.psh[0].id==='helmet8-u~b10'&&g.dgv===1&&g.inv.includes('sword9~a10b20'),g.inv.join()+' '+JSON.stringify(g.psh));
   const g2=x.sanitizeGear(g,'warrior'); ok('a second pass does nothing (version guard: a level-60 piece keeps its three lines)',g2.inv.join()===g.inv.join());
   const g3=x.sanitizeGear({inv:['sword1','sword10~a10b20c30'],eq:{weapon:'sword1'},dgv:1},'warrior'); ok('a save with gear.dgv is never walked: level-60 three lines stay',g3.inv.includes('sword10~a10b20c30'));
-  const g4=x.sanitizeGear({inv:['sword1','sword10~a10b20c30'],eq:{weapon:'sword1'}},'warrior'); ok('a save without gear.dgv is migrated (an old three-line id of any digit is cut)',g4.inv.length===1||!g4.inv.includes('sword10~a10b20c30')); }
+  const g4=x.sanitizeGear({inv:['sword1','sword10~a10b20c30'],eq:{weapon:'sword1'}},'warrior'); ok('a save without gear.dgv never cuts a level-50 / 60 piece (only digit-8 ids are old level-40 ones)',g4.inv.includes('sword10~a10b20c30')); }
 // ---- clears: piece counts, eq split, fixed rarity over many seeded clears ----
 { const mul=a=>()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
   const bad=[]; const rar=[0,0,0,0,0]; let total=0;

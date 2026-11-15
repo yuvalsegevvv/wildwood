@@ -65,7 +65,7 @@ MSG.rwdev=(p,msg)=>{
 // dgrev (D2): the one save migration, gear.dgv. A level-40 piece used to carry three rolled lines and now carries one: every id in the save that ends in a three-line code keeps the first line
 // (inventory, worn pieces, carried weapons gear.eq.wpn, player shops gear.psh: it walks the whole raw save, values only). It runs on the RAW gear, before sanitizeGear filters inv through ITEM (a three-line level-40 id is no
 // item any more and would be dropped). The version guard matters: a level-60 piece legitimately carries three lines, so a save that already has gear.dgv must never be walked again.
-const DGV_VER=1, DGV_OLD_RE=/^([a-z0-9+\-]+~[a-m]\d\d)(?:[a-m]\d\d){2}$/;
+const DGV_VER=1, DGV_OLD_RE=/^((?:(?:sword|bow|wand|helmet|top|bottom|shoes)8|(?:ring8|pendant8|talisman8)-[a-z]+)(?:-[reul])?(?:\+\d{1,2})?~[a-m]\d\d)(?:[a-m]\d\d){2}$/;   // only level-40 ids (digit 8): a level-50 / 60 piece is never cut, even in a save without gear.dgv
 function dgvWalk(o,d){
   if(d>6||!o||typeof o!=='object') return;
   for(const k of Object.keys(o)){ const v=o[k]; if(typeof v==='string'){ const m=DGV_OLD_RE.exec(v); if(m) o[k]=m[1]; } else if(v&&typeof v==='object') dgvWalk(v,d+1); }
