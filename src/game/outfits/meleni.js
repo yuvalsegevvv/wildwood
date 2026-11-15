@@ -37,9 +37,10 @@ OUTFITS.meleni=(function(){
 
     /* ---- the hair: loose and long, with one braid over the left shoulder tied with a cream shell ---- */
     const tide=(F,T)=>{ T.crown(0.113,0.5,0.3); T.fringe(4,0.5,0.3); T.sideLocks(0.04); T.backLocks(sg(14),0,21);
-      const P=[[-0.082,0.0,-0.06],[-0.1,-0.08,-0.08],[-0.112,-0.17,-0.085],[-0.1,-0.27,-0.075],[-0.092,-0.34,-0.07]];
-      T.add(sweepTube(P,[0.016,0.0175,0.016,0.013,0.004],sg(7),{cap:'point',rings:sg(26)}),(x,y,z,c)=>{ T.hp(x,Math.max(y,-0.02),z,c); c.multiplyScalar(1.12*(0.94+0.1*Math.sin(y*150+x*40))); });
-      return [solid(ofRingAt(P[3],[0,1,0],0.015,0.0045,sg(6)),CREAM),solid(csph(0.011,sg(7),sg(5)).scale(1,0.8,0.6).translate(P[3][0],P[3][1]-0.012,P[3][2]-0.016),CREAM)]; };
+      // the braid: rooted in the hair above the left ear, round and tapering to a point, its strands twisting round it like a plait (T.lock: grooved, painted along its length, the tips' colour at its end)
+      const P=[[-0.096,0.04,-0.025],[-0.104,-0.02,-0.06],[-0.114,-0.1,-0.08],[-0.115,-0.18,-0.085],[-0.104,-0.27,-0.076],[-0.094,-0.36,-0.07]];
+      T.lock(P,[0.012,0.017,0.0185,0.017,0.0145,0.011,0.003],{k:3,amp:0.3,tw:0.7,rings:sg(28)});
+      return [solid(ofRingAt(P[4],[0,1,0],0.0165,0.0045,sg(6)),CREAM),solid(csph(0.011,sg(7),sg(5)).scale(1,0.8,0.6).translate(P[4][0],P[4][1]-0.012,P[4][2]-0.018),CREAM)]; };
 
     /* ---- the face: three turquoise dots along each cheekbone and a short row of dots on the chin, like the marks a navigator's family gives ---- */
     const face=F=>{ const out=[];

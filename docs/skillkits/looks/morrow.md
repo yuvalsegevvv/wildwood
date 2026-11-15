@@ -35,7 +35,7 @@ All of it is in `src/game/outfits/morrow.js` (see `docs/CHARACTER.md` section 9 
 | Item | Kind | What it is, where it attaches |
 |---|---|---|
 | `bentwitchhat` | head | an `ofLoft` cone whose rings drift back (`zc`) into a bent tip, a brim, a plum band ring, a brass buckle and moss sprigs |
-| `greystreakplait` | hair | `T.crown`, `T.fringe`, `T.sideLocks`, `T.backLocks` and a `sweepTube` plait with an ember tie; the grey streak is `hairGrad` |
+| `greystreakplait` | hair | `T.crown`, `T.fringe`, `T.sideLocks`, `T.backLocks` and a `T.lock` plait with an ember tie; the grey streak is `hairGrad` |
 | `sharptired`, `amberwatch` | face mark, eye style | decals laid with `F.place`; `eyes:{iris:1.05, tilt:0.18, lash:0.4}` and amber `eyeColor` |
 | `patchedmantle` | top | `paint` (bodice, sleeves), `torso()`: `oxMantle`, a bone clasp, `oxBeads` and `oxPack`; `shoulder` and `forearm` rings |
 | `layeredskirt` | bottom | `hips()`: a pouch belt and two `oxSkirt` layers; `paint(thigh)` |

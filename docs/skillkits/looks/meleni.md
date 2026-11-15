@@ -35,7 +35,7 @@ All of it is in `src/game/outfits/meleni.js` (see `docs/CHARACTER.md` section 9 
 | Item | Kind | What it is, where it attaches |
 |---|---|---|
 | `shellcrown` | head | `ofRingAt` bands, seven scaled shell spheres, five petal spheres for the hibiscus and two `ofRibbon` tails |
-| `tidebraid` | hair | `T.crown`, `T.fringe`, `T.sideLocks`, `T.backLocks` and one `sweepTube` braid with a shell tie |
+| `tidebraid` | hair | `T.crown`, `T.fringe`, `T.sideLocks`, `T.backLocks` and one `T.lock` braid with a shell tie |
 | `wavemarks`, `farsight` | face mark, eye style | dots laid with `F.place`; `eyes:{iris:1.12, h:1.0, tilt:0.18}` |
 | `tapabandeau` | top | `paint` (bandeau, bands, armbands), `torso()`: a back knot, a belt ring and shell, two `oxBeads` leis; `shoulder` and `forearm` rings |
 | `wavepareu` | bottom | `hips()`: an `ofLoft` skirt painted with a sine wave line, a hem ring; `paint(thigh)` the waistband |

@@ -98,10 +98,11 @@ OUTFITS.tansy=(function(){
       T.crown(0.113,0.5,0.3); T.fringe(5,0.8,0.14);
       T.add(T.fit(shell(0.113*T.hv,0.3*PI,0.2*PI,1.9,0,sg(30),sg(8))),(x,y,z,c)=>{ T.hp(x,y,z,c); c.multiplyScalar(0.95+0.09*sin(Math.atan2(x,z)*13)); });   // the hair gathered up under the braid
       // the loose hair behind: twelve tapering locks from under the braid to the nape, each its own length and shade
+      if(sg(100)>=50) for(let i=0;i<8;i++){ const th=i/8*TAU+0.3, g=T.scalpLock(th,0.05*PI,0.3*PI,[0.002,0.0065,0.0075,0.005,0.001],{sw:0.2,lift:0,k:0.3,R:T.R-0.002}); T.add(g); }   // strands combed out from the crown's whorl, so the cap is hair and not a smooth dome
       const rng=mulberry32(321), lock=(th,ph0,ph1,w,sw,tip,k)=>{ const P=[]; for(let q=0;q<=4;q++){ const f=q/4; P.push(T.sp(th+sw*f,lerp(ph0,ph1,f),T.R+0.004*sin(f*PI)-0.001*k)); } P.push(T.sp(th+sw*1.15,ph1+tip,T.R+0.002));
         const g=sweepTube(P,[0.006,w,w*1.1,w*0.65,0.002],sg(5),{cap:'point',rings:sg(8)}); T.flat(g,0.55); return T.fit(g); };
-      for(let i=0;i<12;i++){ const th=1.15+(TAU-2.3)*(i+0.5+(rng()-0.5)*0.5)/12, k=i%3, ph1=(0.62+0.14*rng())*PI; T.add(lock(th,0.34*PI,ph1,0.0105+0.004*rng(),(rng()-0.5)*0.12,0.04+0.05*rng(),k),(x,y,z,c)=>{ T.hp(x,y,z,c); mixc(c,k===0?0xf0d796:k===1?0xc9a053:0xd8b56e,0.45); }); }                                                      // the hair behind the braid, down to the nape
-      for(const sd of [-1,1]) T.add(T.scalpLock(sd*1.28,0.34*PI,0.62*PI,[0.003,0.0085,0.0078,0.0045,0.001],{sw:sd*0.14,tip:0.1,lift:0.007,k:0.55}),(x,y,z,c)=>{ T.hp(x,y,z,c); mixc(c,0xf3dc9a,0.4); });
+      for(let i=0;i<12;i++){ const th=1.15+(TAU-2.3)*(i+0.5+(rng()-0.5)*0.5)/12, k=i%3, ph1=(0.62+0.14*rng())*PI; T.add(lock(th,0.34*PI,ph1,0.0105+0.004*rng(),(rng()-0.5)*0.12,0.04+0.05*rng(),k),(x,y,z,c)=>{ T.hp(x,y,z,c); c.multiplyScalar(k===0?1.1:k===1?0.88:1); }); }                                                      // the hair behind the braid, down to the nape
+      for(const sd of [-1,1]) T.add(T.scalpLock(sd*1.28,0.34*PI,0.62*PI,[0.003,0.0085,0.0078,0.0045,0.001],{sw:sd*0.14,tip:0.1,lift:0.007,k:0.55}),(x,y,z,c)=>{ T.hp(x,y,z,c); c.multiplyScalar(1.1); });
       const nT=1.35+0.5*clamp((hl-0.9)/0.35,0,1), n1=sg(40), N=Math.round(n1*nT), a0=0.92*PI, Rc0=0.113*T.hv+0.0085, TW=6, ro=0.0058, rs=0.0092;
       const at=s=>{ const u=s*nT, L=smoothstep(0.85,1.25,u), tk=smoothstep(nT-0.3,nT,u), a=a0+u*TAU, ca=cos(a), sa=sin(a), sink=1-smoothstep(0,0.12,u);
         const R=Rc0-0.004*L-0.016*tk-0.022*sink, zs=ca>0?1-0.05*ca:1+0.09*-ca;
@@ -109,8 +110,8 @@ OUTFITS.tansy=(function(){
       const strand=(j,rad,off,seg,col)=>{ const P=[]; for(let i=0;i<=N;i++){ const s=i/N, q=at(s), nl=Math.hypot(q.nx,q.nz)||1, ph=s*nT*TAU*TW+j*TAU/3, co=cos(ph)*off, so=sin(ph)*off;
           P.push([q.p[0]+co*q.nx/nl,q.p[1]+so,q.p[2]+co*q.nz/nl]); }
         return pc(sweepTube(P,[rad*0.55,rad,rad,rad,rad,rad*0.8],seg,{cap:'point',rings:N}),col); };
-      const shades=[0xeccb88,0xd3a95a,0xbd9345];
-      for(let j=0;j<3;j++) out.push(strand(j,rs,ro,sg(5),(x,y,z,c)=>{ c.set(shades[j]); c.multiplyScalar(0.94+0.1*sin(x*90+z*90+j)); }));
+      const shades=[1.1,0.88,0.74];   // the braid strands keep the hair's hue (only lighter / darker), so a hair gradient dyes the braid too
+      for(let j=0;j<3;j++) out.push(strand(j,rs,ro,sg(5),(x,y,z,c)=>{ T.hp(x,Math.max(y,0.03),z,c); c.multiplyScalar(shades[j]*(0.94+0.1*sin(x*90+z*90+j))); }));
       out.push(strand(1.5,0.0034,ro+0.0068,3,(x,y,z,c)=>c.set(CLAY)));    // a clay thread woven round the braid
       return out;
     };

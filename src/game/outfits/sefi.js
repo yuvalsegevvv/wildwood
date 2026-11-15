@@ -52,7 +52,18 @@ OUTFITS.sefi=(function(){
 
     /* ---- the hair: swept back from a high point, the fringe blown sideways, and one long ponytail streaming behind ---- */
     const pony=(F,T)=>{ T.crown(0.112,0.55,0.3); T.fringe(5,0.6,0.3); T.sideLocks(0.04); T.backLocks(sg(10),0,17);
-      const P=[[0,0.085,0.075],[0,0.1,0.13],[0,0.07,0.21],[0,0.0,0.29],[0,-0.1,0.33],[0,-0.22,0.33]]; T.add(sweepTube(P,[0.03,0.034,0.03,0.024,0.016,0.003],sg(8),{cap:'point',rings:sg(26)}),(x,y,z,c)=>{ T.hp(x,y,z,c); if(y<-0.06) c.set(TIP); c.multiplyScalar(0.92+0.1*Math.sin(z*120)); });
+      const P=[[0,0.085,0.075],[0,0.1,0.13],[0,0.07,0.21],[0,0.0,0.29],[0,-0.1,0.33],[0,-0.22,0.33]], span=[0.1,-0.24];
+      // the tail keeps the hair's own hue (only lighter toward the tip: a fixed cream tip colour was "not hair" to the gradient, so it never took the dye) and runs tie-to-tip by hgSpan
+      const tp=(x,y,z,c)=>{ T.hp(x,Math.max(y,0.012),z,c); c.multiplyScalar(1+0.34*smoothstep(-0.02,-0.22,y)).multiplyScalar(0.92+0.1*Math.sin(z*120+x*60)); };
+      { const g=sweepTube(P,[0.03,0.034,0.03,0.024,0.016,0.003],sg(8),{cap:'point',rings:sg(26)}); g.hgSpan=span; T.add(g,tp); }
+      if(sg(100)>=50){   // two thin locks along the tail, longer and shorter, so it reads as a bundle
+        for(const [dx,len,r] of [[-0.016,6,0.014],[0.016,5,0.012]]){ const Q=P.slice(0,len).map((q,i)=>[q[0]+dx*Math.min(1,i/2),q[1]-0.004*i,q[2]+0.012*(i>1?1:0)]);
+          const g=sweepTube(Q,[r*0.5,r,r*0.9,r*0.7,r*0.5,0.002].slice(0,len),5,{cap:'point',rings:sg(14)}); g.hgSpan=span; T.add(T.swing(g),tp); }
+        // swept-back strands: from the hairline over the crown to the tie, so the cap is combed hair and not a smooth dome
+        const rng=mulberry32(55);
+        for(let i=0;i<7;i++){ const f=i/6*2-1, A=new THREE.Vector3(...T.sp(f*0.8,0.2*Math.PI,1)), B=new THREE.Vector3(...T.sp(Math.PI+f*0.28,0.3*Math.PI,1)), Q=[];   // a great arc over the crown, so the strand lifts off the scalp in the middle
+          for(let k=0;k<=6;k++){ const u=k/6, d=A.clone().lerp(B,u).normalize().multiplyScalar(T.R+0.004*Math.sin(u*Math.PI)+0.003); Q.push([d.x,d.y,d.z]); }
+          const g=sweepTube(Q,[0.003,0.008,0.009,0.007,0.005,0.003,0.001],5,{cap:'point',rings:sg(10)}); T.flat(g,0.6); T.add(T.fit(g)); } }
       return [solid(ofRingAt(P[0],[0,0.3,1],0.034,0.0065,sg(6)),SKY_D)]; };
 
     /* ---- the face: a swept sky line from each eye corner and three spots on each cheek ---- */
