@@ -49,7 +49,7 @@ const dgGearId=(slot,r,n)=>slot+(DG_TIER+1)+dgSuffix(r,n), dgGearId40=(slot,r,n,
 //   // dgrev D6: gloves   // t: the level digit 7 / 8 (default) / 9 / 10 (D4)
 // an id back into its parts, or null when it is not a level-30 piece (or asks for more enhancement than its rarity allows)
 function dgParse(id){
-  const m=/^(?:(sword|bow|wand|helmet|top|bottom|shoes)(7|8|9|10)|ring(8|9|10)?-(basic|fire|water|earth|air|dark|light)|pendant(8|9|10)?-(xp|drop|coin|crit|critdmg)|talisman(7|8|9|10)-(aspd|buffdur|chg|cdr|atk)|cape(7|8|9|10)-(al|ai|la|gh|hg|ia|mi|ml)|gloves(7|8|9|10)-(crit|critdmg|atk|streak|over|echo)|shield(7|8|9|10)-(hp|def|block|steady|ward|leech|regen))(?:-([reul]))?(?:\+(\d{1,2}))?(~(?:[a-m]\d\d){1,3})?$/.exec(String(id));
+  const m=/^(?:(sword|bow|wand|helmet|top|bottom|shoes)(7|8|9|10)|ring(8|9|10)?-(basic|fire|water|earth|air|dark|light)|pendant(8|9|10)?-(xp|drop|coin|crit|critdmg)|talisman(7|8|9|10)-(aspd|buffdur|chg|cdr|atk)|cape(7|8|9|10)-(al|ai|la|gh|hg|ia|mi|ml)|gloves(7|8|9|10)-(crit|critdmg|atk|streak|over|echo)|shield(7|8|9|10)-(hp|def|block|steady|ward|leech|regen))(?:-([reul]))?(?:\+(\d{1,2}))?(~!?(?:\*?[a-m]\d\d){1,3})?$/.exec(String(id));
   if(!m) return null;
   const rar=m[15]?RAR_KEY.indexOf(m[15]):0, n=m[16]===undefined?0:+m[16], t=m[2]?+m[2]:m[3]?+m[3]:m[5]?+m[5]:m[7]?+m[7]:m[9]?+m[9]:m[11]?+m[11]:m[13]?+m[13]:7, roll=m[17]||null;   // ring8-... is a level-40 ring, pendant8-... a level-40 pendant, talisman7- / 8- / 9- / 10- a level-30 / 40 / 50 / 60 talisman (D4; the old talisman8- ids are level 40)
   if(m[16]!==undefined&&(n<1||String(n)!==m[16])||n>ENH_MAX[rar]) return null;
@@ -81,6 +81,7 @@ function dgItem(id){
       def:Math.round(Math.max((hi?df:DF[slot])+rar,Math.round((hi?df:DF[slot])*RAR_MULT[rar]))*k),price:Math.round(PR*SLOT_PRICE[slot]*Math.pow(3,rar))}); }
     if(hi){ it.roll0=true; if(q.roll){ it.rcode=q.roll; it.roll=rlLinesOf(q.roll,it.kind,rlLinesFor(t)); } }   // an unrolled piece (roll0) is waiting for a Reroll Stone; a rolled one lists its lines (rolls.js)
   }
+  if(q.roll){ const RM=rlParseFull(q.roll); if(RM){ it.rprism=RM.g; it.rlock=RM.lock; } }   // abyss: the markers of the roll code: a prism (0 / 1) and the locked line (-1: none)
   return it;
 }
 // the id of a parsed piece q (dgParse) at rarity r, tempering n and roll code: the one place that picks the id maker by kind and level digit

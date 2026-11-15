@@ -56,6 +56,8 @@ function abMsgP(p,msg){
     case 'drop': abDropP(p,msg.i); return;
     case 'shop': abShopP(p); return;   // B10: abyss/pay.js
     case 'buy': abBuyP(p,msg.id,msg.n); return;
+    case 'prism': abItemP(p,'prism',msg.id,0,!!msg.worn); return;   // abyss: B11 (abyss/items.js)
+    case 'lock': abItemP(p,'lock',msg.id,msg.i,!!msg.worn); return;
     case 'open': {
       abStaleP(p);
       if((p.level|0)<AB_ENTRY_LV){ toastTo(p.id,'The Abyss is for hikers of level '+AB_ENTRY_LV+' and up.','bad'); return; }

@@ -13,7 +13,7 @@
 const AB_ELITE_K=0.5, AB_ELITE_SHARE=0.5, AB_ELITE_HP=2, AB_CHAMP_HP=4, AB_ELITE_S=1.15, AB_CHAMP_S=1.5;   // an Elite round: half the monsters of a Fight, half of them elites (x2 health), a champion (x4, scale 1.5) in wave 2 and a second in wave 3 half of the time
 const AB_TXT_SHARED='The Abyss needs Solo mode or a server: a shared room cannot keep a run apart from the world.';
 const abRunOf=p=>{ const r=dgRunOf(p); return r&&r.ab?r:null; };
-const abSaveOf=p=>p.gear.ab||(p.gear.ab={top:0,best:0,clears:[0,0,0,0,0,0],as:0,lock:0,sh:{d:0,n:{}},run:null});
+const abSaveOf=p=>p.gear.ab||(p.gear.ab={top:0,best:0,clears:[0,0,0,0,0,0],as:0,lock:0,prism:0,sh:{d:0,n:{}},run:null});
 // a run left over in the save (a restart, a pulled plug that closed the run) with no live instance ends cleanly: nothing is resumed in B2
 function abStaleP(p){ const g=abSaveOf(p); if(g.run&&!abRunOf(p)){ g.run=null; p.dirty=true; } }
 // a run object of the dungeons' shape in the first free Abyss slot (dropRun: a run of this hiker's whose slot counts as free), the layout abLayout, one member, no party

@@ -38,7 +38,7 @@ function rlRollP(p,id,worn){
   const kind=RL_STONE_KIND[it.kind], have=p.gear[kind]||0;
   if(have<RL_COST){ toastTo(p.id,'You need '+RL_COST+' '+RL_STONE_NAME[kind]+' (you have '+have+')','bad'); return; }
   const slot=Object.keys(p.gear.eq).find(s=>p.gear.eq[s]===id), wornCopy=!!slot&&(!!worn||unwornCount(p,id)<1);
-  const q=dgParse(id), nid=dgIdOfQ(q,q.rar,q.n,rlRoll(null,rlLinesFor(q.t)));   // dgrev: a reroll replaces all the lines with the level's count (40: 1, 50: 2, 60: 3)
+  const q=dgParse(id), P=q.roll?rlParseFull(q.roll):null, keep=P&&P.lock>=0?{k:P.lines[P.lock].s.k,q:P.lines[P.lock].q,i:P.lock}:null, nid=dgIdOfQ(q,q.rar,q.n,rlRoll(null,rlLinesFor(q.t),keep,P?P.g:0));   // abyss: a prism and a Void Anchor's locked line stay through a reroll   // dgrev: a reroll replaces all the lines with the level's count (40: 1, 50: 2, 60: 3)
   p.gear[kind]=have-RL_COST;
   p.gear.inv[p.gear.inv.lastIndexOf(id)]=nid; wpnSwapG(p.gear,id,nid);   // wpn: a carried weapon's slot follows
   if(wornCopy){ p.gear.eq[slot]=nid; gearChangedP(p); } else p.dirty=true;

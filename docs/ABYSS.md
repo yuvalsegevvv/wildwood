@@ -52,6 +52,8 @@ Save: `gear.ab = {top (0-5), best, clears:[6], as, lock, sh:{d,n:{id:count}}, ru
 | Place | What |
 |---|---|
 | `server/players.js` `sanitizeGear` | `abSanitize(g,out)` beside `riftSanitize` |
+| `shared/rolls.js`, `shared/dungeon-rewards.js` (`dgParse`, `dgItem`), `server/rolls.js` `rlRollP`, `game/economy/rolls.js` | B11: the roll code's `!` / `*` markers (`RL_CODE_RE`, `rlParseFull`, `rlRoll(rnd,n,keep,g)`, a reroll keeps both, the Roll tab's badge, lock icon and buttons) |
+| `server/abyss.js` `abMsgP` | B11: `case 'prism'` / `'lock'` -> `abItemP` (`server/abyss/items.js`) |
 | `server/rift.js` `riftDefOf(run)` | the one read of a run's rift def (replaces the 14 `RIFT_DEFS[run.rift]` reads), so an Abyss run can supply its own (B2) |
 
 | `server/dungeons/runs.js` `dgSetupS` | no puzzle stones in an Abyss run (`!run.ab`) |
@@ -244,7 +246,7 @@ After a won round the offer holds 3 cards, each a **tile and a kind**, drawn by 
 
 ## 4. Messages
 
-`abyss{a:'open'}` → `{t:'abyss',a:'info',on:1,top,best,diffs,lv}`; `go,d`, `next`, `out` (B2; a won last round of a finite difficulty sets `gear.ab.top = max(top, d+1)` and `clears[d]++`; Infinite keeps `top` and records `best`); events `abr [pid, round, of, lv]` and `abw [pid, round]` (`docs/PROTOCOL.md`). B4: `pick,i`, `skip`, `drop,i`; events `abo [pid,'art',ids]` and `aba [pid,id,copies]`. B7: `next,i` (a tile of the stored offer), `abo [pid,'tile',[[tile,kind]...]]`, `abr [pid,round,of,lv,tile]`, the tp's `dg.tile`. B10: `shop` → `{t:'abyss',a:'shop',as,top,d,rows:[{id,name,kind,price,left,open,ok}]}`, `buy,id,n` (n an integer 1-99, charged first on the server, answers with a toast and a fresh `shop`), event `abs [pid,round,shards,bonus,balance]`. Planned: `lock,id,i` (B11). Build order: PLAN.md section 8.
+`abyss{a:'open'}` → `{t:'abyss',a:'info',on:1,top,best,diffs,lv}`; `go,d`, `next`, `out` (B2; a won last round of a finite difficulty sets `gear.ab.top = max(top, d+1)` and `clears[d]++`; Infinite keeps `top` and records `best`); events `abr [pid, round, of, lv]` and `abw [pid, round]` (`docs/PROTOCOL.md`). B4: `pick,i`, `skip`, `drop,i`; events `abo [pid,'art',ids]` and `aba [pid,id,copies]`. B7: `next,i` (a tile of the stored offer), `abo [pid,'tile',[[tile,kind]...]]`, `abr [pid,round,of,lv,tile]`, the tp's `dg.tile`. B10: `shop` → `{t:'abyss',a:'shop',as,top,d,rows:[{id,name,kind,price,left,open,ok}]}`, `buy,id,n` (n an integer 1-99, charged first on the server, answers with a toast and a fresh `shop`), event `abs [pid,round,shards,bonus,balance]`. B11: `prism,id` / `lock,id,i` (section 5b). Build order: PLAN.md section 8.
 
 ## 5. Shards and the shop (B10: `shared/abyss/shop.js`, `server/abyss/pay.js`)
 
@@ -279,3 +281,11 @@ After a won round the offer holds 3 cards, each a **tile and a kind**, drawn by 
 | **Ascendant Prism** (after V) | 60,000 | none | `gear.ab.prism` |
 
 A common row has a daily stock; a special has none but each one bought today costs `AB_SPECIAL_GROWTH` (1.5) times the one before (`abShopPrice`: the 2nd Prism 90,000, the 3rd 135,000...), back to the base price the next UTC day (`gsDayOf`, the daily quest set's reset). Prices were tuned with the table above: one Difficulty V clear (about 19,600 shards) buys one Void Anchor or one Abyss Heart, a Prism costs about three clears, a reroll stone about four first-difficulty rounds; the whole common stock of a day costs about 3,400 shards. Today's purchases are `gear.ab.sh = {d, n:{id:count}}` (`abSanitize` keeps own `AB_SHOP` ids only, a new day empties it). `abBuyP` checks everything before it charges (an own row, n an integer 1-99, opened by `gear.ab.top`, stock left, shards, room under the item's cap, not inside a run, level 40), then charges, then grants; `economy-fuzz` covers it. The Void Anchor and Prism have no use until B11; the Abyss Heart none until Awakening A6. The shop works in Shared mode too (it needs no run), but shards can only be earned where a run can start.
+
+## 5b. The Void Anchor and the Ascendant Prism (B11: `shared/abyss-items.js`, `server/abyss/items.js`, markers in `shared/rolls.js`)
+
+Both are bought in the shop (section 5, `gear.ab.lock` / `gear.ab.prism`) and used on a rolled piece in the forge's Roll tab; the effect lives **inside the piece's roll code** (`docs/ROLLS.md`, last section), so every path that carries an id carries it: `~!*a57k12c90` = prism, line `a` locked.
+
+- **Ascendant Prism** (`abyss{a:'prism',id}`): one per piece, for good. Every existing line's grade +10 (stored 00-99, capped 99) and every later roll of that piece uses `q = min(99, floor(rnd*100)+10)`: the top grade comes up 11 times as often as any other, grades under 10 never appear. Refused: no Prism, the piece not in the bag, no lines (unrolled), a prism already on. The details show it as "Prism"; grades read `q/99` there.
+- **Void Anchor** (`abyss{a:'lock',id,i}`): line i of a 2-3 line piece (level 50 / 60) stays locked: every reroll keeps its stat, grade and position and rolls the others (never its stat) for the normal stone. Another Anchor on a different line moves the lock (and costs one more). Refused: a 1-line piece, i not an integer below the line count, that line already locked.
+- A worn piece: the bag copy is used unless `worn:true` or no spare exists (as `reroll`). Both items work inside a run too; sacrifice, tempering, player shops and saves treat a marked piece like any other. Test: `node tools/abyss-items-smoke.js`.

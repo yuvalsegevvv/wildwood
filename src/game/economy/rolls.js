@@ -18,8 +18,10 @@ function rlUiSum(stat){
 function rlUiCdr(){ return rlUiSum('cdr'); }   // (the 5th argument of abilityCd)
 // quality 0..99 -> a colour from grey-green to gold
 const rlUiCol=q=>q>=85?'#ffd24a':q>=60?'#9ff0c8':q>=30?'#cfd8c8':'#9aa39a';
-function rlUiLinesHtml(it){
-  return it.roll.map(l=>`<span class="rl-line" style="color:${rlUiCol(l.q)}">${rlText(l)} <small class="muted">(${l.q}/99)</small></span>`).join('');
+// abyss: lock marks the locked line (a Void Anchor held it); anchor (the Roll tab): a button "Anchor this line" on each line that is not locked; a piece with a prism shows a badge
+const RL_UI_LOCK='<span class="rl-lock" title="Locked by a Void Anchor: every reroll keeps this line">&#128274;</span>', RL_UI_PRISM='<span class="rl-prism" title="Ascendant Prism: every line gained +10 and every later roll of this piece gets +10 (grades 10 to 99)">&#10022; Prism</span>';
+function rlUiLinesHtml(it,anchor){
+  return it.roll.map((l,i)=>`<span class="rl-line" style="color:${rlUiCol(l.q)}">${l.lock?RL_UI_LOCK+' ':''}${rlText(l)} <small class="muted">(${l.q}/99)</small>${anchor&&!l.lock?` <button class="chip forge rl-anchor" data-lock="${it.id}" data-i="${i}" data-worn="${anchor.worn?1:0}">Anchor this line</button>`:''}</span>`).join('')+(it.rprism?RL_UI_PRISM:'');
 }
 // the extra lines in the item details panel (dgInfoHtml calls it): '' for anything but a level-40 piece
 function rlUiInfoHtml(it){
@@ -43,13 +45,14 @@ function rlUiRows(pred){
 }
 const rlUiKindOk=it=>(it.kind==='weapon'||it.kind==='armor'||it.kind==='ring'||it.kind==='pendant'||it.kind==='talisman'||it.kind==='cape'||it.kind==='gloves'||it.kind==='shield')&&it.dg;   // a ring has its own stone (gear.rsr)
 function rlUiRollHtml(){
-  const rows=rlUiRows(it=>rlUiKindOk(it)&&it.roll0);
-  let h=`<p class="fg-intro">Level-40 pieces carry one rolled line out of 13 stats, level 50 two and level 60 three (level 30 none). A roll costs ${RL_COST} Reroll Stone of the piece's kind and replaces all its lines: Weapon stones for weapons, Armor stones for armour and shields, Accessory stones for rings, pendants, talismans, capes and gloves. Make stones in the other tab.</p>`+rlUiStoneBarHtml();
+  const rows=rlUiRows(it=>rlUiKindOk(it)&&it.roll0), abAb=(GEAR&&GEAR.ab)||{}, abLk=abAb.lock|0, abPr=abAb.prism|0;   // abyss: the Void Anchors and Ascendant Prisms held
+  let h=`<p class="fg-intro">Level-40 pieces carry one rolled line out of 13 stats, level 50 two and level 60 three (level 30 none). A roll costs ${RL_COST} Reroll Stone of the piece's kind and replaces all its lines: Weapon stones for weapons, Armor stones for armour and shields, Accessory stones for rings, pendants, talismans, capes and gloves. Make stones in the other tab.</p>`+rlUiStoneBarHtml()+((abLk|abPr)?`<p class="fg-intro">You hold ${abLk} ${AB_LOCK_NAME}${abLk===1?'':'s'} (locks one line of a piece with two or three lines for good) and ${abPr} ${AB_PRISM_NAME}${abPr===1?'':'s'} (+10 on every line of one piece, now and on every later roll, one a piece).</p>`:'');
   if(!rows.length) h+='<p class="muted">You have no level-40+ dungeon piece yet.</p>';
   for(const r of rows){
     const it=ITEM[r.id], kind=RL_STONE_KIND[it.kind], have=rlUiStones(kind), can=have>=RL_COST;
     h+=`<div class="fg-row${can?' ready':''}"><span class="it-ico big r${it.rar}">${itemIcon(it)}</span>
-      <div class="fg-main"><b style="color:${RAR_COL[it.rar]}">${it.name} <small class="muted">Lv ${it.lv}</small></b>${it.roll?`<span class="rl-lines">${rlUiLinesHtml(it)}</span>`:'<span class="rl-un">Unrolled</span>'}
+      <div class="fg-main"><b style="color:${RAR_COL[it.rar]}">${it.name} <small class="muted">Lv ${it.lv}</small></b>${it.roll?`<span class="rl-lines">${rlUiLinesHtml(it,abLk>0&&it.roll.length>=2?{worn:r.worn}:null)}</span>`:'<span class="rl-un">Unrolled</span>'}
+      ${abPr>0&&!abPrismWhy(it)?`<button class="chip forge rl-prismbtn" data-prism="${it.id}" data-worn="${r.worn?1:0}">Use Ascendant Prism</button>`:''}
       <span class="muted">${r.worn?'worn':r.n>1?'you have '+r.n:'in your bag'} &middot; ${RL_STONE_NAME[kind]}: ${have}</span></div>
       <button class="chip forge" data-reroll="${it.id}" data-worn="${r.worn?1:0}" ${can?'':'disabled'}>${can?(it.roll?'Reroll':'Roll')+': '+RL_COST+' stone':'Need '+RL_COST+' stone'}</button></div>`;
   }
@@ -70,6 +73,8 @@ function rlUiSacHtml(){
 }
 function rlUiBind(root){
   root.querySelectorAll('[data-reroll]').forEach(b=>b.onclick=()=>{ b.disabled=true; b.textContent='Rolling…'; netSend({t:'reroll',id:b.dataset.reroll,worn:b.dataset.worn==='1'}); });
+  root.querySelectorAll('[data-prism]').forEach(b=>b.onclick=()=>{ b.disabled=true; b.textContent='Using…'; netSend({t:'abyss',a:'prism',id:b.dataset.prism,worn:b.dataset.worn==='1'}); });   // abyss:
+  root.querySelectorAll('[data-lock]').forEach(b=>b.onclick=()=>{ b.disabled=true; b.textContent='Anchoring…'; netSend({t:'abyss',a:'lock',id:b.dataset.lock,i:+b.dataset.i,worn:b.dataset.worn==='1'}); });   // abyss:
   root.querySelectorAll('[data-sac]').forEach(b=>b.onclick=()=>{ b.disabled=true; b.textContent='Sacrificing…'; netSend({t:'sac',id:b.dataset.sac}); });
 }
 /* ---- server events ---- */
