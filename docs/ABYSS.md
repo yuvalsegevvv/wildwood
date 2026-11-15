@@ -2,15 +2,16 @@
 
 A solo roguelike mode: one hiker, one life, rounds of small tiles with choices between them, artifacts that live for the run, paid only in Abyssal Shards. Plan, numbers and decisions: the project's `abyss-plan/PLAN.md` (version 5). Stem `abyss`, prefix `ab` / `AB_`.
 
-**Status: B0 and B1 built, behind `AB_ON`** (false until step B12). The server asks `abOnS()` = `AB_ON || io.test || S.dev`, so the test world and dev servers have it, the deploy (`--no-dev`) does not. Built so far: the slot split, the rules tables, the save `gear.ab`, the window message. No run, no gate, no client yet (B2 on).
+**Status: B0, B1 and B2 built, behind `AB_ON`** (false until step B12). The server asks `abOnS()` = `AB_ON || io.test || S.dev`, so the test world and dev servers have it, the deploy (`--no-dev`) does not. Built so far: the slot split, the rules tables, the save `gear.ab`, the window message, and (B2) the server run with Fight rounds only: three waves of the Shardmere's glass kinds at the round's level with plain numbers (no `RIFT_HP_K` / `RIFT_DMG_K`), `go` / `next` / `out`, death and leaving end the run, no XP, coins or loot from Abyss kills. Still none: gate, client panel, artifacts, tiles, bosses, shards (B3 on). TODO (B3): the HUD row `DG_HUD.abyss` is in `shared/abyss.js` and the run draws as the rift void (`game/dungeon/run.js` hook); the `abr` event has no client handler yet.
 
 ## 1. Files
 
 | File | What it holds |
 |---|---|
 | `shared/abyss.js` | `AB_ON` / `abSwitch`, `AB_DIFFS` (I-V and Infinite), `abRoundLv`, `abRounds`, `abBossRounds`, `abIsBossRound`, the caps |
-| `server/abyss.js` | `abSanitize` (`gear.ab`), `abOnS`, `MSG.abyss` (`a:'open'` only for now) |
+| `server/abyss.js` | `abSanitize` (`gear.ab`, with `abRunSanitize` for `run`), `abOnS`, `MSG.abyss` (`open`, `go`, `next`, `out`) |
 | `shared/dungeon-slots.js` | `DG_MAX_INST` 48 and `AB_SLOT0` 32: slots 0-15 dungeons, 16-31 rifts, 32-47 the Abyss |
+| `server/abyss/rounds.js` | the run: `abRunNewS`, `abGoP` / `abNextP` / `abOutP`, `abSpawnS`, `abWaveStepS`, `abRoundWonS`, `DG_KITS.abyss`, the fall and leave rules, `abDevP` |
 | `tools/abyss-smoke.js` | the test |
 
 ## 2. Numbers (`shared/abyss.js`)
@@ -33,8 +34,16 @@ Save: `gear.ab = {top (0-5), best, clears:[6], as, lock, sh:{d,n:{id:count}}, ru
 | `server/players.js` `sanitizeGear` | `abSanitize(g,out)` beside `riftSanitize` |
 | `server/rift.js` `riftDefOf(run)` | the one read of a run's rift def (replaces the 14 `RIFT_DEFS[run.rift]` reads), so an Abyss run can supply its own (B2) |
 
+| `server/dungeons/runs.js` `dgSetupS` | no puzzle stones in an Abyss run (`!run.ab`) |
+| `server/dungeons/runs.js` `dgDownTickS` | `abDownTickS`: a fall ends the run after `AB_DEATH_S` |
+| `server/dungeons/runs.js` `dgCloseS` | `abCloseS`: whoever is online has no run in the save (the empty close of a pulled plug ends here) |
+| `server/dungeons/lobby.js` `dgLeaveP` | `abLeaveP`: between rounds it is "out", in a fight a fall |
+| `server/dungeons/mobs.js` `rewardAllS` | an Abyss run pays no world rewards |
+| `server/economy.js` `devP` | `abyss`: `v` = top difficulty open, `r` = jump to round r of the run you are in (`abDevP`) |
+| `game/dungeon/run.js` `dgRunEnter` | the client rebuilds an Abyss run's theme and layout (`abLayout`, `shared/abyss.js`) |
+
 `RIFT_SLOT_END` (32, `server/rift.js`) ends the rifts' slot scan; `rift-smoke` checks a rift never takes slot 32 or above.
 
 ## 4. Messages
 
-`abyss{a:'open'}` → `{t:'abyss',a:'info',on:1,top,best,diffs,lv}` (`docs/PROTOCOL.md`). Planned: `go,d`, `next,i`, `pick,i`, `drop,i`, `out`, `shop`, `buy,id,n`, `lock,id,i`; events `abr`, `abo`, `aba`. Build order: PLAN.md section 8.
+`abyss{a:'open'}` → `{t:'abyss',a:'info',on:1,top,best,diffs,lv}`; `go,d`, `next`, `out` (B2; a won last round of a finite difficulty sets `gear.ab.top = max(top, d+1)` and `clears[d]++`; Infinite keeps `top` and records `best`); event `abr [pid, round, of, lv]` (`docs/PROTOCOL.md`). Planned: `pick,i`, `drop,i`, `out`, `shop`, `buy,id,n`, `lock,id,i`; events `abr`, `abo`, `aba`. Build order: PLAN.md section 8.

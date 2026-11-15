@@ -26,8 +26,8 @@ function dgOnTp(msg){
   }catch(err){ console.error('dungeon view:',err); }
 }
 function dgRunEnter(d){
-  const T=DG_THEMES[d.th]||(d.m==='rift'&&RIFT_DEFS[d.th])||null; let lay=null, B=null;   // rift: the theme is the rift's entry
-  try{ lay=d.m==='rift'?riftLayout(RIFT_DEFS[d.th]):dgLayout({mission:d.m,seed:d.seed|0,theme:d.th}); B=lay&&dgBake(lay); if(B&&d.m==='rift') B.open=true; }catch(err){ console.error('dungeon layout:',err); }   // rift: its own platforms
+  const T=DG_THEMES[d.th]||((d.m==='rift'||d.m==='abyss')&&RIFT_DEFS[d.th])||null; let lay=null, B=null;   // rift: the theme is the rift's entry
+  try{ lay=d.m==='rift'?riftLayout(RIFT_DEFS[d.th]):d.m==='abyss'?abLayout(d.seed|0):dgLayout({mission:d.m,seed:d.seed|0,theme:d.th}); B=lay&&dgBake(lay); if(B&&(d.m==='rift'||d.m==='abyss')) B.open=true; }catch(err){ console.error('dungeon layout:',err); }   // rift: its own platforms   // abyss: its own layout (shared/abyss.js abLayout)
   if(!B) console.warn('dungeon '+d.th+':'+d.m+' seed '+d.seed+' could not be rebuilt here: walls are the server\'s only');
   DG_RUN={id:d.id,m:d.m,th:d.th,T,seed:d.seed|0,L:d.L|0,tier:d.tier|0,ox:+d.ox||0,oz:+d.oz||0,y:isFinite(d.y)?+d.y:DG_FLOOR_Y,B,lay,
     dg:[d.ph|0,d.t|0,0],t0:t-(d.t|0),objs:new Map(),boss:null,respawns:DG_RESPAWNS_SHOW,seen:new Uint8Array(lay?lay.gw*lay.gh:1),downAt:0,away:0,end:null};
