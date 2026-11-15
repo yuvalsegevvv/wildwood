@@ -1,4 +1,4 @@
-//@ The travel window: stepping on a teleport circle and pressing the talk key, or the map's Travel button from anywhere, lists every village (CIRCLES in shared/hoarfrost.js); the ones you have not walked to yet are locked
+//@ The travel window: stepping on a teleport circle and pressing the talk key, or the map's Travel button from anywhere, lists every village (CIRCLES in shared/hoarfrost.js; the ones you have not walked to yet are locked) and, on a second tab, the eight dungeons (their Delve board from the circle)
 /* The server does the travelling (warp{to}, warpP in server/players.js) and checks the same rules; this window only shows them. On a circle it closes when you
    step off it. From the map (openTravel(true): TR_ANY) it sends warp{to, any:1}: the server refuses a run, the Proving Isle, a cave floor and a fight (WARP_IDLE). */
 const TR_ICON={
@@ -12,10 +12,12 @@ const TR_ICON={
   cavemouth:'<path d="M3 21V12a9 9 0 0118 0v9"/><path d="M7 21v-6a5 5 0 0110 0v6"/><path d="M10 10.5v1.5M14 10.5v1.5M12 9v2"/>',
   coralhaven:'<path d="M3 15c3 3 6 3 9 0s6-3 9 0"/><path d="M12 14V4l6 7z"/><path d="M12 4L7 11h5"/>'
 };
-let TR_ANY=false;   // opened from the map: travel from where you stand
+let TR_ANY=false, TR_TAB='v';   // TR_ANY: opened from the map: travel from where you stand; TR_TAB: 'v' villages, 'd' dungeons (dgrev D8c)
 function openTravel(any){ TR_ANY=any===true&&!nearCircle(); openPanel('travel'); renderTravel(); }
 function renderTravel(){
   if($('#travel').hidden) return;
+  document.querySelectorAll('#trTabs [data-trtab]').forEach(b=>{ b.classList.toggle('on',b.dataset.trtab===TR_TAB); b.onclick=()=>{ TR_TAB=b.dataset.trtab; UI_SFX.click(); renderTravel(); }; });
+  if(TR_TAB==='d'){ trDungeons(); return; }
   const here=nearCircle(), g=GEAR||{};
   let h=TR_ANY?'<p class="tr-intro">Call on the circles from where you stand. Choose a village you have walked to.</p><div class="tr-grid">':'<p class="tr-intro">The old stones hum under your feet. Choose where they carry you.</p><div class="tr-grid">';
   for(const C of CIRCLES){
@@ -25,6 +27,24 @@ function renderTravel(){
   h+='</div>';
   $('#trBody').innerHTML=h;
   $('#trBody').querySelectorAll('[data-to]').forEach(b=>b.onclick=()=>{ netSend(TR_ANY?{t:'warp',to:b.dataset.to,any:1}:{t:'warp',to:b.dataset.to}); UI_SFX.click(); closePanels(); });
+}
+// dgrev D8c: the Dungeons tab. A row opens that dungeon's Delve board without standing at its door (dg{a:'open',via:'circle'}: the server accepts it on a circle or with travel-from-anywhere's rules);
+// Rewards opens the menu of what it pays (game/dungeon/rewards-menu.js). A shut land gate locks the row (DG_LANDS hint).
+function trDungeons(){
+  const g=GEAR||{}, top=Math.min(DG_TIER_MAX,dgtTop(g)), body=$('#trBody'); body.innerHTML='';
+  const intro=document.createElement('p'); intro.className='tr-intro'; intro.textContent=(TR_ANY?'Call on a dungeon from where you stand.':'Open a dungeon\'s Delve board from the circle.')+' Start sends your party straight in, and everyone comes back here when the run ends.'; body.appendChild(intro);
+  const list=document.createElement('div'); list.className='tr-dg';
+  for(const th of dgrmThemes()){
+    const T=DG_THEMES[th], open=dgGateOpen(g,T), info=DG_BOARD_INFO[th]||{}, row=document.createElement('div'); row.className='tr-dgrow'+(open?'':' locked'); row.style.setProperty('--dgc',info.color||'#cdd98f');
+    const ic=document.createElement('span'); ic.className='tr-dgico'; ic.innerHTML=dgrmKindIcon(th);
+    const tx=document.createElement('div'); tx.className='tr-dgct'; const nm=document.createElement('b'); nm.textContent=T.name;
+    const sm=document.createElement('small'); sm.textContent=DG_LANDS[T.land].name+' \u00B7 '+(open?'highest open tier '+DG_BOARD_ROMAN[top]:DG_LANDS[T.land].hint); tx.appendChild(nm); tx.appendChild(sm);
+    const bt=document.createElement('button'); bt.type='button'; bt.className='chip buy tr-dgopen'; bt.textContent=open?'Delve board':'Locked'; bt.disabled=!open; bt.dataset.th=th;
+    bt.addEventListener('click',()=>{ UI_SFX.click(); dgBoardOpen(th,TR_ANY&&!nearCircle()?'any':'circle'); });
+    const rw=document.createElement('button'); rw.type='button'; rw.className='chip tr-dgrew'; rw.textContent='Rewards'; rw.dataset.th=th; rw.addEventListener('click',()=>{ UI_SFX.click(); dgrmOpen(th); });
+    row.appendChild(ic); row.appendChild(tx); row.appendChild(rw); row.appendChild(bt); list.appendChild(row);
+  }
+  body.appendChild(list);
 }
 // the map's Travel button (index.html #mapTravel): the same window, from anywhere
 if($('#mapTravel')) $('#mapTravel').addEventListener('click',()=>{ closePanels(); openTravel(true); UI_SFX.click(); });

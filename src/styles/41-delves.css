@@ -48,3 +48,11 @@
   .dgr-card{ flex:none; padding:4px; border-left-width:1px; border-bottom:3px solid var(--dgc); } .dgr-ct,.dgr-kind{ display:none; } .dgr-pic{ width:44px; height:44px; } .dgr-pic .mp-pic{ width:44px; height:44px; }
   .dgr-tiers{ grid-template-columns:repeat(6,1fr); } .dgr-tile{ width:calc(33.3% - 4px); }
 }
+/* the travel window's Dungeons tab (ui/travel.js trDungeons) */
+.tr-dg{ display:flex; flex-direction:column; gap:6px; }
+.tr-dgrow{ --dgc:#cdd98f; display:flex; align-items:center; gap:10px; padding:7px 10px; border-radius:6px; border:1px solid var(--line); border-left:4px solid var(--dgc); background:rgba(0,0,0,.22); }
+.tr-dgrow.locked{ opacity:.65; }
+.tr-dgico,.tr-dgico .dgr-kico{ flex:none; width:32px; height:32px; } .tr-dgico svg{ width:32px; height:32px; }
+.tr-dgct{ flex:1; min-width:0; display:flex; flex-direction:column; } .tr-dgct b{ font:600 15px Alegreya,Georgia,serif; } .tr-dgct small{ font-size:11.5px; line-height:1.35; color:var(--ink-dim); }
+.tr-dgrow .chip{ flex:none; min-height:36px; }
+@media (max-width:719px){ .tr-dgrow{ flex-wrap:wrap; } .tr-dgct{ flex-basis:calc(100% - 50px); } .tr-dgrow .chip{ flex:1; } }

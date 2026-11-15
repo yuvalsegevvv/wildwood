@@ -1,7 +1,7 @@
 //@ The Delve board: the panel a dungeon door opens (the dungeon, its lock, the two missions on offer this hour, the countdown, your party, the leader's Start) and the prompt to join a party's run (dgi)
 /* Agent map (docs/DUNGEONS.md sections 8 and 9; the door is game/dungeon/entrances.js; the server's answer is server/dungeons/lobby.js dgBoardP; markup #dgBoard and #dgJoin in index.html;
    styles/25-dungeon-board.css; test tools/dungeon-board-client-smoke.js).
-   Public:  dgBoardOpen(themeId)   the talk key at an open door (dgOpenDoor calls it): sends dg{a:'open'}, opens the panel at once (the dungeon's name, "reading the board") and fills it
+   Public:  dgBoardOpen(themeId,via)   (via: D8c, 'circle' / 'any' when the travel window's Dungeons tab opens it: no door, dg{a:'open',dungeon,via:'circle'}, Start carries via, a "Go to the door" chip, it stays while you stand on the circle) the talk key at an open door (dgOpenDoor calls it): sends dg{a:'open'}, opens the panel at once (the dungeon's name, "reading the board") and fills it
                                    when the server's dgboard answer arrives (NETH.dgboard; it also refreshes an open board: after "the offer changed" or the hour turning).
             DG_BOARD               the board's state: {th, msg (the last dgboard), until (ms: when the offer changes), want (ms of the last request), ...}.
             dgJoinShow(e) / dgJoinHide()   the join prompt for a dgi event [name, pid, run, 0 starting | 1 under way, theme, mission, level, seconds, leader's name]: Join sends dg{a:'accept'},
@@ -9,7 +9,7 @@
    Reads:   dgPartyState (the party code's roster, if it keeps one: {lead: pid, list|members|roster: [[pid, name, ...] or {pid|id, name}]}, read-only: see dgBoardRoster). Nothing is registered for pty here.
    Rules:   the panel only shows what the server decided (ok / gate / why / lead / offer / left): it checks nothing itself. It closes when you step away from a door (a 1 s timer, which also ticks the clock).
    Hooks:   'dgBoard' in PANELS (ui/panels.js), the #dgBoard / #dgJoin block in index.html, two lines in the manifest. */
-const DG_BOARD={th:null,msg:null,want:0,until:0,sent:0,silent:false,polled:0,pick:undefined,pickTh:null};   // pick: the tier (0-10) the leader has chosen on the picker
+const DG_BOARD={via:null,th:null,msg:null,want:0,until:0,sent:0,silent:false,polled:0,pick:undefined,pickTh:null};   // pick: the tier (0-10) the leader has chosen on the picker
 // one sentence for each dungeon (docs/DUNGEON-THEMES.md section 3) and the accent of its card
 const DG_BOARD_INFO={
   hollowroots:{color:'#8fd06a',text:'A hollow under the Ancient Grove where the roots of the Heartwood go down: warm dark, sap and fungus for light, and root spikes in the floor.'},
@@ -44,10 +44,12 @@ const dgBoardDesc=(th,id)=>{ const o=DG_BOARD_OBJ[th]&&DG_BOARD_OBJ[th][id], t=D
 function dgBoardEl(tag,cls,text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!==undefined&&text!==null) e.textContent=text; return e; }   // (text before children: setting textContent drops them)
 function dgBoardAdd(parent,...kids){ for(const k of kids) if(k) parent.appendChild(k); return parent; }
 
-function dgBoardOpen(themeId){
-  if(DG_BOARD.th!==themeId) DG_BOARD.msg=null;   // another door: do not show the last one's board while this one answers
-  DG_BOARD.th=themeId; DG_BOARD.want=Date.now(); DG_BOARD.sent=1; DG_BOARD.silent=false;
-  netSend({t:'dg',a:'open'});   // the server finds the door from your position; the answer is dgboard
+// the request: at a door the server finds the door from your position; from a circle (D8c: DG_BOARD.via 'circle' or 'any') the dungeon travels with it
+function dgBoardAsk(){ netSend(DG_BOARD.via?{t:'dg',a:'open',dungeon:DG_BOARD.th,via:'circle'}:{t:'dg',a:'open'}); }
+function dgBoardOpen(themeId,via){
+  if(DG_BOARD.th!==themeId||DG_BOARD.via!==(via||null)) DG_BOARD.msg=null;   // another door: do not show the last one's board while this one answers
+  DG_BOARD.th=themeId; DG_BOARD.via=via||null; DG_BOARD.want=Date.now(); DG_BOARD.sent=1; DG_BOARD.silent=false;   // dgrev D8c: via = the travel window opened it (no door)
+  dgBoardAsk();   // the answer is dgboard
   openPanel('dgBoard'); dgBoardRender();
 }
 NETH.dgboard=msg=>{
@@ -55,6 +57,7 @@ NETH.dgboard=msg=>{
   const shown=!$('#dgBoard').hidden;
   if(!shown&&Date.now()-DG_BOARD.want>8000) return;   // nobody asked (or the board was closed since): a late answer must not pop a panel open
   { const pv=DG_BOARD.msg; if(!shown||!pv||pv.th!==msg.th||pv.top!==msg.top||pv.tier!==msg.tier) DG_BOARD.pick=undefined; }   // dgrev: the leader's picked tier survives the hourly refresh, but a new board, door or unlock starts at the highest open tier
+  if(!msg.via) DG_BOARD.via=null;   // dgrev D8c
   DG_BOARD.th=msg.th; DG_BOARD.msg=msg; DG_BOARD.until=Date.now()+Math.max(0,+msg.left||0)*1000; DG_BOARD.want=0; DG_BOARD.silent=false;
   if(!shown) openPanel('dgBoard');
   dgBoardRender();
@@ -94,6 +97,7 @@ function dgBoardRender(){
   const facts=dgBoardEl('div','dgb-facts');
   dgBoardAdd(facts,dgBoardEl('span','dgb-fact lv','Level '+dgtLevel(pick)),dgBoardEl('span','dgb-fact','Enter from level '+DG_ENTRY_LV));
   { const sn=bdcDoorNote(th); if(sn) facts.appendChild(dgBoardEl('span','dgb-fact bdc-stirfact','\u2605 '+sn)); }   // bond: the hour's stirring dungeon
+  if(m.via&&m.gate){ const gd=dgBoardEl('button','chip dgb-goto','Go to the door'); gd.type='button'; gd.addEventListener('click',()=>{ UI_SFX.click(); closePanels(); netSend({t:'dg',a:'door',dungeon:th,via:'circle'}); }); facts.appendChild(gd); }   // dgrev D8c: warp to the door instead
   { const rw=dgBoardEl('button','chip dgb-rew','Rewards'); rw.type='button'; rw.addEventListener('click',()=>{ UI_SFX.click(); dgrmOpen(th,pick); }); facts.appendChild(rw); }   // dgrev D8b: what this dungeon pays (rewards-menu.js)
   hero.appendChild(facts); body.appendChild(hero);
   body.appendChild(dgBoardEl('p','dgb-state '+(m.ok&&open?'ok':'no'),!m.ok?(m.gate?'':'Sealed. ')+(m.why||'You cannot enter yet.'):open?'The way is open for you.':'Tier '+DG_BOARD_ROMAN[pick]+' opens when you clear tier '+DG_BOARD_ROMAN[pick-1]+' of any dungeon.'));
@@ -124,20 +128,21 @@ function dgBoardStart(id,tier){
   const m=DG_BOARD.msg; if(!m||!m.ok||!m.lead||!(m.offer||[]).includes(id)) return;
   UI_SFX.click(); DG_BOARD.want=Date.now(); DG_BOARD.msg=null;
   closePanels();   // before the send: a refusal's fresh board may come back at once (solo: in the same call), and must find the panel closed to open it again
-  netSend({t:'dg',a:'start',dungeon:m.th,type:id,tier:dgtClamp(tier)});
+  netSend(Object.assign({t:'dg',a:'start',dungeon:m.th,type:id,tier:dgtClamp(tier)},DG_BOARD.via?{via:'circle'}:null));   // dgrev D8c: from a circle the party goes in directly
 }
 // once a second: the clock (and a fresh board when it runs out), a board nobody answered, and closing when you walk away from the door
 function dgBoardTick(){
   const now=Date.now();
   if(!$('#dgBoard').hidden){
-    if(!dgEntranceNear(P.x,P.z)) closePanels();
+    if(DG_BOARD.via){ if(DG_BOARD.via==='circle'&&!nearCircle()) closePanels(); }   // dgrev D8c: no door: it stays while you stand on the circle (or called from the map)
+    else if(!dgEntranceNear(P.x,P.z)) closePanels();
     else if(!DG_BOARD.msg){
       const age=now-DG_BOARD.want;
-      if(DG_BOARD.want&&age>2000&&DG_BOARD.sent<2){ DG_BOARD.sent=2; netSend({t:'dg',a:'open'}); }   // the first message may have beaten the position update
+      if(DG_BOARD.want&&age>2000&&DG_BOARD.sent<2){ DG_BOARD.sent=2; dgBoardAsk(); }   // the first message may have beaten the position update
       if(DG_BOARD.want&&age>5000&&!DG_BOARD.silent){ DG_BOARD.silent=true; dgBoardRender(); }
     } else {
       dgBoardClockSet(now);
-      if(dgBoardLeft(now)===0&&now-DG_BOARD.polled>2500){ DG_BOARD.polled=now; DG_BOARD.want=now; netSend({t:'dg',a:'open'}); }   // the hour turned: ask for the new offer
+      if(dgBoardLeft(now)===0&&now-DG_BOARD.polled>2500){ DG_BOARD.polled=now; DG_BOARD.want=now; dgBoardAsk(); }   // the hour turned: ask for the new offer
     }
   }
   dgJoinTick(now);

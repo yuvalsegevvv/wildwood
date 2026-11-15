@@ -8,7 +8,7 @@ const got={}, msgs={};   // pid -> events / messages received
 const NAMES=['DG_RUNS','DG_SLOT_RUN','DG_DG_SLOTS','DG_KITS','DG_KIT_BAD','DG_THEMES','DG_MISSIONS','DG_PARTY','DG_X0','DG_SLOT','DG_FLOOR_Y','DG_MAX_INST','DG_ENTRANCES','DG_HOLD_S','DG_END_S','DG_EMPTY_S',
   'DG_DOWN_S','DG_REVIVE_HP','DG_LV','MONS','S','WX1','getH','dgWorldS','dgLocalS','dgSpawnS','dgRemoveS','dgPresentS','dgBossS','dgBossDefOf','dgSlotAt','dgSlotOrigin','dgSolid','dgFree','dgLos',
   'dgFlow','dgLayout','dgBake','dgOffer','dgPoolS','dgApron','dgDefineKit','dgMemberOf','dgKOf','damageMonsterS','killMonsterS','hurtP','monK','zoneTierK','landAt','recalcP','sanitizeGear',
-  'DEF_BY_ID','fireProjS','PROJS','partyOf','ITEM','xpFor','psP','dgParse','PENDANT_STATS'];
+  'DEF_BY_ID','fireProjS','PROJS','partyOf','ITEM','xpFor','psP','dgParse','PENDANT_STATS','CIRCLES','WARP_IDLE'];
 const {api:W,x}=loadServer({dev:true,log(){},send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (msgs[pid]=msgs[pid]||[]).push(c); if(c.t==='snap'&&c.ev) (got[pid]=got[pid]||[]).push(...c.ev); }},NAMES);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const IMM=new Set();   // players kept at full health (monsters roam the runs)
@@ -269,6 +269,46 @@ const runK=runOf('k');
   clear(); dg('m','leave'); tick(2);
   ok('leaving (the portal) puts you on the door\'s apron',!M.inst&&Math.hypot(M.x-ap.x,M.z-ap.z)<0.01&&!!mOf('m','tp').find(t=>t.dg===false));
   secs(x.DG_EMPTY_S+1.5); ok('a run nobody is in closes after '+x.DG_EMPTY_S+' s',!x.DG_RUNS.has(run.id)); }
+
+// ---- dgrev D8c: a board and a start from a teleport circle (via:'circle'), the return to the circle, "Go to the door" ----
+{ const Ent=x.DG_ENTRANCES.hollowroots, C0=x.CIRCLES[0], T0=C0.V.tele, offer=x.dgOffer('hollowroots',Date.now(),x.dgPoolS());
+  const Q=join('q','Quin',{gear:{east:2}}); IMM.add('q'); tick(2);
+  const onCircle=()=>{ Q.x=T0.x; Q.z=T0.z; Q.lastHit=-999; Q.warpT=-9; Q.dead=false; Q.pv=false; };
+  Q.x=Ent.x+200; Q.z=Ent.z; Q.lastHit=-999; clear(); dg('q','open',{dungeon:'hollowroots'}); tick(1);
+  ok('open without via far from a door does nothing (the old rule)',!lastMsg('q','dgboard'));
+  onCircle(); clear(); dg('q','open',{dungeon:'hollowroots',via:'circle'}); tick(1);
+  { const bd=lastMsg('q','dgboard'); ok('on a circle, open {dungeon, via:"circle"} sends that dungeon\'s board with via:1',!!bd&&bd.th==='hollowroots'&&bd.via===1&&bd.ok===1&&bd.lead===1,JSON.stringify(bd)); }
+  clear(); dg('q','open',{dungeon:'dev-nosuch',via:'circle'}); dg('q','open',{dungeon:'constructor',via:'circle'}); tick(1); ok('an unknown dungeon id is ignored',!lastMsg('q','dgboard'));
+  clear(); dg('q','start',{dungeon:'hollowroots',type:offer[0],tier:0,via:'circle'}); tick(3);
+  const run=runOf('q'), a=Math.atan2(C0.V.x-T0.x,C0.V.z-T0.z), spot={x:T0.x+Math.sin(a)*3.2,z:T0.z+Math.cos(a)*3.2};
+  ok('start with via:"circle" on a circle sends the hiker in directly (no door), run.back = the circle\'s spot',!!run&&run.th==='hollowroots'&&!run.dev&&run.back&&Math.hypot(run.back.x-spot.x,run.back.z-spot.z)<0.01,JSON.stringify(run&&run.back));
+  clear(); dg('q','leave'); tick(2);
+  ok('when the run ends the hiker is back at the circle\'s spot, not at the door\'s apron',!Q.inst&&Math.hypot(Q.x-spot.x,Q.z-spot.z)<0.01&&Math.hypot(Q.x-x.dgApron(Ent).x,Q.z-x.dgApron(Ent).z)>20);
+  secs(x.DG_EMPTY_S+1.5);
+  // refusals: off a circle (not anywhere-travel eligible = in a fight / the isle), the old door rule stays
+  Q.x=Ent.x+200; Q.z=Ent.z; Q.lastHit=x.S.t; clear(); dg('q','start',{dungeon:'hollowroots',type:offer[0],tier:0,via:'circle'}); tick(2);
+  ok('away from a circle, in a fight, via:"circle" is refused (WARP_IDLE)',!Q.inst&&/out of combat/.test(toasts('q')));
+  Q.lastHit=-999; Q.pv=true; clear(); dg('q','start',{dungeon:'hollowroots',type:offer[0],tier:0,via:'circle'}); tick(2);
+  ok('on the Proving Isle via:"circle" is refused',!Q.inst&&/cannot travel/.test(toasts('q'))); Q.pv=false;
+  Q.lastHit=-999; clear(); dg('q','start',{dungeon:'hollowroots',type:offer[0],tier:0,via:'circle'}); tick(3);
+  { const r2=runOf('q'); ok('travel from anywhere (rested, in the world) is accepted with the same rules; the run returns you where you stood',!!r2&&r2.back&&Math.hypot(r2.back.x-(Ent.x+200),r2.back.z-Ent.z)<0.5); }
+  clear(); dg('q','leave'); tick(2); secs(x.DG_EMPTY_S+1.5);
+  onCircle(); Q.lastHit=x.S.t; clear(); dg('q','start',{dungeon:'hollowroots',type:offer[0],tier:1,via:'circle'}); tick(2);
+  ok('every other check is unchanged: a tier that is not open is refused from a circle too',!Q.inst&&/not open/.test(toasts('q')));
+  onCircle(); clear(); dg('q','start',{dungeon:'sandglass',type:offer[0],tier:0,via:'circle'}); tick(2);
+  ok('a shut land gate is refused from a circle (the Sunscar before Glasswell)',!Q.inst&&Q.gear.sun<2&&toasts('q').length>0);
+  // the party: the leader starts, the member is asked and returns to the circle too
+  const L=join('lead','Lea',{gear:{east:2}}), Mb=join('mem','Mem'); IMM.add('lead'); IMM.add('mem'); tick(2);
+  W.receive('lead',{t:'party',a:'invite',to:'mem'}); tick(1); W.receive('mem',{t:'party',a:'accept'}); tick(1);
+  if(L.party&&Mb.party===L.party){ L.x=T0.x; L.z=T0.z; L.lastHit=-999; Mb.x=Ent.x+120; Mb.z=Ent.z; clear(); dg('lead','start',{dungeon:'hollowroots',type:offer[0],tier:0,via:'circle'}); tick(2); dg('mem','accept'); tick(2);
+    const r3=runOf('lead'); ok('a party starts from a circle: the member, wherever they stand, is asked and joins',!!r3&&Mb.inst===L.inst); clear(); dg('mem','leave'); dg('lead','leave'); tick(2);
+    ok('both return to the circle\'s spot',Math.hypot(Mb.x-spot.x,Mb.z-spot.z)<0.01&&Math.hypot(L.x-spot.x,L.z-spot.z)<0.01); }
+  else ok('(party helper not available: skipped)',true);
+  // "Go to the door"
+  const G2=join('go','Gus',{gear:{east:2}}); IMM.add('go'); tick(2); G2.x=T0.x; G2.z=T0.z; G2.lastHit=-999; G2.warpT=-9; clear(); dg('go','door',{dungeon:'hollowroots',via:'circle'}); tick(1);
+  { const ap=x.dgApron(Ent); ok('door {dungeon} warps to the door\'s apron (a tp message and a warp event)',Math.hypot(G2.x-ap.x,G2.z-ap.z)<0.01&&!!mOf('go','tp').length&&evs('go','warp').length>0); }
+  G2.x=T0.x; G2.z=T0.z; G2.warpT=-9; G2.lastHit=x.S.t; G2.x=Ent.x+300; const gx=G2.x; clear(); dg('go','door',{dungeon:'hollowroots'}); tick(3);
+  ok('door while in a fight is refused',G2.x===gx&&/out of combat/.test(toasts('go'))); }
 
 // ---- the slot cap ----
 { const ps=[]; for(let i=0;x.DG_RUNS.size<x.DG_DG_SLOTS&&i<20;i++){ const pid='r'+i; join(pid,'Run'+i); IMM.add(pid); dev(pid,'bare:purge:'+i); ps.push(pid); }

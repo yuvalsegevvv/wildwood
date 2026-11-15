@@ -3,7 +3,7 @@
 // the piece count / eq split / rarity line / pool tiles / details card / Compare table, and that it opens from the inventory button, the Delve board's Rewards chip and the travel window's Dungeons tab.
 const errs=[]; const realErr=console.error; console.error=(...a)=>{ errs.push(a.map(String).join(' ')); };
 const {bootClient}=require('./headless');
-const c=bootClient({expose:['NET','startSolo','beginPlay','canStart:()=>canStart','Stream','P','PL','GEAR','DG_THEMES','DG_TIERS','DG_TIER_MAX','DG_REWARDS','DG_REWARD_W','DGRM','dgrmOpen','dgrmRender','dgrmThemes','PANELS','uiOpen','closePanels','dgBoardOpen','dgBoardRender','DG_BOARD','netHandle','dgGateOpen','dgtTop','openTravel','renderTravel']});
+const c=bootClient({expose:['NET','startSolo','beginPlay','canStart:()=>canStart','Stream','P','PL','GEAR','DG_THEMES','DG_TIERS','DG_TIER_MAX','DG_REWARDS','DG_REWARD_W','DGRM','dgrmOpen','dgrmRender','dgrmThemes','PANELS','uiOpen','closePanels','dgBoardOpen','dgBoardRender','DG_BOARD','netHandle','dgGateOpen','dgtTop','openTravel','renderTravel','VIL','trDungeons','dgBoardStart','DG_BOARD','TR_TABSET:v=>{ TR_TAB=v; }']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,cnd,i)=>{ console.log((cnd?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!cnd) fails++; };
 const tx=e=>[e.textContent||'',...(e._kids||[]).map(tx)].join(' ').replace(/\s+/g,' ').trim();
 const walk=(e,f)=>{ f(e); (e._kids||[]).forEach(k=>walk(k,f)); };
@@ -40,6 +40,21 @@ const find=(e,cls)=>{ const out=[]; walk(e,k=>{ if(typeof k.className==='string'
   G.closePanels(); c.el('#invDelves').click(); ok('the inventory header button opens it',!panel().hidden&&G.uiOpen());
   G.closePanels(); G.DG_BOARD.th='hollowroots'; G.DG_BOARD.want=Date.now(); G.dgBoardOpen('hollowroots'); G.netHandle({t:'dgboard',th:'hollowroots',name:'The Hollow Roots',door:'The Hollowed Elder',offer:['purge','defense'],pool:['purge','defense'],left:100,L:30,tier:2,top:2,gate:1,ok:1,why:'',lead:1}); await wait(50);
   { const r=find(c.el('#dgBody'),'dgb-rew')[0]; ok('the Delve board has a Rewards chip',!!r); if(r){ r.click(); ok('it opens the menu on that dungeon at the picked tier, the board closes',!panel().hidden&&c.el('#dgBoard').hidden&&G.DGRM.th==='hollowroots'&&G.DGRM.tier===2); } }
+  // ---- D8c: the travel window's Dungeons tab ----
+  const sent=[]; const send0=G.NET.send; G.NET.send=m=>{ sent.push(JSON.parse(JSON.stringify(m))); send0(m); };
+  G.closePanels(); G.P.x=G.VIL.tele.x; G.P.z=G.VIL.tele.z; G.GEAR.east=2; G.GEAR.sun=0; G.TR_TABSET('d'); G.openTravel(); await wait(50);
+  { const rows=find(c.el('#trBody'),'tr-dgrow'); ok('the Dungeons tab lists the eight dungeons with their lock state (a shut land gate: Locked, disabled)',rows.length===8&&find(c.el('#trBody'),'tr-dgopen').filter(b=>b.disabled).length===themes.filter(th=>!G.dgGateOpen(G.GEAR,G.DG_THEMES[th])).length&&/highest open tier/.test(tx(rows[0])),rows.length+' rows');
+    sent.length=0; find(rows[0],'tr-dgopen')[0].click(); await wait(50);
+    const o=sent.find(m=>m.t==='dg'&&m.a==='open'); ok('a tap on a dungeon opens its Delve board from the circle: dg{a:"open",dungeon,via:"circle"}, the board panel shows',!!o&&o.dungeon==='hollowroots'&&o.via==='circle'&&!c.el('#dgBoard').hidden&&G.DG_BOARD.via==='circle',JSON.stringify(o));
+    G.netHandle({t:'dgboard',via:1,th:'hollowroots',name:'The Hollow Roots',door:'The Hollowed Elder',offer:['purge','defense'],pool:['purge','defense'],left:100,L:30,tier:0,top:0,gate:1,ok:1,why:'',lead:1}); await wait(50);
+    ok('the board has Go to the door, and no door is needed to keep it open',find(c.el('#dgBody'),'dgb-goto').length===1&&!c.el('#dgBoard').hidden);
+    sent.length=0; find(c.el('#dgBody'),'dgb-start')[0].click(); await wait(50); const st=sent.find(m=>m.t==='dg'&&m.a==='start');
+    ok('Start from the circle carries via:"circle" with the dungeon, type and tier',!!st&&st.via==='circle'&&st.dungeon==='hollowroots'&&st.type==='purge'&&st.tier===0,JSON.stringify(st));
+    G.closePanels(); G.TR_TABSET('d'); G.openTravel(); await wait(50); find(c.el('#trBody'),'tr-dgrew')[3].click(); ok('Rewards on a row opens the rewards menu on that dungeon (the third way in)',!panel().hidden&&G.DGRM.th===themes[3]);
+    G.closePanels(); G.TR_TABSET('d'); G.openTravel(); await wait(50); G.netHandle({t:'dgboard',via:1,th:'hollowroots',name:'x',door:'y',offer:[],pool:[],left:100,L:30,tier:0,top:0,gate:1,ok:1,why:'',lead:1}); await wait(20);
+    G.dgBoardOpen('hollowroots','circle'); G.netHandle({t:'dgboard',via:1,th:'hollowroots',name:'x',door:'y',offer:['purge'],pool:['purge'],left:100,L:30,tier:0,top:0,gate:1,ok:1,why:'',lead:1}); await wait(20);
+    sent.length=0; find(c.el('#dgBody'),'dgb-goto')[0].click(); await wait(50); const d=sent.find(m=>m.t==='dg'&&m.a==='door'); ok('Go to the door sends dg{a:"door",dungeon,via:"circle"} and closes the panel',!!d&&d.dungeon==='hollowroots'&&c.el('#dgBoard').hidden,JSON.stringify(d)); }
+  G.TR_TABSET('v');
   ok('the run threw nothing',!c.G().Stream.failed&&errs.length===0,errs.slice(0,2).join(' | '));
   c.stop(); console.error=realErr; console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);
 })();
