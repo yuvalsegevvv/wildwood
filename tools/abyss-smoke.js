@@ -39,7 +39,7 @@ ok('a clean save stays as it is',(()=>{ const g={top:3,best:21,clears:[4,3,2,0,0
 // the flag and the window
 W.join('a',{name:'Alice',look:{cls:'warrior'},save:{level:40}}); W.join('b',{name:'Bob',look:{cls:'warrior'},save:{level:39}}); tick(2);
 const A=W.players.get('a'), B=W.players.get('b'), abm=pid=>sent.filter(s=>s[0]===pid&&s[1].t==='abyss').map(s=>s[1]);
-ok('the flag is off by default (and the deploy-like server has no dev tools)',x.abOnS()===false);
+ok('the flag is ON by default since B12 (the deploy-like server has no dev tools, so this is AB_ON itself)',x.abOnS()===true);
 x.abSwitch(false); ok('abSwitch(false) turns it off (the deploy-like server has no dev tools)',x.abOnS()===false);
 W.receive('a',{t:'abyss',a:'open'}); tick(2); ok('flag off: open is silence',abm('a').length===0);
 x.abSwitch(true); ok('abSwitch(true) turns the flag on',x.abOnS()===true);

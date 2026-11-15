@@ -9,7 +9,7 @@
    test: tools/abyss-smoke.js
    Round levels: every finite difficulty climbs 10 levels every 3 rounds, so ONE formula, abRoundLv(d,r) = lo + round((r-1)*10/3): difficulty I (lo 40) gives 40, 43, 47, 50, 53, 57, 60 (the
    last digit cycles 0, 3, 7), V reaches 140 at round 19, Infinite (lo 90, no end) reaches 180 at round 28. Boss rounds: 7, 13, 19... (every 6 from 7) and the last round of a finite difficulty. */
-let AB_ON=false;   // the mode's switch: false on the deploy until step B12; the server also opens it in the test world and with the dev tools (abOnS, server/abyss.js)
+let AB_ON=true;   // the mode's switch (on since step B12); the server also opens it in the test world and with the dev tools (abOnS, server/abyss.js)
 function abSwitch(on){ AB_ON=!!on; }
 const AB_DIFFS=[
   {id:'I',name:'Difficulty I',lo:40,hi:60,rounds:7},
