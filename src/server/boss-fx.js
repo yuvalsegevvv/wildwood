@@ -54,7 +54,7 @@ function resolveTeleS(e,m){
 }
 function playersInArena(A,pad){ const out=[]; for(const p of S.players.values()) if(!p.dead && Math.hypot(p.x-A.x,p.z-A.z)<A.r+pad) out.push(p); return out; }
 // effects on a player, applied by that player's client: root and slow last dur seconds; push shoves (vx, vz metres per second, fading over about half a second)
-function pfxS(p,kind,dur,vx,vz){ ev('pfx',p.id,kind,dur,r1(vx||0),r1(vz||0)); }
+function pfxS(p,kind,dur,vx,vz){ dur=shdSteadyDur(p,kind,dur); ev('pfx',p.id,kind,dur,r1(vx||0),r1(vz||0)); }   // dgrev D7: Steady shortens a root or slow on you
 
 /* ---- ground zones ---- */
 function addZoneS(B,kind,x,z,r,dur,a,b){

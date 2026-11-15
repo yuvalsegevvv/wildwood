@@ -5,7 +5,7 @@
 const {loadServer}=require('./load');
 const got={}, msgs={};
 const {api:W,x}=loadServer({dev:true,log(){},send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (msgs[pid]=msgs[pid]||[]).push(c); if(c.t==='snap'&&c.ev) (got[pid]=got[pid]||[]).push(...c.ev); }},
-  ['DG_RUNS','DG_THEMES','DG_BAD','DG_ENTRANCES','DG_LANDS','DG_ENTRY_LV','DG_END_S','DG_BOSS_DEFS','DG_BOSSES','DG_REWARDS','EW_DOOR','PENDANT_STATS','PENDANT_BASE','PENDANT40_BASE','RAR_MULT','ENH_MAX','ITEM','MON_DEFS',
+  ['DG_RUNS','DG_THEMES','DG_BAD','DG_ENTRANCES','DG_LANDS','DG_ENTRY_LV','DG_END_S','DG_BOSS_DEFS','DG_BOSSES','DG_REWARDS','SHD_IDS','EW_DOOR','PENDANT_STATS','PENDANT_BASE','PENDANT40_BASE','RAR_MULT','ENH_MAX','ITEM','MON_DEFS',
    'dgEntranceNear','dgApron','dgUnlocked','dgGateOpen','dgLevel','dgOffer','dgPoolS','dgClearReward','dgParse','dgItem','dgBossDefOf','dgEnhanceNext','dgMergedId','dgAllPendantIds40','killMonsterS','BOSS_KITS','DG_STARS_WARN','DG_STAR_R','DG_STARS_STUN']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const IMM=new Set(), tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const pid of IMM){ const p=W.players.get(pid); if(p&&!p.dead) p.hp=p.maxHp; } } };
@@ -54,13 +54,13 @@ W.receive('a',{t:'dg',a:'leave'}); tick(3);
 { W.receive('a',{t:'dev',cmd:'dg',v:'cenote:hunt:5'}); tick(3); const r=A.inst?x.DG_RUNS.get(A.inst):null;
   ok('a hunt run\'s quarry is the Cenote Eel (an isles kind slipping through the flooded halls)',!!r&&!!r.k&&!!r.k.q&&r.k.q.def.id==='cenoteeel'); W.receive('a',{t:'dg',a:'leave'}); tick(3); }
 
-// ---- what a clear pays: a level-40 pendant ----
+// ---- what a clear pays: level-40 shields (D7; the level-40 pendant ids stay registered, below) ----
 { const R=x.DG_REWARDS.cenote, rnd=(()=>{ let a=7; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; })();
   const seen={}, rar=[0,0,0,0,0], N2=30000; let bad=0;
   for(let i=0;i<N2;i++){ const id=x.dgClearReward('cenote',rnd), q=x.dgParse(id), it=x.dgItem(id);
-    if(!q||!it||q.t!==8||q.n!==0||q.roll||it.lv!==40||it.kind!=='pendant'||!R.pool.includes(q.stat)||!it.roll0||!/^pendant8-(xp|drop|coin|crit|critdmg)(-[reul])?$/.test(id)) bad++; seen[q.stat]=(seen[q.stat]||0)+1; rar[q.rar]++; }
+    if(!q||!it||q.t!==8||q.n!==0||q.roll||it.lv!==40||it.kind!=='shield'||!R.pool.includes(q.stat)||!it.roll0||!/^shield8-(hp|def|block|steady|ward|leech|regen)(-[reul])?$/.test(id)) bad++; seen[q.stat]=(seen[q.stat]||0)+1; rar[q.rar]++; }
   const within=(o,n,p)=>Math.abs(o-n*p)<=4*Math.sqrt(n*p*(1-p))+1;
-  ok('a clear rolls a +0 level-40 pendant (pendant8-<kind>, unrolled: a stone rolls it) of the five kinds, each equally often, at 65 / 25 / 7 / 2.5 / 0.5%',bad===0&&R.kind==='pendant'&&R.t===8&&R.pool.join()===x.PENDANT_STATS.join()&&x.PENDANT_STATS.every(s=>within(seen[s],N2,1/x.PENDANT_STATS.length))&&rar.every((c,r)=>within(c,N2,[0.65,0.25,0.07,0.025,0.005][r])),JSON.stringify(rar)); }
+  ok('a clear rolls a +0 level-40 shield (shield8-<kind>, unrolled: an Armor Reroll Stone rolls it) of the seven kinds, each equally often, at 65 / 25 / 7 / 2.5 / 0.5%',bad===0&&R.kind==='shield'&&R.t===8&&R.pool.join()===x.SHD_IDS.join()&&x.SHD_IDS.every(s=>within(seen[s],N2,1/x.SHD_IDS.length))&&rar.every((c,r)=>within(c,N2,[0.65,0.25,0.07,0.025,0.005][r])),JSON.stringify(rar)); }
 { const ids=x.dgAllPendantIds40(), I=x.ITEM;
   ok('175 level-40 pendants (5 kinds x the 35 rarity and tempering pairs) are items: lv 40, tier 7, value = the level-40 base x rarity x tempering, the level-30 ones untouched',ids.length===175&&ids.every(id=>I[id]&&I[id].kind==='pendant'&&I[id].lv===40&&I[id].tier===7&&I[id].t===8)&&x.PENDANT_STATS.every(s=>Math.abs(I['pendant8-'+s].v-x.PENDANT40_BASE[s])<1e-9&&Math.abs(I['pendant8-'+s+'-l+10'].v-Math.round(x.PENDANT40_BASE[s]*3*2*10000)/10000)<1e-9&&I['pendant-'+s].lv===30&&I['pendant-'+s].v===x.PENDANT_BASE[s]));
   ok('a level-40 pendant tempers to the next step and three +0 copies merge into the next rarity, both staying level-40 pendants',x.dgEnhanceNext('pendant8-xp')==='pendant8-xp+1'&&x.dgEnhanceNext('pendant8-crit-r+2')==='pendant8-crit-r+3'&&x.dgMergedId(I['pendant8-coin'])==='pendant8-coin-r'&&x.dgMergedId(I['pendant8-coin-l'])===null&&x.dgParse('pendant8-xp~a00a01a02')===null&&x.dgParse('pendant8-xp+11')===null); }
@@ -103,7 +103,7 @@ W.receive('k',{t:'dg',a:'leave'}); W.receive('l',{t:'dg',a:'leave'}); tick(3);
     ok('with the whole party inside a lit star the pulse hurts nobody and Ahmetl is stunned',B.stunT>0||B.stunT===0&&toasts('w').includes('mask cracks'),'stun '+B.stunT);
     IMM.add('w'); IMM.add('v'); for(const p of [W2,W3]){ p.hp=p.maxHp; } B.stunT=0;
     const i2=W2.gear.inv.length, i3=W3.gear.inv.length; clear(); withRandom(0.0005,()=>x.killMonsterS(B.m,W2)); tick(3);
-    const n2=W2.gear.inv.slice(i2), n3=W3.gear.inv.slice(i3), w2=n2.find(id=>/^pendant-/.test(id)), d2=last('w','dge');
-    ok('the win (tier I: one level-30 piece, D2) pays EVERY member the same pendant through dgGrantItemP, listed in the results, and is saved as a clear',r.phase==='won'&&!!w2&&n3.includes(w2)&&x.dgParse(w2).t===7&&x.ITEM[w2].lv===30&&x.ITEM[w2].kind==='pendant'&&!!d2&&d2[6].includes(w2));
+    const n2=W2.gear.inv.slice(i2), n3=W3.gear.inv.slice(i3), w2=n2.find(id=>/^shield7-/.test(id)), d2=last('w','dge');
+    ok('the win (tier I: one level-30 piece, D2) pays EVERY member the same shield through dgGrantItemP, listed in the results, and is saved as a clear',r.phase==='won'&&!!w2&&n3.includes(w2)&&x.dgParse(w2).t===7&&x.ITEM[w2].lv===30&&x.ITEM[w2].kind==='shield'&&!!d2&&d2[6].includes(w2));
     secs(x.DG_END_S+0.5); } } }
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

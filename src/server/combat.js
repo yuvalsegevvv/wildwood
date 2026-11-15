@@ -60,6 +60,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   m.kbx+=ex/e*k; m.kbz+=ez/e*k;
   if(!m.aggro||!S.players.get(m.tgt)){ m.aggro=true; m.tgt=p.id; }
   if(d.fx) ev('dmg',m.id,d.v,d.crit?1:0,p.id,d.fx); else ev('dmg',m.id,d.v,d.crit?1:0,p.id);
+  shdLeechS(p,d.v);   // dgrev D7: the shield's Lifeblood heals a share of the hit
   if(d.crit) glvHitS(m,p,d);   // dgrev: gloves: Hot Streak's stack and Echo's second hit (server/dungeon-gear.js)
   if(m.hp<=0&&m.boss&&vbPartDownS(m)){}   // volcano: a part ended, not the boss
   else if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }

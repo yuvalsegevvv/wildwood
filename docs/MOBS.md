@@ -21,7 +21,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides) | `MON_COUNT` src/server/monsters.js:20, `initMonstersS` src/server/monsters.js:21 |
 | Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:11, src/shared/vale.js:42, src/shared/hoarfrost.js:88, src/shared/beach.js:6 |
 | Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:60 |
-| What a kill pays (XP, coins, an item roll, the material, quests) | `rewardKill` src/server/combat.js:84 |
+| What a kill pays (XP, coins, an item roll, the material, quests) | `rewardKill` src/server/combat.js:85 |
 | Materials a kind drops (one per kind, `MAT_NAMES`) | `MATS` src/shared/drops.js:12 |
 | What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:33, `monK` src/server/tiers.js:13 |
 | Boss fights: engagement, phases, reset / one move set per boss / the move primitives | `BOSSES` src/server/boss.js:11 / `BOSS_KITS` src/server/boss-fx.js:17 / src/server/boss-fx.js |
@@ -314,7 +314,7 @@ A dungeon (`src/shared/dungeons/themes/<id>.js`) is built from the world's own m
 | `khet` | Khet, the Hourkeeper | 40 | light | 110010 | 889 | 2.3 | 2.3 | 322490.2 | 48480 | The Sandglass | a level-40 ring | Sand Imp | — | boss30 | `hour` src/server/dungeons/boss-kits-sandglass.js:8 | src/shared/dungeons/bosses.js:71 |
 | `abbess` | Abbess Morrow, the Drowned Abbess | 40 | water | 110010 | 889 | 2.4 | 2.2 | 322490.2 | 48480 | The Gloamvault | a level-40 ring | Drowned Acolyte | — | boss30 | `toll` src/server/dungeons/boss-kits-gloamvault.js:9 | src/shared/dungeons/bosses.js:86 |
 | `ortha` | Queen Ortha, the Brood Queen | 45 | earth | 159712 | 1013 | 2.6 | 0.4 | 820351.9 | 65340 | The Termite Cathedral | a level-40 ring | Broodling | Brood Egg | boss30 | `brood` src/server/dungeons/boss-kits-termite.js:30 | src/shared/dungeons/bosses.js:101 |
-| `ahmetl` | Ahmetl, the Star-Masked | 48 | dark | 185392 | 1107 | 2.4 | 2.3 | 1445525.3 | 78160 | The Cenote of Hollow Stars | a level-40 pendant | Star Shade | — | boss30 | `stars` src/server/dungeons/boss-kits-cenote.js:9 | src/shared/dungeons/bosses.js:117 |
+| `ahmetl` | Ahmetl, the Star-Masked | 48 | dark | 185392 | 1107 | 2.4 | 2.3 | 1445525.3 | 78160 | The Cenote of Hollow Stars | a level-40 ring | Star Shade | — | boss30 | `stars` src/server/dungeons/boss-kits-cenote.js:9 | src/shared/dungeons/bosses.js:117 |
 
 ### 11.2 Dungeon boss helpers (summons and props)
 

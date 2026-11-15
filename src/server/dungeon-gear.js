@@ -15,6 +15,20 @@ const glvAtkP=p=>glvP(p,'atk');
 const glvStreakP=p=>{ const it=glvOfP(p,'streak'); if(!it||!p.glvS) return 0; let n=0; for(const t of p.glvS) if(t>S.t) n++; return n*it.v; };   // p.glvS: the expiry times of the live stacks (not saved, cleared on death)
 const glvOverP=(p,raw)=>{ const it=glvOfP(p,'over'); return it&&raw>CRIT_CAP?(raw-CRIT_CAP)*100*it.v:0; };   // raw: the crit chance before the cap; every 1% above it adds it.v to the crit multiplier (the multiplier's own cap still holds)
 // one crit landed on m (damageMonsterS, after the hit's event): Hot Streak adds a stack, Echo may hit again for a share of the crit. The echo is no roll, so it can never crit, echo or stack
+// dgrev D7: the worn shield (none on the Proving Isle, none below the piece's own level). Everything is read from the item id in the save, never from a client number.
+const shdOfP=(p,kind)=>{ if(p.pv) return null; const it=ITEM[p.gear.eq.shield]; return it&&it.kind==='shield'&&it.stat===kind&&p.level>=it.lv?it:null; };
+const shdP=(p,kind)=>{ const it=shdOfP(p,kind); return it?it.v:0; };   // hp / def: recalcP
+const shdBlockK=p=>{ const it=shdOfP(p,'block'); return it&&Math.random()<Math.min(SHD_BLOCK_CAP,it.v)?SHD_BLOCK_LET:1; };   // hurtP: x0.3 of one hit's damage when it blocks (inside the DMG_TAKEN_MIN floor, so a hit still does at least 10%)
+const shdSteadyDur=(p,kind,dur)=>{ if(kind!=='root'&&kind!=='slow') return dur; const it=shdOfP(p,'steady'); return it?dur*(1-Math.min(SHD_STEADY_CAP,it.v)):dur; };   // pfxS: a stun (root) or slow on you is shorter
+function shdWardS(p){   // hurtP, after a hit that leaves you alive: below 30% health a shield of v x max health, once every 60 s (the larger of it and a skill's shield stays)
+  const it=shdOfP(p,'ward'); if(!it||p.dead||p.hp>=p.maxHp*SHD_WARD_BELOW||S.t<(p.shdWardT||0)) return;
+  p.shdWardT=S.t+SHD_WARD_CD; ssShieldS(p,Math.min(SHD_WARD_CAP,it.v),SHD_WARD_SECS); toastTo(p.id,'Your shield flares: a ward of light absorbs the next blows.','good');
+}
+function shdLeechS(p,v){ const it=shdOfP(p,'leech'); if(it) healP(p,v*it.v); }   // damageMonsterS: heal a share of the damage dealt
+function shdRegenP(p,dt){   // updatePlayersS: Mending, +v of max health a second out of combat, a third of it in combat (on top of the ordinary regen)
+  const it=shdOfP(p,'regen'); if(!it||p.dead) return;
+  healP(p,p.maxHp*it.v*(S.t-Math.max(p.lastHit,p.lastDealt||-99)>3?1:SHD_REGEN_COMBAT)*dt);
+}
 function glvHitS(m,p,d){
   const st=glvOfP(p,'streak'); if(st){ const a=(p.glvS||(p.glvS=[])).filter(t=>t>S.t); a.push(S.t+GLV_STREAK_SECS); while(a.length>GLV_STREAK_MAX) a.shift(); p.glvS=a; }
   const ec=glvOfP(p,'echo'); if(ec&&Math.random()<GLV_ECHO_CHANCE){ const v=Math.max(1,Math.round(d.v*ec.v)); m.hp-=v/monK(m,p).hp/(m.hpDiv||1); if(m.tr) troomHitS(m,p,v); ev('dmg',m.id,v,0,p.id); }

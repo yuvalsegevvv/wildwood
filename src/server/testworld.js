@@ -15,6 +15,7 @@ function testKitP(p){
   for(const t of TAL_STATS) put(dgTalismanId(t,TEST_RAR,TEST_ENH));   // volcano: the Sinkwarden's talismans
   for(const c of CAPE_IDS) put(dgCapeId(c,TEST_RAR,TEST_ENH));   // dgrev D5: the eight capes
   for(const k of GLV_IDS) put(dgGlovesId(k,TEST_RAR,TEST_ENH));   // dgrev D6: the six gloves
+  for(const k of SHD_IDS) put(dgShieldId(k,TEST_RAR,TEST_ENH));   // dgrev D7: the seven shields
   g.coins=TEST_COINS; g.rsw=g.rsa=g.rsr=TEST_STONES;
   // the world: every circle attuned, every gate open (the same values the testing tools set), every land's zone tier unlocked up to TEST_TIER (the symbol)
   g.east=2; g.north=2; g.west=2; g.sun=2; g.gloam=2; g.tall=2; g.isles=2; g.river=1; g.neck=1; g.redgate=1; g.amber=1;
@@ -35,6 +36,6 @@ function testKitP(p){
   for(const w of ['sword','bow','wand']) equipP(p,dgGearId40(w,TEST_RAR,TEST_ENH));   // wpn: all three carried (the last one equipped is in hand until a character is played)
   equipP(p,dgGearId40('sword',TEST_RAR,TEST_ENH));
   for(const s of ARMOR_SLOTS) equipP(p,dgGearId40(s,TEST_RAR,TEST_ENH));
-  equipP(p,dgRingId40('basic',TEST_RAR,TEST_ENH)); equipP(p,dgPendantId40('critdmg',TEST_RAR,TEST_ENH)); equipP(p,dgTalismanId('atk',TEST_RAR,TEST_ENH)); equipP(p,dgCapeId('hg',TEST_RAR,TEST_ENH)); equipP(p,dgGlovesId('crit',TEST_RAR,TEST_ENH));
+  equipP(p,dgRingId40('basic',TEST_RAR,TEST_ENH)); equipP(p,dgPendantId40('critdmg',TEST_RAR,TEST_ENH)); equipP(p,dgTalismanId('atk',TEST_RAR,TEST_ENH)); equipP(p,dgCapeId('hg',TEST_RAR,TEST_ENH)); equipP(p,dgGlovesId('crit',TEST_RAR,TEST_ENH)); equipP(p,dgShieldId('hp',TEST_RAR,TEST_ENH));
   recalcP(p); p.hp=p.maxHp; p.dirty=true;
 }

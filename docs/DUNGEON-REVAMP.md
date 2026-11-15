@@ -193,7 +193,7 @@ The travel window (`game/ui/travel.js`: `openTravel`, `renderTravel`, it has no 
 | D4 (built) | Talismans at all levels from the Sandglass; Pyrrhax's list emptied; the slot at 30 | `volcano-smoke`, `rewards-smoke`, `sandglass-dungeon-smoke`, `testworld-smoke` |
 | D5 **(built)** | Capes: slot, the 8 combos, plus and minus growth, caps; the Gloamvault pays them | new `capes-smoke` |
 | D6 **(built)** | Gloves: slot, the 6 kinds, combat hooks; the Termite Cathedral | new `gloves-smoke`, `skills-smoke` |
-| D7 | Shields: slot, the 7 kinds, hurt hooks; the Cenote | new `shields-smoke`, `server-smoke` |
+| D7 **(built)** | Shields: slot, the 7 kinds, hurt hooks; the Cenote | new `shields-smoke`, `server-smoke` |
 | D8 | Client: inventory slots and icons, forge tabs, details text, the board, a results card with several pieces; the docs | `rewards-client-smoke`, `client-smoke`, `phone-layout-smoke` |
 | D8b | The Delves rewards menu (7b) | new `dungeon-rewards-menu-smoke`, `phone-layout-smoke` |
 | D8c | Dungeons from the teleport circle (7c) | `dungeon-runs-smoke`, `dungeon-board-client-smoke`, `client-smoke` |
@@ -239,6 +239,14 @@ The main files touched: `shared/dungeon-rewards.js`, `dungeon-items.js`, `rolls.
 - Server (`server/dungeon-gear.js`, hooks marked `// dgrev:`): `rollDmgS` builds the raw crit chance `cr0` (with `glvP(p,'crit')` and `glvStreakP`), caps it at `CRIT_CAP`, and adds `glvP(p,'critdmg')` and `glvOverP(p,cr0)` (`(cr0 - CRIT_CAP) x 100 x v`, only above the cap) to the multiplier before `CRIT_MULT_CAP`; `recalcP` adds `glvAtkP` beside the talisman's flat attack; `damageMonsterS` calls `glvHitS` after a crit's event: Hot Streak (`p.glvS`, one expiry time per stack, 4 s, at most 5, not saved, cleared on death and gone with the player) and Echo (15%: a second hit of `v` x the crit's damage straight off the monster's health; it is no roll, so it cannot crit, echo or stack). Nothing counts on the Proving Isle (`p.pv`, like the pendant) and a glove above your level counts for nothing. The hit on another fighter (`pvpHitS`) never reaches `damageMonsterS`.
 - Client minimum: `BODY_SLOTS` + the doll's grid area `gloves` (left of the feet), `glovesIconArt`, details / tempering text, `rlUiKindOk` and `pshKinds` (`PSHOP_KINDS`) list gloves. Forge tabs and polish stay D8.
 - `termitecathedral` pays gloves (`dungeons-smoke`, `termite-dungeon-smoke` updated); `tools/gloves-smoke.js` is new.
+
+### D7 as built (decisions)
+
+- `shared/shields.js` (`SHD_KINDS`, `shdVal`, `shdText`; the prefix is `shd` / `SHD_` because "shield" already means a skill's absorb pool and the cosmetic shield). Ids `shield<7|8|9|10>-<hp|def|block|steady|ward|leech|regen>[-rarity][+n][~roll]` (`dgShieldId`, `dgAllShieldIds(t)` = 245 a level, `dgParse` returns `stat` = the kind); records `kind:'shield'`, `slot:'shield'`, `stat`, `v`, lines 0 / 1 / 2 / 3, price like a talisman. `RL_STONE_KIND.shield` = `rsa` (the Armor Reroll Stone, sacrifice pays armour stones), `RL_KIND_K.shield` = armour's weights. The test world's kit holds all seven and wears Bulwark.
+- `v` = base (0.08, 0.08, 0.08, 0.30, 0.20, 0.015, 0.006) x `RAR_MULT` (a legendary x3) x (1 + 0.1 n) x 1.15^(level step above 30). Caps at the consumers: block chance 50%, Steady 75% (a stun is never shorter than a quarter), Last Ward 60% of max health. Block's 30% let-through, the ward's 30% threshold and 60 s cooldown (and its 8 s duration) never grow.
+- Server (`server/dungeon-gear.js`, hooks marked `// dgrev D7`): health % and defence % in `recalcP` (`shdP`, after the rolled lines, then `defRed` again); **Parry sits inside the `DMG_TAKEN_MIN` floor** in `hurtP`'s multiplier (`Math.max(DMG_TAKEN_MIN, shdBlockK(p) * ...)`), so armour, buffs and a block together still leave a hit at least 10%; Last Ward (`shdWardS`, after the hit, alive and below 30%) raises the existing skill shield `p.shield` through `ssShieldS` (the larger pool wins; `p.shdWardT` is the cooldown, not saved); Steady shortens a `root` or `slow` in `pfxS` (`boss-fx.js`; a knock-back is not shortened); Lifeblood (`shdLeechS`) heals a share of `damageMonsterS`'s damage; Mending (`shdRegenP`, in `updatePlayersS`) adds to the ordinary regen, out of combat (3 s since the last hit taken or dealt) at v, in combat at a third of v. Nothing counts on the Proving Isle (`p.pv`) and a shield above your level counts for nothing.
+- Client minimum: `BODY_SLOTS` + the doll's grid area `shield` (left of the legs), `shieldIconArt`, details / tempering text, `rlUiKindOk` and `pshKinds` (`PSHOP_KINDS`) list shields. Forge tabs and polish stay D8.
+- `cenote` pays shields (`dungeons-smoke`, `cenote-dungeon-smoke` updated); `tools/shields-smoke.js` is new.
 
 ### D3 as built (decisions)
 

@@ -41,7 +41,7 @@ function rlUiRows(pred){
   for(const s in GEAR.eq){ const id=GEAR.eq[s], it=id?ITEM[id]:null; if(it&&pred(it)&&worn.has(id)) rows.push({id,worn:true,n:1}); }
   return rows.sort((a,b)=>b.worn-a.worn||ITEM[b.id].rar-ITEM[a.id].rar||ITEM[b.id].name.localeCompare(ITEM[a.id].name)||a.id.localeCompare(b.id));
 }
-const rlUiKindOk=it=>(it.kind==='weapon'||it.kind==='armor'||it.kind==='ring'||it.kind==='pendant'||it.kind==='talisman'||it.kind==='cape'||it.kind==='gloves')&&it.dg;   // a ring has its own stone (gear.rsr)
+const rlUiKindOk=it=>(it.kind==='weapon'||it.kind==='armor'||it.kind==='ring'||it.kind==='pendant'||it.kind==='talisman'||it.kind==='cape'||it.kind==='gloves'||it.kind==='shield')&&it.dg;   // a ring has its own stone (gear.rsr)
 function rlUiRollHtml(){
   const rows=rlUiRows(it=>rlUiKindOk(it)&&it.roll0);
   let h=`<p class="fg-intro">Level-40 gear and accessories carry one rolled line out of 13 stats, level 50 two and level 60 three. A roll costs ${RL_COST} Reroll Stone of the piece's kind (weapon, armour or ring) and replaces all its lines. Weapons roll higher offence, armour higher defence. Make stones in the other tab.</p>`+rlUiStoneBarHtml();
