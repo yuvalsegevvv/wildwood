@@ -28,8 +28,14 @@ function dgInfoHtml(it){
 }
 // dgrev: does this ring work with what you play (the server's bdx.main, else unknown = yes)? Another kind of item: always yes
 function dgRingUiOn(it){ const X=GEAR&&GEAR.skills&&GEAR.skills.bdx; return !(it&&it.kind==='ring')||!X||dgRingOn(it,dgKitEl(GEAR,X.main)); }
+// d8: the fixed bonus of a piece as html: a cape's plus in green and its minus in red, everything else as itemStat
+function dgStatHtml(it){
+  if(it.kind==='cape') return `<span class="up">${capeStatText(it.plus,'+')}</span>, <span class="down">${capeStatText(it.minus,'-')}</span>`;
+  return itemStat(it);
+}
 function dgInfoTail(it){
   const E=dgEnhInfo(it.id), have=dgStones(); let h='';
+  if(PL.level<it.lv&&it.kind!=='weapon'&&it.kind!=='armor') h+=`<span class="down">Inactive: needs level ${it.lv}</span>`;   // d8: above your level a piece counts for nothing
   if(it.kind==='ring') h+=dgRingUiOn(it)?`<span class="up">+${it.ratk} attack</span>`:`<span class="down">+${it.ratk} attack, inactive: ${dgRingNeedText(it)}</span>`;
   h+=`<span>Tempered +${E.n} of ${E.max}`+(E.next?` &middot; next: ${dgStatChange(it,E.next)} for ${dgPlural(E.stones,ENH_NAME)} <span class="${have>=E.stones?'up':'down'}">(you have ${have})</span>`:' &middot; fully tempered')+'</span>';
   return h;
@@ -50,15 +56,15 @@ function dgTemperRows(){
 }
 function dgTemperHtml(){
   const have=dgStones(), rows=dgTemperRows();
-  let h=`<p class="fg-intro">Bring me level-30 gear from the dungeons and ${ENH_NAME}s (normal monsters of level ${ENH_LV} and above drop them instead of equipment). Each step adds ${Math.round(ENH_STEP*100)}% of the piece's own stats and always works; the step to +n costs n stones. Common gear reaches +${ENH_MAX[0]}, rare +${ENH_MAX[1]}, epic +${ENH_MAX[2]}, unique +${ENH_MAX[3]}, legendary +${ENH_MAX[4]}.</p>
+  let h=`<p class="fg-intro">Bring me gear from the dungeons (level 30 to 60: weapons, armour, rings, pendants, talismans, capes, gloves and shields) and ${ENH_NAME}s (normal monsters of level ${ENH_LV} and above drop them instead of equipment). Each step adds ${Math.round(ENH_STEP*100)}% of the piece's own stats and always works; the step to +n costs n stones. Common gear reaches +${ENH_MAX[0]}, rare +${ENH_MAX[1]}, epic +${ENH_MAX[2]}, unique +${ENH_MAX[3]}, legendary +${ENH_MAX[4]}.</p>
     <div class="fg-stones"><i></i>${ENH_NAME}s <b id="fgStones">${have}</b></div>`;
-  if(!rows.length) h+='<p class="muted">You have no level-30 gear yet. A dungeon clear pays one piece.</p>';
+  if(!rows.length) h+='<p class="muted">You have no dungeon gear yet. A dungeon clear pays pieces.</p>';
   for(const r of rows){
     const E=dgEnhInfo(r.id), it=E.it, can=!!E.next&&have>=E.stones;
     const btn=!E.next?'<button class="chip forge" disabled>Fully tempered</button>':`<button class="chip forge" data-temper="${it.id}" data-worn="${r.worn?1:0}" ${can?'':'disabled'}>${can?'Temper: '+dgPlural(E.stones,'stone'):'Need '+dgPlural(E.stones,'stone')}</button>`;
     h+=`<div class="fg-row${can?' ready':''}"><span class="it-ico big r${it.rar}">${itemIcon(it)}</span>${E.next?ARROW+`<span class="it-ico big r${E.next.rar}">${itemIcon(E.next)}</span>`:''}
-      <div class="fg-main"><b style="color:${RAR_COL[it.rar]}">${it.name}${E.next?' <span class="fg-step">&rarr; +'+E.next.n+'</span>':''}</b><span>${E.next?dgStatChange(it,E.next):itemStat(it)}</span>
-      <span class="muted">+${E.n} of ${E.max}${r.worn?' &middot; worn':r.n>1?' &middot; you have '+r.n:' &middot; in your bag'}</span></div>${btn}</div>`;
+      <div class="fg-main"><b style="color:${RAR_COL[it.rar]}">${it.name} <small class="muted">Lv ${it.lv}</small>${E.next?' <span class="fg-step">&rarr; +'+E.next.n+'</span>':''}</b><span>${E.next?dgStatChange(it,E.next):dgStatHtml(it)}</span>
+      <span class="muted">${ENH_NAME}s: ${have} &middot; +${E.n} of ${E.max}${r.worn?' &middot; worn':r.n>1?' &middot; you have '+r.n:' &middot; in your bag'}</span></div>${btn}</div>`;
   }
   return h;
 }

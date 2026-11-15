@@ -99,7 +99,7 @@ function dgBoardRender(){
   const tp=dgBoardEl('div','dgb-tier'), tl=dgBoardEl('button','chip dgb-tl','\u25C0'), tr=dgBoardEl('button','chip dgb-tr','\u25B6');
   tl.type='button'; tr.type='button'; tl.disabled=pick<=0; tr.disabled=pick>=DG_TIER_MAX;
   tl.addEventListener('click',()=>{ DG_BOARD.pick=pick-1; dgBoardRender(); }); tr.addEventListener('click',()=>{ DG_BOARD.pick=pick+1; dgBoardRender(); });
-  dgBoardAdd(tp,dgBoardEl('span',null,'Tier'),tl,dgBoardEl('b','dgb-tn',DG_BOARD_ROMAN[pick]+(open?'':' (locked)')),tr,dgBoardEl('span',null,'monster level '+dgtLevel(pick))); body.appendChild(tp);
+  dgBoardAdd(tp,dgBoardEl('span',null,'Tier'),tl,dgBoardEl('b','dgb-tn',DG_BOARD_ROMAN[pick]+(open?'':' (locked)')),tr,dgBoardEl('span',null,'monster level '+dgtLevel(pick)+' · gear level '+DG_TIERS[pick].eq.map((w,i)=>w?30+10*i:0).filter(Boolean).join(' / ')+', '+(DG_TIERS[pick].n[0]===DG_TIERS[pick].n[1]?DG_TIERS[pick].n[0]:DG_TIERS[pick].n[0]+'-'+DG_TIERS[pick].n[1])+' pieces')); body.appendChild(tp);
   const offer=m.offer||[], pool=m.pool||offer, cards=dgBoardEl('div','dgb-cards');
   for(const id of offer){
     const Mi=DG_MISSIONS[id], built=pool.includes(id), card=dgBoardEl('div','dgb-card'+(built?'':' soon')), ct=dgBoardEl('div','dgb-ct'), act=dgBoardEl('div','dgb-act');

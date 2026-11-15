@@ -69,7 +69,7 @@ function renderInvInfo(){
   const btn=carried?'<span class="muted">Carried, not in use: it is in your hand when you play a '+CLASSES[CLASS_OF[it.slot]].name.toLowerCase()+' character (Characters panel, T).</span>':worn?(slot==='weapon'?'<span class="muted">You always hold a weapon: drag another one onto your hand to swap.</span>':`<button class="chip" data-unequip="${slot}">Take off</button>`)
     :`<button class="chip" data-equip="${it.id}" ${locked?'disabled':''}>${locked?'Needs level '+it.lv:'Equip'}</button>`;
   el.innerHTML=`<div class="ii-ico r${it.rar}">${itemIcon(it)}</div><div class="ii-main"><b style="color:${RAR_COL[it.rar]}">${it.name}</b>
-    <span>${RARITY[it.rar]} ${kind} &middot; <span class="${locked?'req bad':''}">level ${it.lv}</span> &middot; ${itemStat(it)}</span>${cmp?`<span>${cmp}</span>`:''}</div><div class="ii-btn">${btn}</div>`;
+    <span>${RARITY[it.rar]} ${kind} &middot; <span class="${locked?'req bad':''}">level ${it.lv}</span> &middot; ${dgStatHtml(it)}</span>${cmp?`<span>${cmp}</span>`:''}</div><div class="ii-btn">${btn}</div>`;
   el.querySelectorAll('[data-equip]').forEach(b=>b.onclick=()=>{ equip(b.dataset.equip); INV.sel=null; });
   el.querySelectorAll('[data-unequip]').forEach(b=>b.onclick=()=>{ unequip(b.dataset.unequip); INV.sel=null; });
 }

@@ -78,7 +78,10 @@ function dgResultShow(e){
   { const RR=DG_RUN&&DG_RUN.m==='rift'&&RIFT_DEFS[DG_RUN.th], re=RR&&RR.reward==='essence'?essOf(essIdOf(RR.essence)):null;   // a rift that pays Essence: the count is in the materials slot
     $('#dgResultStats').textContent=re?'Time '+dgClockText(+e[3]||0)+' · '+(e[7]|0)+' '+re.name:'Time '+dgClockText(+e[3]||0)+' · '+Math.round(+e[4]||0)+' XP · '+(e[5]|0)+' coins · '+(e[7]|0)+' materials'; }
   box.innerHTML=''; if(!items.length) box.append(Object.assign(document.createElement('span'),{className:'dgr-none',textContent:'No items this time.'}));
-  for(const id of items){ const it=ITEM[id], s=document.createElement('span'); s.className='dgr-it'; s.textContent=it?it.name:String(id); if(it) s.style.color=RAR_COL[it.rar]||''; box.append(s); }
+  for(const id of items){   // d8: an icon, the name and the level; the rarity colours the border and the name (names stay textContent)
+    const it=ITEM[id], s=document.createElement('span'), nm=document.createElement('span'); s.className='dgr-it'+(it?' r'+it.rar:''); nm.className='dgr-nm'; nm.textContent=it?it.name+' Lv '+it.lv:String(id);
+    if(it){ const ic=document.createElement('span'); ic.className='dgr-ico'; ic.innerHTML=itemIcon(it); s.append(ic); nm.style.color=RAR_COL[it.rar]||''; s.title=it.name+' · '+RARITY[it.rar]+' · level '+it.lv+' · '+itemStat(it); }
+    s.append(nm); box.append(s); }
   DG_HUD_EL.endAt=performance.now(); DG_HUD_EL.endLen=(DG_RUN?[...DG_RUN.objs.values()]:[]).some(o=>o.kind==='chest'&&o.st===1)?60:DG_END_SHOW;   /* the server waits 60 s while reward chests stand */ $('#dgResultGo').textContent='Leave now'; $('#dgResult').hidden=false; won?UI_SFX.success():UI_SFX.notify();
 }
 $('#dgResultGo').addEventListener('click',()=>{ if(DG_RUN) netSend({t:'dg',a:'leave'}); $('#dgResult').hidden=true; UI_SFX.click(); });

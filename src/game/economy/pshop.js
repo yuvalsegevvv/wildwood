@@ -12,7 +12,7 @@ EVH.pshv=e=>{ if(e[1]!==NET.pid) return; pshState.view=e[3]?{name:String(e[2]),i
 const pshEl=(tag,cls,text)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(text!==undefined) e.textContent=text; return e; };
 function pshItemRow(id,price,btnText,onClick){
   const it=ITEM[id], row=pshEl('div','fr-row'), ico=pshEl('span','ii-ico r'+it.rar); ico.innerHTML=itemIcon(it);
-  const nm=pshEl('b','',it.name); nm.style.color=RAR_COL[it.rar];
+  const nm=pshEl('b','',it.name); nm.style.color=RAR_COL[it.rar]; row.title=it.name+' · '+RARITY[it.rar]+' · level '+it.lv+' · '+itemStat(it);   // d8: every kind's bonus on hover / long press
   row.append(ico,nm,pshEl('span','fr-lv','Lv '+it.lv+(price?' · '+price+' coins':'')));
   const b=pshEl('button','chip buy',btnText); b.type='button'; b.addEventListener('click',()=>{ onClick(); UI_SFX.click(); }); row.append(b); return row;
 }
