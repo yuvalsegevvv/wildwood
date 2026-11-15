@@ -74,7 +74,7 @@ function dgSpotS(run,i){
   if(!dgFree(B,x,z,0.5)){ x=P.x+fx*4; z=P.z+fz*4; }
   return {x,z,face:Math.atan2(-fx,-fz)};
 }
-const dgInfoS=run=>({id:run.id,m:run.mission,seed:run.seed,th:run.th,L:run.L,tier:run.tier,ox:run.ox,oz:run.oz,y:DG_FLOOR_Y,ph:DG_PHASE_CODE[run.phase],t:Math.floor(run.t),boss:run.boss?run.boss.m.id:0});
+const dgInfoS=run=>({id:run.id,m:run.mission,seed:run.seed,th:run.th,L:run.L,tier:run.tier,ox:run.ox,oz:run.oz,y:DG_FLOOR_Y,ph:DG_PHASE_CODE[run.phase],t:Math.floor(run.t),boss:run.boss?run.boss.m.id:0,tile:run.abTile||undefined});   // abyss: the tile a round is played on (the client rebuilds its island and look)
 // into a run (at the entrance): the member's place (kept by account), the tp that tells the client to build the layout from the seed, the run's monsters, objectives and boss
 function dgEnterS(run,p){
   const key=dgKeyOf(p); let mb=run.members.get(key);

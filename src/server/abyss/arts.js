@@ -41,7 +41,7 @@ function abOfferP(run,p){
   const ids=abDrawOfferS(g.run.arts||(g.run.arts=[]),AB_OFFER_N-abCurseStat(g.run.curses,'offer'));   // B6: a curse takes cards off the offer (at least 1 stays) if(!ids.length) return;
   g.run.offer={k:'art',o:ids}; p.dirty=true; dgEvTo('abo',p.id,'art',ids);
 }
-function abResendOfferP(p){ const g=abSaveOf(p), o=g.run&&g.run.offer; if(o&&o.k==='art'&&abRunOf(p)) dgEvTo('abo',p.id,'art',o.o.slice()); }
+function abResendOfferP(p){ const g=abSaveOf(p), o=g.run&&g.run.offer; if(o&&o.k==='art'&&abRunOf(p)) dgEvTo('abo',p.id,'art',o.o.slice()); else if(o&&o.k==='tile'&&abRunOf(p)) abTileSendP(p); }   // B7: a tile offer shows again too
 // the run, its saved bar and the offer, only between rounds (a won round that has not ended the run)
 function abBetweenP(p){ const run=abRunOf(p); return run&&run.abWon&&!run.endT&&!p.dead&&abSaveOf(p).run?run:null; }
 const abIdx=(i,n)=>typeof i==='number'&&Number.isInteger(i)&&i>=0&&i<n;
@@ -55,9 +55,9 @@ function abPickP(p,i){
   const arts=g.run.arts||(g.run.arts=[]);
   if(arts.length>=AB_ART_MAX){ toastTo(p.id,AB_TXT_FULL,'bad'); return; }
   if(arts.filter(x=>x===id).length>=AB_RANK_MAX){ toastTo(p.id,AB_ARTS[id].name+' is at rank '+AB_RANK_MAX+' already.','bad'); return; }
-  arts.push(id); g.run.offer=null; abBarChangedP(p,id);
+  arts.push(id); g.run.offer=null; abBarChangedP(p,id); abTileOfferP(p);   // B7: the artifact offer is resolved: the next tiles
 }
-function abSkipP(p){ if(!abBetweenP(p)) return; const g=abSaveOf(p); if(g.run.offer){ g.run.offer=null; p.dirty=true; } }
+function abSkipP(p){ if(!abBetweenP(p)) return; const g=abSaveOf(p); if(g.run.offer&&g.run.offer.k==='art'){ g.run.offer=null; p.dirty=true; abTileOfferP(p); } }   // B7: skipping an artifact offer (never a tile offer) leads to the tiles
 function abDropP(p,i){
   const run=abRunOf(p); if(!run||!run.abWon||run.endT){ if(run) toastTo(p.id,'You can throw an artifact away between rounds only.','bad'); return; }
   const g=abSaveOf(p), arts=g.run&&g.run.arts; if(!arts||!abIdx(i,arts.length)) return;

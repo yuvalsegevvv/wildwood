@@ -3,7 +3,7 @@
    exports: AB_ON, abSwitch(on), AB_DIFFS (6 rows {id,name,lo,hi,rounds}: I-V then Infinite; hi / rounds 0 = no end), AB_INF (the index of Infinite, 5), abRoundLv(d,r), abRounds(d),
             abBossRounds(d) (the finite list; for Infinite the first AB_BOSS_SHOWN), abIsBossRound(d,r), AB_ART_MAX (20 artifacts at once), AB_RANK_MAX (5 copies), AB_CURSE_MAX (5),
             AB_ENTRY_LV (40), AB_AS_MAX / AB_LOCK_MAX (save caps of gear.ab.as / .lock), AB_RUN_KEEP_S (a saved run older than this is dropped), AB_THEME (the rift def a run borrows its look and kinds from for now),
-            B4: AB_ARTS (the artifact registry, Object.create(null)), AB_ART_BAD, defineAbArt(row), AB_STATS / AB_RATE / AB_CAPS / AB_RARS / AB_RAR_W, abArtStat(arts,stat) (the pure product / capped sum of a bar), AB_OFFER_N (3), B6: AB_NTH / AB_EXEC_HP / AB_DEF_MIN, AB_CURSES / AB_CURSE_BAD / defineAbCurse(row) / abIsCurse / abCurseStat(curses,stat) (the curse registry), AB_WAVES / AB_COUNT_S / AB_WAVE_S / AB_RELEASE_S / AB_ALIVE_MAX / AB_NEXT_PCT / AB_DEATH_S, abWaveSize(r,w), abLayout(seed), DG_HUD.abyss (the run's HUD row)
+            B4: AB_ARTS (the artifact registry, Object.create(null)), AB_ART_BAD, defineAbArt(row), AB_STATS / AB_RATE / AB_CAPS / AB_RARS / AB_RAR_W, abArtStat(arts,stat) (the pure product / capped sum of a bar), AB_OFFER_N (3), B6: AB_NTH / AB_EXEC_HP / AB_DEF_MIN, AB_CURSES / AB_CURSE_BAD / defineAbCurse(row) / abIsCurse / abCurseStat(curses,stat) (the curse registry), AB_WAVES / AB_COUNT_S / AB_WAVE_S / AB_RELEASE_S / AB_ALIVE_MAX / AB_NEXT_PCT / AB_DEATH_S, abWaveSize(r,w), abLayout(tile,seed) (B7: the tile's island or the rift's plain platforms), DG_HUD.abyss (the run's HUD row)
    users: server/abyss/arts.js (abP), shared/abyss/artifacts-stat.js (the entries), game/abyss/choice.js,
           server/abyss.js (the flag, the window, the save), server/abyss/rounds.js (the run), game/dungeon/run.js (abLayout); later steps: the run, the artifacts, the client panel
    test: tools/abyss-smoke.js
@@ -88,8 +88,9 @@ function abCurseStat(curses,stat){
   for(const id of curses||[]){ const c=abIsCurse(id)?AB_CURSES[id]:null, k=c&&c.k[stat]; if(k) v=stat==='offer'?v+k:v*k; }
   return v;
 }
-// the run's layout, rebuilt by the client from the seed (game/dungeon/run.js): for now the Shardmere's plus; the seed is for the tiles of B7
-const abLayout=seed=>riftLayout(RIFT_DEFS[AB_THEME]);
+// the run's layout, rebuilt by the client from the tile id and the seed (game/dungeon/run.js): a land or cave tile is a solid island (abTileLayout, shared/abyss/tiles.js); no tile (the Event and Shrine
+// rounds of B8) is the Shardmere's plain rift platforms
+const abLayout=(tile,seed)=>{ const T=abTileOf(tile); return T?abTileLayout(T,seed):riftLayout(RIFT_DEFS[AB_THEME]); };
 // the snapshot's numbers (run.hud): [round, rounds (0 = Infinite), monsters alive or on their way, wave, waves, seconds to the next wave]  (dg[3]...dg[8])
 DG_HUD.abyss=dg=>{ const r=dg[3]|0, n=dg[4]|0, left=dg[5]|0, w=dg[6]|0, ws=Math.max(1,dg[7]|0), clk=dg[8]|0;
   return {title:'The Abyss',lines:['Round '+r+(n?' / '+n:''),w?'Wave '+w+' / '+ws+(clk>0&&w<ws?' · next in '+clk+' s':''):'The tears open in '+clk+' s','Monsters: '+left],

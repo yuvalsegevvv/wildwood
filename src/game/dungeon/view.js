@@ -148,6 +148,7 @@ const DG_PROP_KINDS={
 // can light from (x0, z0) reach (x1, z1)? like dgLos, but steps over the first `skip` metres (a lantern stands in its own solid cell)
 function dgvSees(B,x0,z0,x1,z1,skip){ const d=Math.hypot(x1-x0,z1-z0), n=Math.ceil(d/0.9); for(let i=1;i<n;i++){ const k=i/n; if(k*d<skip) continue; if(dgSolid(B,x0+(x1-x0)*k,z0+(z1-z0)*k)) return false; } return true; }
 function dgViewBuild(R){
+  if(R.tile) return abTileViewBuild(R);   // abyss: a land or cave tile's island in the void (abyss/view.js)
   if(R.T&&R.T.rift) return riftViewBuild(R);   // rift: the void world (rift/view.js)
   dgViewClear(); const B=R.B; if(!B) return;
   const T=R.T, pal=dgPalOf(T), W=B.w, H=B.h, N=W*H, wob=T?DG_WOBBLE[T.id]||0.12:0, amb=(T&&DG_AMB[T.id])||0.66;

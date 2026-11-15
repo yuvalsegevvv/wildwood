@@ -279,6 +279,7 @@ shared
   abyss/artifacts-combat.js          The Abyss's combat artifacts (B6): ten rules and procs (kills heal, every 5th hit, boss damage, a round-start shield, thorns, execute, Last Breath: death prevention); one defineAbArt row each
   abyss/artifacts-wild.js            The Abyss's wildcards (B6): eight artifacts with a real plus and a real minus (damage for health, health for damage, crits for healing...); fam 'wild', the minus is shown in red
   abyss/curses.js                    The Abyss's curses (B6): ten burdens a run can carry beside its 20 artifacts (stronger monsters, less healing, fewer offered cards); one defineAbCurse row each; Events (B8) hand them out
+  abyss/tiles.js                     The Abyss's map tiles (B7): eight land patches and six cave chunks, each a registry row (pool of monster kinds, tint, props, island shape), and abTileLayout, the pure solid island a Fight round is played on
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -383,6 +384,7 @@ server
   abyss/rounds.js                    The Abyss's run (B2): a Fight round is a fresh run object in an Abyss slot, three waves through the void's tears, plain monsters at the round's level; go, next, out, death, leaving; no world rewards
   abyss/arts.js                      The Abyss's artifact engine (B4): the run's bar on the hiker, abP (the product / capped sum read by the hooks), the offer after a won round, pick, skip and drop
   abyss/combat.js                    The Abyss's combat rules (B6): every 5th hit, boss and execute damage, kills heal, thorns, the round-start shield, Last Breath (death prevention), curses on the run (give, spawn factors); one small function per hook
+  abyss/tiles.js                     The Abyss's next-tile choice (B7): after a won round and its artifact offer, 2-3 tiles are drawn, stored in gear.ab.run.offer and sent; next,i picks one against the stored offer
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
@@ -727,6 +729,7 @@ game
   rift/rift.js                       Rifts on the client: the tear in the wild (a crack of light in a ring of glass shards, glassed trees round its clearing), the talk key, the rift window (energy bar and time to full, the Double, Enter), the wave banner
   abyss/abyss.js                     The Abyss on the client (behind the server's flag, NET.ab): the gate in Glasswell (a dark tear), the talk key, the difficulty window, the round banner and the between-rounds bar (Next round / Leave)
   abyss/choice.js                    The Abyss's artifact screens (B4-B5): the pick screen (3 cards, Pick / Skip), the artifact bar (icons with a copy count, n / 20), the discard dialog (a full bar, or between rounds); events abo and aba
+  abyss/view.js                      The Abyss's tile look (B7): a land patch or cave chunk floating in the rift's void: ground tinted per tile, rock under the rim, a handful of low-poly props of its land, the tears and the landing, the rift sky and shards around
   bond/orbs.js                       Bond Orbs on the client: the orb stall's panel (24 characters, buy 1 or 10, the pouch's pick), the hour's Stirrings picks (BDC_STIR), the orb and stir events (the Bonds panel, the map glow and the pop-up are in bond/panel.js, stir.js, popup.js)
   bond/stir.js                       The hour's Stirrings on the client: the picks made drawable once (zone outlines, the boss's arena, the door, the raid), their glow on the land map, the minimap and the world map, and the "Stirrings this hour" box
   bond/popup.js                      The orb pop-up: a small card in the character's colour when stones arrive (the stones, the next Bond step's progress), stacked and merged while orbs keep opening

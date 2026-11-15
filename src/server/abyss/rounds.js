@@ -13,13 +13,13 @@ const abSaveOf=p=>p.gear.ab||(p.gear.ab={top:0,best:0,clears:[0,0,0,0,0,0],as:0,
 // a run left over in the save (a restart, a pulled plug that closed the run) with no live instance ends cleanly: nothing is resumed in B2
 function abStaleP(p){ const g=abSaveOf(p); if(g.run&&!abRunOf(p)){ g.run=null; p.dirty=true; } }
 // a run object of the dungeons' shape in the first free Abyss slot (dropRun: a run of this hiker's whose slot counts as free), the layout abLayout, one member, no party
-function abRunNewS(p,d,r,dropRun){
+function abRunNewS(p,d,r,dropRun,tileId){
   let slot=-1; for(let i=AB_SLOT0;i<DG_MAX_INST;i++) if(!DG_SLOT_RUN[i]||(dropRun&&DG_SLOT_RUN[i]===dropRun.id)){ slot=i; break; }
   if(slot<0) return null;
-  const T=RIFT_DEFS[AB_THEME], seed=Math.floor(Math.random()*1e9), L=abLayout(seed), B=dgBake(L); B.open=true;
+  const T=RIFT_DEFS[AB_THEME], TL=abTileOf(tileId), seed=Math.floor(Math.random()*1e9), L=abLayout(TL?TL.id:'',seed), B=dgBake(L); B.open=true;   // B7: the tile's island (no tile: the rift's plain platforms)
   const O=dgSlotOrigin(slot), run={id:dgNextRun++,slot,ox:O.x,oz:O.z,theme:T,th:T.id,mission:'abyss',seed,L:abRoundLv(d,r),tier:0,lay:L,B,
     phase:'objectives',ready:false,t:0,endT:0,members:new Map(),mons:new Set(),objs:[],boss:null,k:{},hud:[],party:0,lead:p.id,dev:false,back:dropRun&&dropRun.back?{x:dropRun.back.x,z:dropRun.back.z}:{x:p.x,z:p.z},
-    inv:new Map(),asked:new Set(),emptyT:0,flow:new Map(),nextObj:0,ab:true,abD:d,abR:r,abWon:false};
+    inv:new Map(),asked:new Set(),emptyT:0,flow:new Map(),nextObj:0,ab:true,abD:d,abR:r,abWon:false,abTile:TL?TL.id:'',tile:TL};
   DG_SLOT_RUN[slot]=run.id; DG_RUNS.set(run.id,run); return run;
 }
 // the hiker walks in, the kit's setup starts the waves, abr tells the client the round
@@ -27,8 +27,8 @@ function abStartRoundS(p,run){
   const g=abSaveOf(p), old=g.run; g.run={d:run.abD,r:run.abR,at:Date.now(),arts:old&&old.arts||[],curses:old&&old.curses||[],offer:null}; p.dirty=true;   // the bar goes on from round to round
   dgEnterS(run,p); abArtsDirtyP(p); recalcP(p); dgSetupS(run);   // abyss: the bar's health counts from the moment the hiker is in the run
   run.abCK=abCurseKS(p); abShieldS(p);   // abyss: the curses' monster factors for this round and the bar's round-start shield (abyss/combat.js)
-  dgEvTo('abr',p.id,run.abR,abRounds(run.abD),run.L);
-  toastTo(p.id,'Round '+run.abR+(abRounds(run.abD)?' of '+abRounds(run.abD):'')+': level '+run.L+'.','');
+  dgEvTo('abr',p.id,run.abR,abRounds(run.abD),run.L,run.abTile);
+  toastTo(p.id,'Round '+run.abR+(abRounds(run.abD)?' of '+abRounds(run.abD):'')+': level '+run.L+(run.tile?', '+run.tile.name:'')+'.','');
 }
 function abGoP(p,d){
   if(io.broadcastSnaps){ toastTo(p.id,AB_TXT_SHARED,'bad'); return; }
@@ -37,18 +37,18 @@ function abGoP(p,d){
   if(typeof d!=='number'||!Number.isInteger(d)||d<0||d>AB_INF) return;
   if((p.level|0)<AB_ENTRY_LV){ toastTo(p.id,'The Abyss is for hikers of level '+AB_ENTRY_LV+' and up.','bad'); return; }
   if(d>(g.top|0)){ toastTo(p.id,'Clear the difficulty before it first.','bad'); return; }
-  const run=abRunNewS(p,d,1); if(!run){ toastTo(p.id,'The Abyss is full right now. Try again in a minute.','bad'); return; }
+  const run=abRunNewS(p,d,1,undefined,abRandTileS()); if(!run){ toastTo(p.id,'The Abyss is full right now. Try again in a minute.','bad'); return; }
   abStartRoundS(p,run);
 }
 // the next round of a won one: a fresh run object (the old one's slot is reused), the hiker is carried over without a trip through the world
-function abNextP(p){
+function abNextP(p,i){
   const old=abRunOf(p); if(!old||!old.abWon||old.endT||p.dead) return;
-  if(abSaveOf(p).run&&abSaveOf(p).run.offer){ toastTo(p.id,'Pick an artifact or skip the offer first.','bad'); return; }
+  const tile=abTilePickP(p,i); if(tile===null) return;   // B7: a pending tile offer is answered by next,i (a pending artifact offer or a bad i is refused); no offer pending: a random tile as before
   const d=old.abD, r=old.abR+1; if(abRounds(d)&&r>abRounds(d)) return;
   const c0=S.ctx; S.ctx=old.id;
   for(const m of [...old.mons]) dgRemoveS(old,m);
   DG_SLOT_RUN[old.slot]=0; DG_RUNS.delete(old.id); S.ctx=c0;
-  const run=abRunNewS(p,d,r,old); abStartRoundS(p,run);
+  const run=abRunNewS(p,d,r,old,tile||abRandTileS(old.abTile)); abStartRoundS(p,run);
 }
 // leave between rounds: everything is kept
 function abOutP(p){
@@ -78,7 +78,8 @@ function abSpawnS(run,defId,lx,lz){
   const ck=run.abCK; if(ck&&(ck.mhp!==1||ck.mdmg!==1)){ const k=m.dgK; m.dgK={lv:k.lv,hp:k.hp*ck.mhp,dmg:k.dmg*ck.mdmg,xp:k.xp}; }   // abyss: the curses (a copy: dgKOf's answers are cached)
   ev('spawn',monRoster(m)); S.ctx=c0; return m;
 }
-function abPickS(run){ const kinds=run.theme.kinds, tw=kinds.reduce((s,c)=>s+c.w,0); let r=Math.random()*tw; for(const c of kinds){ r-=c.w; if(r<=0) return c.id; } return kinds[0].id; }
+function abPickS(run){ if(run.tile) return run.tile.pool[Math.floor(Math.random()*run.tile.pool.length)];   // B7: the tile's own kinds, all of them at the round's level
+  const kinds=run.theme.kinds, tw=kinds.reduce((s,c)=>s+c.w,0); let r=Math.random()*tw; for(const c of kinds){ r-=c.w; if(r<=0) return c.id; } return kinds[0].id; }
 // the wave step: AB_COUNT_S, then AB_WAVES waves (the next at AB_NEXT_PCT dead or AB_WAVE_S); 'won' when the last wave is dead
 function abWaveStepS(run){
   const k=run.k, S0=run.B.marks.S;
@@ -104,7 +105,7 @@ function abRoundWonS(run){
     const g=abSaveOf(p);
     if(d===AB_INF) g.best=Math.max(g.best|0,Math.min(999999,run.abR));
     if(last){ g.top=Math.max(g.top|0,Math.min(5,d+1)); g.clears[d]=Math.min(999999,(g.clears[d]|0)+1); g.run=null; dgEndEvS(run,p,1,''); toastTo(p.id,AB_DIFFS[d].name+' cleared! '+AB_DIFFS[d+1].name+' is open.','good'); }
-    else { dgEvTo('abw',p.id,run.abR); abOfferP(run,p); toastTo(p.id,'Round '+run.abR+' won. Go on to the next round, or leave with everything you earned.','good'); }
+    else { dgEvTo('abw',p.id,run.abR); abOfferP(run,p); if(!g.run||!g.run.offer) abTileOfferP(p); toastTo(p.id,'Round '+run.abR+' won. Go on to the next round, or leave with everything you earned.','good'); }
     p.dirty=true;
   }
   if(last) run.endT=S.t;   // the dungeons' end timer closes the run (dgRunTickS) and puts everyone back

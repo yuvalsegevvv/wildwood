@@ -1,9 +1,9 @@
 //@ The Abyss's artifact screens (B4-B5): the pick screen (3 cards, Pick / Skip), the artifact bar (icons with a copy count, n / 20), the discard dialog (a full bar, or between rounds); events abo and aba
 /* agent map (docs/ABYSS.md section 5; the server side: server/abyss/arts.js)
-   exports: abBarArts() (the saved bar from GEAR.ab.run.arts), abBarCurses() (B6: GEAR.ab.run.curses, own ids only; drawn as their own row under the bar), abPickShow(ids), abPickHide(), abDropShow(pend), abDropHide(), abArtsRender(), abChoiceUpdate() (abUpdate calls it), EVH.abo, EVH.aba, AB_PK
+   exports: abTilesShow(list) / abTilePick(i) (B7: the next-tile cards on the same screen), abBarArts() (the saved bar from GEAR.ab.run.arts), abBarCurses() (B6: GEAR.ab.run.curses, own ids only; drawn as their own row under the bar), abPickShow(ids), abPickHide(), abDropShow(pend), abDropHide(), abArtsRender(), abChoiceUpdate() (abUpdate calls it), EVH.abo, EVH.aba, AB_PK
    markup: #abArts (the bar), #abPick / #abPickCards / #abSkip, #abDrop / #abDropList / #abDropNo (index.html); styles 42-abyss.css. The bar is read from GEAR (the `you` message carries gear.ab.run.arts and .offer).
-   messages sent: abyss{a:'pick',i} / {a:'skip'} / {a:'drop',i}. Test: tools/client-smoke.js (the Abyss artifacts case). */
-const AB_PK={offer:null,pend:-1,ign:0,sig:''};
+   messages sent: abyss{a:'next',i} (a tile card), abyss{a:'pick',i} / {a:'skip'} / {a:'drop',i}. Test: tools/client-smoke.js (the Abyss artifacts case). */
+const AB_PK={offer:null,pend:-1,ign:0,sig:'',tiles:null};   // tiles (B7): the stored next-tile offer [[tile, kind]] while the pick screen shows it (or was put aside with Later)
 const abBarArts=()=>{ const r=GEAR&&GEAR.ab&&GEAR.ab.run; return r&&Array.isArray(r.arts)?r.arts:[]; };
 const abBarCurses=()=>{ const r=GEAR&&GEAR.ab&&GEAR.ab.run; return r&&Array.isArray(r.curses)?r.curses.filter(id=>abIsCurse(id)):[]; };   // B6: the curse row (outside the 20)
 const abArtCopies=id=>abBarArts().filter(x=>x===id).length;
@@ -13,7 +13,7 @@ function abGroups(){ const g=[], seen={}; abBarArts().forEach((id,i)=>{ if(seen[
 function abPickShow(ids){
   const el=$('#abPick'), box=$('#abPickCards'); if(!el||!box) return;
   const list=(ids||[]).filter(id=>abIsArt(id)); if(!list.length){ abPickHide(); return; }
-  AB_PK.offer=list; box.innerHTML='';
+  AB_PK.offer=list; AB_PK.tiles=null; box.innerHTML=''; $('#abPickT').textContent='Choose an artifact'; $('#abSkip').textContent='Skip';
   list.forEach((id,i)=>{
     const a=AB_ARTS[id], held=abArtCopies(id), c=abMk('div','ab-card ab-'+a.rar);
     c.append(abMk('div','ab-ic',a.icon),abMk('b','ab-nm',a.name),abMk('div','ab-rar',a.fam==='wild'?'wildcard · '+a.rar:a.rar),abMk('p','ab-tx',a.text));
@@ -25,7 +25,21 @@ function abPickShow(ids){
   });
   $('#abPickN').textContent=abBarArts().length+' / '+AB_ART_MAX; el.hidden=false;
 }
-function abPickHide(){ AB_PK.offer=null; AB_PK.pend=-1; const el=$('#abPick'); if(el) el.hidden=true; abDropHide(); }
+function abPickHide(){ AB_PK.offer=null; AB_PK.tiles=null; AB_PK.pend=-1; const el=$('#abPick'); if(el) el.hidden=true; abDropHide(); }
+// B7, the next-tile choice: the same screen with a card per tile (name, land or cave, the kind of round, a colour chip, some of its monsters); the button below is "Later" (the bar's Next brings it back)
+function abTilesShow(list){
+  const el=$('#abPick'), box=$('#abPickCards'); if(!el||!box) return;
+  const tiles=(list||[]).filter(t=>Array.isArray(t)&&abTileOf(t[0])); if(!tiles.length){ abPickHide(); return; }
+  AB_PK.offer=null; AB_PK.tiles=tiles; box.innerHTML=''; $('#abPickT').textContent='Choose the next tile'; $('#abPickN').textContent=''; $('#abSkip').textContent='Later';
+  tiles.forEach((t,i)=>{
+    const T=abTileOf(t[0]), c=abMk('div','ab-card ab-tilec'), chip=abMk('div','ab-chipc'); chip.style.background='#'+T.tint.chip.toString(16).padStart(6,'0');
+    const names=T.pool.slice(0,4).map(id=>{ const d=ALL_MON_DEFS.find(m=>m.id===id); return d?d.name:id; }).join(', ');
+    c.append(chip,abMk('b','ab-nm',T.name),abMk('div','ab-rar',(T.kind==='cave'?'cave':'land')+' · '+(t[1]==='fight'?'Fight':String(t[1]))),abMk('p','ab-tx',names+'...'));
+    const b=abMk('button','chip buy ab-pick','Go here'); b.type='button'; b.onclick=()=>abTilePick(i); c.append(b); box.append(c);
+  });
+  el.hidden=false;
+}
+function abTilePick(i){ if(!AB_PK.tiles||!AB_UI.won) return; UI_SFX.click(); AB_UI.won=false; abBar(false); netSend({t:'abyss',a:'next',i}); abPickHide(); }
 // the discard dialog: pend >= 0 = the offer's card that wanted a place (thrown copy first, then the pick is retried)
 function abDropShow(pend){
   const el=$('#abDrop'), box=$('#abDropList'); if(!el||!box) return; AB_PK.pend=pend===undefined?-1:pend; box.innerHTML='';
@@ -62,10 +76,10 @@ function abArtsRender(){
 function abChoiceUpdate(){
   const run=!!(NET.ab&&(dgIn()||AB_UI.won)), sig=abBarArts().join(',')+'|'+abBarCurses().join(',')+'|'+(run?1:0);
   if(sig!==AB_PK.sig) abArtsRender();
-  if(!run&&AB_PK.offer) abPickHide();   // the run is gone (a fall, out, a close)
+  if(!run&&(AB_PK.offer||AB_PK.tiles)) abPickHide();   // the run is gone (a fall, out, a close)
 }
 // an offer: abo [pid, 'art', ids]
-EVH.abo=e=>{ if(e[1]!==NET.pid||e[2]!=='art') return; abPickShow(e[3]); };
+EVH.abo=e=>{ if(e[1]!==NET.pid) return; if(e[2]==='art') abPickShow(e[3]); else if(e[2]==='tile') abTilesShow(e[3]); };   // B7: 'tile' = the next-tile offer
 // a copy taken or thrown away: aba [pid, id, copies]; the pick screen closes when the pick landed
 EVH.aba=e=>{
   if(e[1]!==NET.pid) return; const a=abIsArt(e[2])?AB_ARTS[e[2]]:null, n=e[3]|0;

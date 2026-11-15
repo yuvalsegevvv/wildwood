@@ -13,6 +13,7 @@ function abRunSanitize(r){
   if(!Number.isInteger(d)||d<0||d>AB_INF||!Number.isInteger(n)||n<1||n>999999||(AB_DIFFS[d].rounds&&n>AB_DIFFS[d].rounds)||at<=0||now-at>AB_RUN_KEEP_S*1000) return null;
   const arts=[], held={}; if(Array.isArray(r.arts)) for(const id of r.arts){ if(arts.length>=AB_ART_MAX) break; if(!abIsArt(id)||(held[id]|0)>=AB_RANK_MAX) continue; held[id]=(held[id]|0)+1; arts.push(id); }
   let offer=null, o=r.offer; if(o&&typeof o==='object'&&!Array.isArray(o)&&o.k==='art'&&Array.isArray(o.o)){ const ids=[]; for(const id of o.o) if(ids.length<AB_OFFER_N&&abIsArt(id)&&!ids.includes(id)) ids.push(id); if(ids.length) offer={k:'art',o:ids}; }
+  else if(o&&typeof o==='object'&&!Array.isArray(o)&&o.k==='tile'&&Array.isArray(o.o)){ const ts=[]; for(const t of o.o) if(ts.length<AB_TILE_OFFER_N&&t&&typeof t==='object'&&abTileOf(t.tile)&&t.kind==='fight'&&!ts.some(x=>x.tile===t.tile)) ts.push({tile:t.tile,kind:'fight'}); if(ts.length) offer={k:'tile',o:ts}; }   // B7
   const curses=[]; if(Array.isArray(r.curses)) for(const id of r.curses){ if(curses.length>=AB_CURSE_MAX) break; if(abIsCurse(id)) curses.push(id); }   // own-property ids only, at most AB_CURSE_MAX (they are outside the 20)
   return {d,r:n,at:Math.min(at,now),arts,curses,offer};
 }
@@ -32,7 +33,7 @@ function abMsgP(p,msg){
   const a=msg&&msg.a;
   switch(a){
     case 'go': abGoP(p,msg.d); return;   // abyss/rounds.js
-    case 'next': abNextP(p); return;
+    case 'next': abNextP(p,msg.i); return;   // B7: i picks a tile of the stored offer (abyss/tiles.js)
     case 'out': abOutP(p); return;
     case 'pick': abPickP(p,msg.i); return;   // abyss/arts.js
     case 'skip': abSkipP(p); return;

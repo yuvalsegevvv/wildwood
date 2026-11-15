@@ -21,6 +21,7 @@ function dgLookEnter(R){
   for(const p of L.pool){ p.intensity=0; scene.add(p); }
   L.poolT=0;
   if(R.T&&R.T.rift) riftLookTune(L,R);   // rift: the aura's light, a long sight
+  if(R.tile) abTileLookTune(L,R);   // abyss: the tile's fog and ground colour (abyss/view.js)
 }
 function dgLookLeave(){
   const L=DG_LOOK, s=L.save; L.on=false;

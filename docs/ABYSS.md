@@ -2,7 +2,7 @@
 
 A solo roguelike mode: one hiker, one life, rounds of small tiles with choices between them, artifacts that live for the run, paid only in Abyssal Shards. Plan, numbers and decisions: the project's `abyss-plan/PLAN.md` (version 5). Stem `abyss`, prefix `ab` / `AB_`.
 
-**Status: B0-B6 built, behind `AB_ON`** (false until step B12). The server asks `abOnS()` = `AB_ON || io.test || S.dev`, so the test world and dev servers have it, the deploy (`--no-dev`) does not. Built so far: the slot split, the rules tables, the save `gear.ab`, the window message, and (B2) the server run with Fight rounds only: three waves of the Shardmere's glass kinds at the round's level with plain numbers (no `RIFT_HP_K` / `RIFT_DMG_K`), `go` / `next` / `out`, death and leaving end the run, no XP, coins or loot from Abyss kills. B3 (the client shell): the flag reaches the client as `welcome.ab`, the gate stands in Glasswell, the window lists the six difficulties, the `abr` banner, the `abw` event and the between-rounds bar (Next round / Leave); the HUD row `DG_HUD.abyss` and the void look were already there. B4-B5 (artifacts): the registry, twelve stat artifacts, the run's bar in the save, `abP`, an offer after every won round, pick / skip / drop, and the client's pick screen, bar and discard dialog. B6: ten combat artifacts, eight wildcards, ten curses (the engine, a dev way to give one) and the balance yardstick `tools/abyss-sim.js`, sections 3c-3e. Still none: tiles, bosses, shards, a `game/abyss/view.js`, the Events that hand out curses (B8).
+**Status: B0-B7 built, behind `AB_ON`** (false until step B12). The server asks `abOnS()` = `AB_ON || io.test || S.dev`, so the test world and dev servers have it, the deploy (`--no-dev`) does not. Built so far: the slot split, the rules tables, the save `gear.ab`, the window message, and (B2) the server run with Fight rounds only: three waves of the Shardmere's glass kinds at the round's level with plain numbers (no `RIFT_HP_K` / `RIFT_DMG_K`), `go` / `next` / `out`, death and leaving end the run, no XP, coins or loot from Abyss kills. B3 (the client shell): the flag reaches the client as `welcome.ab`, the gate stands in Glasswell, the window lists the six difficulties, the `abr` banner, the `abw` event and the between-rounds bar (Next round / Leave); the HUD row `DG_HUD.abyss` and the void look were already there. B4-B5 (artifacts): the registry, twelve stat artifacts, the run's bar in the save, `abP`, an offer after every won round, pick / skip / drop, and the client's pick screen, bar and discard dialog. B6: ten combat artifacts, eight wildcards, ten curses (the engine, a dev way to give one) and the balance yardstick `tools/abyss-sim.js`, sections 3c-3e. B7: the tiles (section 3f): every Fight round is a land patch or cave chunk floating in the rift's void, and the next tile is chosen from three. Still none: bosses, shards, Elite / Trial / Event / Shrine rounds (B8-B9), the Events that hand out curses (B8).
 
 ## 1. Files
 
@@ -19,6 +19,9 @@ A solo roguelike mode: one hiker, one life, rounds of small tiles with choices b
 | `styles/42-abyss.css` | the window, the bar, the pick screen, the artifact bar and the discard dialog |
 | `shared/abyss/artifacts-combat.js`, `artifacts-wild.js`, `curses.js` | (B6) ten combat rows, eight wildcards (with their `minus` text), ten curses (`defineAbCurse`) |
 | `server/abyss/combat.js` | (B6) the rules: `abHitS` (every 5th hit, boss, execute), `abKillP`, `abThornsS`, `abLastS` (Last Breath), `abShieldS`, `abCurseKS` / `abCurseAddP`, `abGiveArtP` (dev) |
+| `shared/abyss/tiles.js` | (B7) `defineAbTile`, `AB_TILES` / `AB_TILE_IDS` / `AB_TILE_BAD`, `abTileOf`, `abTileLayout` (the island), the 14 rows |
+| `server/abyss/tiles.js` | (B7) the next-tile offer: `abDrawTilesS`, `abRandTileS`, `abTileOfferP`, `abTilePickP` |
+| `game/abyss/view.js` | (B7) `abTileViewBuild` (the island, props, tears, rift sky), `abTileLookTune`, `AB_PROP_DRAW` |
 | `tools/abyss-sim.js` | (B6) the balance yardstick (section 3e); `--check` is the test row `abyss-sim` |
 | `tools/abyss-smoke.js` | the test (server side); the client side is the Abyss case of `tools/client-smoke.js` |
 
@@ -63,9 +66,12 @@ Save: `gear.ab = {top (0-5), best, clears:[6], as, lock, sh:{d,n:{id:count}}, ru
 | `server/players.js` `hurtP` | (B6) `abThornsS` after a monster's hit; `abLastS` when the hit would kill (Last Breath); and `abP(p,'def')` now multiplies AFTER the 10% floor (see 3e) |
 | `server/abyss/rounds.js` `abStartRoundS`, `abSpawnS`, `abDevP` | (B6) the curses' monster factors (`run.abCK`) and the round-start shield; `devP abyss` `art` / `curse` |
 | `game/village/talking.js` | the talk key and its prompt (`abHere`, two lines) |
+| `server/dungeons/instances.js` `dgInfoS` | (B7) `tile:run.abTile`: the tp tells the client which tile a round is on |
+| `game/dungeon/view.js` `dgViewBuild` | (B7) `if(R.tile) return abTileViewBuild(R)` before the rift's branch |
+| `game/dungeon/look.js` `dgLookEnter` | (B7) `abTileLookTune(L,R)` after `riftLookTune` |
 | `game/main/loop.js` | `abUpdate(dt)` |
 | `game/ui/panels.js` | `'abyss'` in `PANELS` |
-| `game/dungeon/run.js` `dgRunEnter` | the client rebuilds an Abyss run's theme and layout (`abLayout`, `shared/abyss.js`) |
+| `game/dungeon/run.js` `dgRunEnter` | the client rebuilds an Abyss run's theme and layout (`abLayout(tile,seed)`, `shared/abyss.js`; `DG_RUN.tile`) |
 
 `RIFT_SLOT_END` (32, `server/rift.js`) ends the rifts' slot scan; `rift-smoke` checks a rift never takes slot 32 or above.
 
@@ -153,6 +159,28 @@ With exactly one pick a plain round (what the code gives until B8): greedy V 64%
 
 **Two findings for the owner.** (1) The hero is already at hurtP's 10% damage-taken floor, so the B4 rule "the bar's damage taken sits inside the floor" would have made every defence artifact dead. The bar's `def` now multiplies AFTER the floor (`hurtP`, one hook line), never below `AB_DEF_MIN` x0.1 for the bar, so the lowest possible hit is 1% (plan section 4 had no number for this). (2) Percent-of-damage effects (lifesteal, thorns) scale with the hero's damage, which is 10 to 300 times its health a second here, so their per-copy numbers are tiny (0.04%, 0.4% of the monster's own health).
 
+## 3f. Tiles (B7, `shared/abyss/tiles.js`)
+
+A Fight round is played on a **tile**: one land's look and monster kinds, or one cave floor's, on a solid island floating in the rift's void (the rift sky and shards around it; no rift glass look: the monsters are the real kinds at normal speed, re-levelled to the round with `dgKOf`). A tile is a registry row, `defineAbTile({id, kind:'land'|'cave', land | floor, name, pool, tint:{ground, ground2, rim, fog, chip}, props, shape:{r, wob, pillars}})` (`AB_TILES`, `AB_TILE_IDS`, a bad row is left out and listed in `AB_TILE_BAD`: id, kind, land / floor, name, pool of 4-10 non-boss ids of `ALL_MON_DEFS`, tint, 2-5 `AB_PROP_KINDS`, shape). A land tile's pool is eight varied kinds of that land's zones (an id that a cave copy shares, like `icebeetle`, is avoided: `DEF_BY_ID` would give the cave's); a cave tile's pool is its floor's ten.
+
+| Tile | Kind | Pool |
+|---|---|---|
+| `forest` Home Forest | land | slime, shroom, beetle, boar, goblin, treant, deathcap, direboar |
+| `vale` Sakura Vale | land | sakuraslime, kappa, kodama, kabuto, kitsune, ashigaru, onibi, oni |
+| `hoar` Hoarfrost Reach | land | frostslime, snowboar, lynx, wolf, reaver, rimewisp, yeti, draugr |
+| `grey` Greyspine | land | granitslime, cliffboar, crystalbeetle, minegoblin, snowleopard, mistwraith, rocktroll, galedrake |
+| `sun` Sunscar | land | sandslime, gildedscarab, warthog, dunescorpion, raider, cactustreant, mummy, efreet |
+| `gloam` Gloamhorn | land | brineslime, gloomcrab, seaboar, drownedsailor, banshee, ghoul, gargoyle, hollowknight |
+| `amber` Amber Reach | land | dustrunner, thornboar, grassstalker, mudcroc, moundsoldier, anvilhawk, cinderbuffalo, deltahippo |
+| `isles` Emberwake Isles | land | crabbrute, reefraider, coralbeetle, lagoonray, junglehog, stonejaguar, ropespinner, highlandcondor |
+| `cave_grotto` ... `cave_umbral` | cave | floors 1-6 (`shared/cave/floor-*.js`): grotto, prism, drowned, magma, frost, umbral: each floor's ten monsters |
+
+**The island.** `abLayout(tile,seed)` (pure, both sides) = `abTileLayout`: 2 x 2 map tiles (48 x 48 cells of 2 m), a blob whose rim at angle a is `r (1 + wob (0.6 sin(2a+p) + 0.4 sin(3a+q)))` cells out (radius 30-42 m), all open ground, `pillars` solid rocks between 7 cells from the middle and 6 inside the rim, `P` (the landing) in the middle, six tears `S` just inside the rim; one connected island, so `dgFlow` and `dgBake` work as everywhere. No tile (`''`): the Shardmere's plain platforms, which B8's Event and Shrine rounds keep.
+
+**The look** (`game/abyss/view.js`): ground quads blended between `ground` and `ground2`, a rock face under every edge over the void, hanging rock, a rock stack on each pillar, 12 (phone) / 22 props of the tile's `props` scattered 8 m from the landing and 3 m from the rim (decoration: the server never sees them), the tears, the landing, then the rift's own sky and shards (`riftSkyBuild`, `riftShardsBuild`) and its light, leaned toward the tile's `fog` and `ground` (`abTileLookTune`). Two merged vertex-coloured meshes: no `InstancedMesh`, so nothing to lack `instanceColor`.
+
+**The next-tile choice** (`server/abyss/tiles.js`). Round 1 is a random tile. After a won round (not the last of a finite difficulty) and once its artifact offer is resolved (pick, or skip; at once when there was no offer) the server draws 3 different tiles (not the one just played), stores `gear.ab.run.offer = {k:'tile', o:[{tile, kind:'fight'}]}` and sends `abo [pid,'tile',[[tile,kind]...]]` (again on `open`); `abyss{a:'next',i}` (i an integer index into the stored offer) plays that tile; a bad or missing i and a pending artifact offer are refused; `skip` never clears a tile offer; with no offer pending (the dev jump) `next` plays a random tile. For now every offered kind is `fight` (B8 adds the other kinds, B9 bosses). Client: the same screen as the artifact pick shows a card per tile (name, land / cave, kind, a colour chip, four of its monsters) with Later; the bar's Next brings the cards back.
+
 ## 4. Messages
 
-`abyss{a:'open'}` → `{t:'abyss',a:'info',on:1,top,best,diffs,lv}`; `go,d`, `next`, `out` (B2; a won last round of a finite difficulty sets `gear.ab.top = max(top, d+1)` and `clears[d]++`; Infinite keeps `top` and records `best`); events `abr [pid, round, of, lv]` and `abw [pid, round]` (`docs/PROTOCOL.md`). B4: `pick,i`, `skip`, `drop,i`; events `abo [pid,'art',ids]` and `aba [pid,id,copies]`. Planned: `shop`, `buy,id,n`, `lock,id,i`. Build order: PLAN.md section 8.
+`abyss{a:'open'}` → `{t:'abyss',a:'info',on:1,top,best,diffs,lv}`; `go,d`, `next`, `out` (B2; a won last round of a finite difficulty sets `gear.ab.top = max(top, d+1)` and `clears[d]++`; Infinite keeps `top` and records `best`); events `abr [pid, round, of, lv]` and `abw [pid, round]` (`docs/PROTOCOL.md`). B4: `pick,i`, `skip`, `drop,i`; events `abo [pid,'art',ids]` and `aba [pid,id,copies]`. B7: `next,i` (a tile of the stored offer), `abo [pid,'tile',[[tile,kind]...]]`, `abr [pid,round,of,lv,tile]`, the tp's `dg.tile`. Planned: `shop`, `buy,id,n`, `lock,id,i`. Build order: PLAN.md section 8.
