@@ -45,7 +45,7 @@ function abRender(){
   el.append(list);
 }
 // a round begins: abr [pid, round, of, lv] (of 0 = Infinite)
-EVH.abr=e=>{ if(e[1]!==NET.pid) return; AB_UI.won=false; abBar(false); const r=e[2]|0, n=e[3]|0, lv=e[4]|0; toast(n?'Round '+r+' of '+n+' · level '+lv:'Round '+r+' · level '+lv,''); };
+EVH.abr=e=>{ if(e[1]!==NET.pid) return; AB_UI.won=false; abBar(false); abPickHide(); abArtsRender(); const r=e[2]|0, n=e[3]|0, lv=e[4]|0; toast(n?'Round '+r+' of '+n+' · level '+lv:'Round '+r+' · level '+lv,''); };
 // a round is won (not the last of a finite difficulty): abw [pid, round]; the bar offers Next round or Leave
 EVH.abw=e=>{ if(e[1]!==NET.pid) return; AB_UI.won=true; abBar(true,e[2]|0); };
 function abBar(on,r){
@@ -53,12 +53,14 @@ function abBar(on,r){
 }
 function abBarInit(){
   const n=$('#abNext'), o=$('#abOut'); if(!n||!o||n._ab) return; n._ab=1;
-  n.addEventListener('click',()=>{ if(!AB_UI.won) return; AB_UI.won=false; abBar(false); UI_SFX.click(); netSend({t:'abyss',a:'next'}); });
+  const sk=$('#abSkip'), dn=$('#abDropNo'); if(sk) sk.addEventListener('click',()=>{ UI_SFX.click(); netSend({t:'abyss',a:'skip'}); abPickHide(); }); if(dn) dn.addEventListener('click',()=>{ UI_SFX.click(); abDropHide(); });
+  n.addEventListener('click',()=>{ if(!AB_UI.won) return; if(AB_PK.offer){ toast('Pick an artifact or skip the offer first.','bad'); return; } AB_UI.won=false; abBar(false); UI_SFX.click(); netSend({t:'abyss',a:'next'}); });
   o.addEventListener('click',()=>{ if(!AB_UI.won) return; AB_UI.won=false; abBar(false); UI_SFX.click(); netSend({t:'abyss',a:'out'}); });
 }
 function abUpdate(dt){
   if(!NET.ab) return; if(started&&!AB_UI.gate) abBuildGate(); abBarInit();
-  if(AB_UI.won&&!dgIn()){ AB_UI.won=false; abBar(false); }   // the run is gone (out, a fall, a close)
+  if(AB_UI.won&&!dgIn()){ AB_UI.won=false; abBar(false); }
+  abChoiceUpdate();   // the run is gone (out, a fall, a close)
   const g=AB_UI.gate; if(!g) return; g.t+=dt;
   if(Math.abs(AB_GATE.x-P.x)<160&&Math.abs(AB_GATE.z-P.z)<160){ g.orbit.rotation.y=g.t*0.5; g.ring.rotation.z=Math.sin(g.t*0.7)*0.1; g.glowM.material.opacity=0.28+0.1*Math.sin(g.t*2.3);
     for(const m of [g.glowM,g.crack]) m.lookAt(camera.position.x,g.G.position.y+2.7,camera.position.z); }

@@ -2,6 +2,7 @@
 /* agent map (docs/ABYSS.md; numbers: shared/abyss.js)
    exports: abRunOf(p), abRunNewS(p,d,r,dropRun), abStartRoundS(p,run), abGoP(p,d), abNextP(p), abOutP(p), abSpawnS(run,defId,lx,lz), abWaveStepS(run), abRoundWonS(run), abDownTickS(run,p,dt) (dgDownTickS hook),
             abLeaveP(run,p) (dgLeaveP hook), abCloseS(run) (dgCloseS hook), abDevP(p,msg) (devP 'abyss'), DG_KITS.abyss
+   artifacts: abyss/arts.js (offers after a won round: abOfferP; the bar travels in gear.ab.run).
    hooks marked `// abyss:` (docs/ABYSS.md section 3): dungeons/runs.js dgSetupS, dgDownTickS, dgCloseS; dungeons/lobby.js dgLeaveP; dungeons/mobs.js rewardAllS; economy.js devP; game/dungeon/run.js (the client's layout)
    save: gear.ab.run = {d, r, at (ms)} while a run is on (cleared at its end; a saved run with no live instance is cleaned up by the next abyss message, never resumed)
    events: abr [pid, round, of, lv] when a round starts, abw [pid, round] when a (not the last) round is won, plus the dungeons' tp (dg {m:'abyss', th:AB_THEME, seed}), spawn, dge at the end; the snapshot's dg tuple: run.hud (shared/abyss.js DG_HUD.abyss)
@@ -23,8 +24,8 @@ function abRunNewS(p,d,r,dropRun){
 }
 // the hiker walks in, the kit's setup starts the waves, abr tells the client the round
 function abStartRoundS(p,run){
-  const g=abSaveOf(p); g.run={d:run.abD,r:run.abR,at:Date.now()}; p.dirty=true;
-  dgEnterS(run,p); dgSetupS(run);
+  const g=abSaveOf(p), old=g.run; g.run={d:run.abD,r:run.abR,at:Date.now(),arts:old&&old.arts||[],curses:old&&old.curses||[],offer:null}; p.dirty=true;   // the bar goes on from round to round
+  dgEnterS(run,p); abArtsDirtyP(p); recalcP(p); dgSetupS(run);   // abyss: the bar's health counts from the moment the hiker is in the run
   dgEvTo('abr',p.id,run.abR,abRounds(run.abD),run.L);
   toastTo(p.id,'Round '+run.abR+(abRounds(run.abD)?' of '+abRounds(run.abD):'')+': level '+run.L+'.','');
 }
@@ -41,6 +42,7 @@ function abGoP(p,d){
 // the next round of a won one: a fresh run object (the old one's slot is reused), the hiker is carried over without a trip through the world
 function abNextP(p){
   const old=abRunOf(p); if(!old||!old.abWon||old.endT||p.dead) return;
+  if(abSaveOf(p).run&&abSaveOf(p).run.offer){ toastTo(p.id,'Pick an artifact or skip the offer first.','bad'); return; }
   const d=old.abD, r=old.abR+1; if(abRounds(d)&&r>abRounds(d)) return;
   const c0=S.ctx; S.ctx=old.id;
   for(const m of [...old.mons]) dgRemoveS(old,m);
@@ -55,16 +57,16 @@ function abOutP(p){
 }
 // the run is over for this hiker (out, fell, left): the save's run is cleared, the hiker is back in the world, the slot is free
 function abEndRunS(run,p,txt,kind){
-  const g=abSaveOf(p); g.run=null; p.dirty=true;
+  const g=abSaveOf(p); g.run=null; p.dirty=true; abArtsDirtyP(p);
   if(txt) toastTo(p.id,txt,kind||'');
-  dgExitS(run,p); dgCloseS(run);
+  dgExitS(run,p); dgCloseS(run); recalcP(p);   // abyss: the bar's maximum health goes with the run
 }
 function abFellS(run,p){ dgEndEvS(run,p,0,'the Abyss took you.'); abEndRunS(run,p,'The Abyss took you. Nothing you earned is lost.','bad'); }
 function abDownTickS(run,p,dt){ if(run.endT&&!run.abWon) return; p.deadT+=dt; if(p.deadT>=AB_DEATH_S) abFellS(run,p); }
 // leaving: between rounds it is "out", in a fight it is a fall
 function abLeaveP(run,p){ if(run.abWon&&!run.endT) abOutP(p); else if(run.endT){ abEndRunS(run,p,'','' ); } else abFellS(run,p); }
 // the run closes (dgCloseS: the empty timer, the end of a won run, any of the above): whoever is still online has no run in the save now. A fight round closed here with its hiker gone was a fall.
-function abCloseS(run){ for(const mb of run.members.values()){ const q=mb.p&&S.players.get(mb.pid)===mb.p?mb.p:dgFindKeyS(mb.key); if(q&&q.gear&&q.gear.ab&&q.gear.ab.run){ q.gear.ab.run=null; q.dirty=true; } } }
+function abCloseS(run){ for(const mb of run.members.values()){ const q=mb.p&&S.players.get(mb.pid)===mb.p?mb.p:dgFindKeyS(mb.key); if(q&&q.gear&&q.gear.ab&&q.gear.ab.run){ q.gear.ab.run=null; q.dirty=true; abArtsDirtyP(q); recalcP(q); } } }
 // a monster of the round at local (lx, lz): the run's level and its plain numbers (no brittle glass K's), coming for you at once
 function abSpawnS(run,defId,lx,lz){
   const d=DEF_BY_ID[defId]; if(!d||run.endT) return null;
@@ -100,7 +102,7 @@ function abRoundWonS(run){
     const g=abSaveOf(p);
     if(d===AB_INF) g.best=Math.max(g.best|0,Math.min(999999,run.abR));
     if(last){ g.top=Math.max(g.top|0,Math.min(5,d+1)); g.clears[d]=Math.min(999999,(g.clears[d]|0)+1); g.run=null; dgEndEvS(run,p,1,''); toastTo(p.id,AB_DIFFS[d].name+' cleared! '+AB_DIFFS[d+1].name+' is open.','good'); }
-    else { dgEvTo('abw',p.id,run.abR); toastTo(p.id,'Round '+run.abR+' won. Go on to the next round, or leave with everything you earned.','good'); }
+    else { dgEvTo('abw',p.id,run.abR); abOfferP(run,p); toastTo(p.id,'Round '+run.abR+' won. Go on to the next round, or leave with everything you earned.','good'); }
     p.dirty=true;
   }
   if(last) run.endT=S.t;   // the dungeons' end timer closes the run (dgRunTickS) and puts everyone back
@@ -115,5 +117,5 @@ DG_KITS.abyss={
 function abDevP(p,msg){
   const g=abSaveOf(p);
   if(msg.v!==undefined){ g.top=clampInt(msg.v,0,5,0); p.dirty=true; toastTo(p.id,'Abyss: difficulty '+g.top+' open.','good'); }
-  if(msg.r!==undefined&&abRunOf(p)){ const old=abRunOf(p); old.abR=clampInt(msg.r,1,Math.max(1,abRounds(old.abD)||99),1)-1; old.abWon=true; old.endT=0; abNextP(p); }
+  if(msg.r!==undefined&&abRunOf(p)){ const old=abRunOf(p); if(g.run) g.run.offer=null; old.abR=clampInt(msg.r,1,Math.max(1,abRounds(old.abD)||99),1)-1; old.abWon=true; old.endT=0; abNextP(p); }
 }

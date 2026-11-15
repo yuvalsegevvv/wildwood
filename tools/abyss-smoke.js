@@ -2,10 +2,12 @@
 // gear.ab cleaned field by field (prototype keys, NaN, negatives, huge numbers, strings), the flag (off: abyss{a:'open'} is silence), on at level 40: the info message, at level 39: a refusal,
 // and the slot split (rifts 16-31, the Abyss 32-47). Step B2 (server/abyss/rounds.js): go / next / out, Fight rounds (3 waves, plain monsters at the round's level), a won difficulty opens the next,
 // death, leaving and a pulled plug end the run, no XP or coins, the flag, the level gate, 16 runs at once and "full".
+// Step B4 (server/abyss/arts.js, shared/abyss/artifacts-stat.js): the artifact registry, abArtStat, the stored offer (same after a reopen), pick / skip / drop and their refusals, the 20 cap and rank 5,
+// next refused while an offer is pending, abP = 1 outside a run and after it, and the hooks: damage dealt, damage taken, max health, healing, lifesteal really change in a headless hit.
 // Usage: node tools/abyss-smoke.js
 const {loadServer}=require('./load');
 const sent=[];
-const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K']);
+const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K','abP','AB_ARTS','AB_ART_BAD','defineAbArt','abArtStat','AB_CAPS','rollDmgS','hurtP','healP','damageMonsterS','abDrawOfferS']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefined?'  ('+i+')':'')); if(!c) fails++; };
 const J=JSON.stringify, tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const lvs=(d,n)=>Array.from({length:n},(_,i)=>x.abRoundLv(d,i+1));
@@ -75,11 +77,11 @@ ok('a difficulty that is not unlocked (d > top) or not an integer starts nothing
   ok('the round is won when its waves are dead (3 waves)',run.abWon&&run.k.w===x.AB_WAVES&&!run.endT&&C.inst===run.id,run.k.w);
   ok('kills paid no XP and no coins',xp0()===e0&&C.gear.coins===c0&&run.members.values().next().value.got.xp===0);
   // next: round 2 at level 43, in a fresh run object
-  sent.length=0; W.receive('c',{t:'abyss',a:'next'}); tick(2); const r2=runOf(C);
+  sent.length=0; W.receive('c',{t:'abyss',a:'skip'}); W.receive('c',{t:'abyss',a:'next'}); tick(2); const r2=runOf(C);
   ok('next: round 2 at level 43 in a fresh run object',r2&&r2!==run&&r2.abR===2&&r2.L===43&&!x.DG_RUNS.has(run.id)&&C.gear.ab.run.r===2,r2&&r2.L);
   ok('abr [pid, 2, 7, 43]',evs('c','abr').some(e=>e[2]===2&&e[4]===43));
   // out mid-round is refused; next mid-round does nothing
-  W.receive('c',{t:'abyss',a:'out'}); W.receive('c',{t:'abyss',a:'next'}); tick(1); ok('out / next in the middle of a round do nothing',runOf(C)===r2&&r2.abR===2);
+  W.receive('c',{t:'abyss',a:'out'}); W.receive('c',{t:'abyss',a:'skip'}); W.receive('c',{t:'abyss',a:'next'}); tick(1); ok('out / next in the middle of a round do nothing',runOf(C)===r2&&r2.abR===2);
   upto(r2,400); ok('round 2 won',r2.abWon);
   // out between rounds
   const co=C.gear.coins; W.receive('c',{t:'abyss',a:'out'}); tick(2);
@@ -87,10 +89,10 @@ ok('a difficulty that is not unlocked (d > top) or not an integer starts nothing
 }
 // a whole difficulty I: 7 rounds, levels 40 43 47 50 53 57 60, the top opens, a clear counts
 { W.receive('c',{t:'abyss',a:'go',d:0}); tick(2); const lv=[]; let run=runOf(C);
-  for(let r=1;r<=7;r++){ run=runOf(C); lv.push(run.L); upto(run,600); if(r<7){ W.receive('c',{t:'abyss',a:'next'}); tick(2); } }
+  for(let r=1;r<=7;r++){ run=runOf(C); lv.push(run.L); upto(run,600); if(r<7){ W.receive('c',{t:'abyss',a:'skip'}); W.receive('c',{t:'abyss',a:'next'}); tick(2); } }
   ok('seven rounds at 40, 43, 47, 50, 53, 57, 60',J(lv)==='[40,43,47,50,53,57,60]',J(lv));
   ok('the last round wins the run: top 1, clears[0] 1, the run is closing (dge won sent), gear.ab.run null',C.gear.ab.top===1&&C.gear.ab.clears[0]===1&&C.gear.ab.run===null&&run.endT>0&&run.abR===7,J(C.gear.ab));
-  W.receive('c',{t:'abyss',a:'next'}); tick(1); ok('next after the last round does nothing',runOf(C)===run);
+  W.receive('c',{t:'abyss',a:'skip'}); W.receive('c',{t:'abyss',a:'next'}); tick(1); ok('next after the last round does nothing',runOf(C)===run);
   tick(Math.ceil(25/0.05)); C.hp=C.maxHp; ok('the won run closes by itself and puts the hiker back',!C.inst&&!x.DG_RUNS.has(run.id)); }
 ok('difficulty II is open now, III is not',(()=>{ W.receive('c',{t:'abyss',a:'go',d:2}); tick(1); const no=!C.inst; W.receive('c',{t:'abyss',a:'go',d:1}); tick(2); const yes=!!C.inst&&runOf(C).L===50; return no&&yes; })());
 // death mid-round ends the run
@@ -116,8 +118,94 @@ ok('difficulty II is open now, III is not',(()=>{ W.receive('c',{t:'abyss',a:'go
   ok('the 17th: "the Abyss is full" and not in a run',!ids[16].inst&&sent.some(s=>s[1].t==='snap'&&(s[1].ev||[]).some(e=>e&&e[0]==='toast'&&e[1]==='m16'&&/Abyss is full/.test(e[2]))));
   ok('a rift never takes an Abyss slot (and the reverse): none of the 16 is in a rift slot',ids.slice(0,16).every(q=>runOf(q).slot>=x.AB_SLOT0));
   // a round change with every slot taken still works (the old slot is reused)
-  const q=ids[0], run=runOf(q); for(const m of live(run)){ m.hp=0; } run.abWon=true; run.phase='won'; W.receive('m0',{t:'abyss',a:'next'}); tick(2);
+  const q=ids[0], run=runOf(q); for(const m of live(run)){ m.hp=0; } run.abWon=true; run.phase='won'; W.receive('m0',{t:'abyss',a:'skip'}); W.receive('m0',{t:'abyss',a:'next'}); tick(2);
   ok('with 16 runs, next still works (its own slot is reused)',runOf(q)&&runOf(q).abR===2&&runOf(q).slot>=32);
   for(const q2 of ids) if(q2.inst) W.receive(q2.id,{t:'dg',a:'leave'}); tick(2); ok('all left: every Abyss slot is free again',x.DG_SLOT_RUN.slice(32).every(v=>!v)); }
+
+// ---- B4: artifacts
+{ const N=Object.keys(x.AB_ARTS).length;
+  ok('the registry: 12 stat artifacts, none left out, every row has factors',N===12&&x.AB_ART_BAD.length===0&&Object.values(x.AB_ARTS).every(a=>a.fam==='stat'&&Object.keys(a.k).length&&a.text&&a.icon),N+' '+J(x.AB_ART_BAD));
+  const bads=[null,{id:'__proto__',name:'x',fam:'stat',rar:'common',icon:'a',k:{atk:2},text:'t'},{id:'ab_edge',name:'dup',fam:'stat',rar:'common',icon:'a',k:{atk:2},text:'t'},{id:'ab_zz1',name:'x',fam:'stat',rar:'mythic',icon:'a',k:{atk:2},text:'t'},
+    {id:'ab_zz2',name:'x',fam:'stat',rar:'rare',icon:'a',k:{luck:2},text:'t'},{id:'ab_zz3',name:'x',fam:'stat',rar:'rare',icon:'a',k:{atk:NaN},text:'t'},{id:'ab_zz4',name:'x',fam:'stat',rar:'rare',icon:'a',k:{crit:5},text:'t'},{id:'ab_zz5',name:'x',fam:'stat',rar:'rare',icon:'a',k:{},text:'t'}];
+  for(const b of bads) x.defineAbArt(b);
+  ok('bad rows are left out and listed in AB_ART_BAD',Object.keys(x.AB_ARTS).length===N&&x.AB_ART_BAD.length===bads.length&&Object.getPrototypeOf(x.AB_ARTS)===null,x.AB_ART_BAD.length); x.AB_ART_BAD.length=0;
+  const st=(a,s)=>x.abArtStat(a,s);
+  ok('abArtStat: copies multiply (x1.35 twice and x1.5 once), an empty bar is 1 / 0',Math.abs(st(['ab_edge','ab_fang','ab_edge'],'atk')-1.35*1.35*1.5)<1e-9&&st([],'atk')===1&&st([],'crit')===0&&Math.abs(st(['ab_scale','ab_scale'],'def')-0.7225)<1e-9);
+  ok('five copies of x1.35 is x4.49; rate stats add up and stop at their cap',Math.abs(st(Array(5).fill('ab_edge'),'atk')-Math.pow(1.35,5))<1e-9&&Math.abs(st(['ab_eye','ab_eye'],'crit')-0.10)<1e-9&&st(Array(20).fill('ab_eye'),'crit')===x.AB_CAPS.crit&&st(Array(20).fill('ab_wraps'),'aspd')===x.AB_CAPS.aspd);
+  ok('a bar of garbage ids is neutral',st(['__proto__','constructor','nope',7,null],'atk')===1); }
+{ const o=x.sanitizeGear({ab:{top:1,run:{d:0,r:2,at:Date.now(),arts:['ab_edge','__proto__','constructor','nope',7,null,{},'ab_edge',...Array(10).fill('ab_heart'),...Array(10).fill('ab_fang'),...Array(10).fill('ab_scale'),...Array(10).fill('ab_thread')],curses:['x','y'],offer:{k:'art',o:['ab_fang','__proto__','ab_fang','ab_eye','ab_wraps','ab_glass']}}}}).ab.run;
+  ok('a saved run keeps own-property ids only, at most 20 and 5 of one, no curses yet, an offer of at most 3 different ids',o&&o.arts.length===x.AB_ART_MAX&&o.arts.every(id=>x.AB_ARTS[id])&&o.arts.filter(i=>i==='ab_heart').length===5&&o.arts.filter(i=>i==='ab_edge').length===2&&J(o.curses)==='[]'&&J(o.offer)===J({k:'art',o:['ab_fang','ab_eye','ab_wraps']}),J(o));
+  ok('a bad offer or bar is dropped',(()=>{ const c=clean({run:{d:0,r:2,at:Date.now(),arts:'x',offer:{k:'tile',o:['ab_edge']}}}).run; const c2=clean({run:{d:0,r:2,at:Date.now(),offer:{k:'art',o:['zz']}}}).run; return c.arts.length===0&&c.offer===null&&c2.offer===null; })()); }
+const Dq=mk('d',60); Dq.gear.ab.top=0; 
+// outside a run abP is neutral, even with a bar written into the save
+Dq.gear.ab.run={d:0,r:2,at:Date.now(),arts:['ab_edge','ab_heart','ab_eye'],curses:[],offer:null};
+ok('abP is 1 (0 for a rate stat) outside a live run, whatever the save says',x.AB_ARTS&&x.abP(Dq,'atk')===1&&x.abP(Dq,'hp')===1&&x.abP(Dq,'crit')===0&&x.abP(Dq,'lifesteal')===0); Dq.gear.ab.run=null;
+const maxHp0=Dq.maxHp; W.receive('d',{t:'abyss',a:'go',d:0}); tick(2); let rD=runOf(Dq);
+ok('in a run with an empty bar abP is still neutral; a fresh run has an empty bar and no offer',!!rD&&x.abP(Dq,'atk')===1&&J(Dq.gear.ab.run.arts)==='[]'&&Dq.gear.ab.run.offer===null&&Dq.maxHp===maxHp0);
+for(const m of ['ab_edge']) { W.receive('d',{t:'abyss',a:'pick',i:0}); W.receive('d',{t:'abyss',a:'drop',i:0}); }
+ok('pick / drop with no offer or mid-round do nothing',J(Dq.gear.ab.run.arts)==='[]');
+// win round 1: the offer is drawn, stored, then sent
+sent.length=0; upto(rD,600); ok('(round 1 won)',rD.abWon);
+const off1=Dq.gear.ab.run.offer, abo1=evs('d','abo').pop();
+ok('a won round stores an offer of 3 different artifacts (k art) and sends abo [pid, art, ids] with the same ids',off1&&off1.k==='art'&&off1.o.length===3&&new Set(off1.o).size===3&&off1.o.every(id=>x.AB_ARTS[id])&&abo1&&abo1[2]==='art'&&J(abo1[3])===J(off1.o),J(off1)+' '+J(abo1));
+ok('the offer is in the stored save before it is sent: the `you` message carries it and only the bar, curses and offer beside d, r, at',(()=>{ const y=sent.filter(q=>q[0]==='d'&&q[1].t==='you').pop(); const r=y&&y[1].gear.ab.run; return !!r&&J(Object.keys(r).sort())===J(['arts','at','curses','d','offer','r']); })());
+sent.length=0; W.receive('d',{t:'abyss',a:'open'}); tick(1); const abo2=evs('d','abo').pop();
+ok('reopening during the run shows the same offer again',abo2&&J(abo2[3])===J(off1.o)&&J(Dq.gear.ab.run.offer)===J(off1),J(abo2));
+W.receive('d',{t:'abyss',a:'next'}); tick(1); ok('next is refused while an offer is pending',runOf(Dq)===rD&&rD.abWon&&Dq.gear.ab.run.r===1);
+for(const bad of [3,-1,1.5,'0','__proto__','constructor',null,undefined,{},[0],NaN,Infinity,true]) W.receive('d',{t:'abyss',a:'pick',i:bad});
+ok('pick with a bad index, string, __proto__ or object is refused: nothing taken, the offer stays',J(Dq.gear.ab.run.arts)==='[]'&&J(Dq.gear.ab.run.offer)===J(off1));
+const setOffer=o=>{ Dq.gear.ab.run.offer={k:'art',o}; }, arts=()=>Dq.gear.ab.run.arts;
+setOffer(['ab_edge','ab_fang','ab_heart']); sent.length=0; W.receive('d',{t:'abyss',a:'pick',i:0}); tick(1);
+ok('pick 0 adds the copy, clears the offer and sends aba [pid, id, 1]',J(arts())==='["ab_edge"]'&&Dq.gear.ab.run.offer===null&&evs('d','aba').some(e=>e[2]==='ab_edge'&&e[3]===1));
+ok('abP now multiplies: x1.35 damage',Math.abs(x.abP(Dq,'atk')-1.35)<1e-9);
+W.receive('d',{t:'abyss',a:'pick',i:0}); ok('a pick with no offer does nothing',arts().length===1);
+setOffer(['ab_edge','ab_fang','ab_heart']); W.receive('d',{t:'abyss',a:'pick',i:0}); setOffer(['ab_fang','ab_heart','ab_eye']); W.receive('d',{t:'abyss',a:'pick',i:0});
+ok('two copies of one and one other: atk x1.35 x1.35 x1.5 = x2.73',J(arts())==='["ab_edge","ab_edge","ab_fang"]'&&Math.abs(x.abP(Dq,'atk')-1.35*1.35*1.5)<1e-9,x.abP(Dq,'atk'));
+// skip
+setOffer(['ab_heart','ab_eye','ab_glass']); W.receive('d',{t:'abyss',a:'skip'}); ok('skip clears the offer and takes nothing',Dq.gear.ab.run.offer===null&&arts().length===3);
+// max health follows the bar at once
+setOffer(['ab_heart','ab_eye','ab_glass']); const hpBefore=Dq.maxHp; W.receive('d',{t:'abyss',a:'pick',i:0});
+ok('max health x1.4 with Heartwood Knot, applied at once',Math.abs(Dq.maxHp/hpBefore-1.4)<0.01&&Math.abs(x.abP(Dq,'hp')-1.4)<1e-9,Dq.maxHp+' / '+hpBefore);
+// rank 5: a sixth copy of one is refused
+for(let i=0;i<3;i++){ setOffer(['ab_edge','ab_fang','ab_eye']); W.receive('d',{t:'abyss',a:'pick',i:0}); }
+ok('five copies of one artifact (rank 5)',arts().filter(i=>i==='ab_edge').length===5&&arts().length===7);
+setOffer(['ab_edge','ab_fang','ab_eye']); W.receive('d',{t:'abyss',a:'pick',i:0}); ok('a sixth copy is refused (rank 5 is the most)',arts().filter(i=>i==='ab_edge').length===5&&Dq.gear.ab.run.offer!==null);
+ok('the drawn offers never include an artifact held 5 times, and are 3 different ids',Array.from({length:300},()=>x.abDrawOfferS(arts())).every(o=>o.length===3&&new Set(o).size===3&&!o.includes('ab_edge')));
+// the cap of 20
+const fill=['ab_fang','ab_heart','ab_scale','ab_thread'];
+for(let i=0;arts().length<20;i++){ setOffer([fill[(i>>2)%4],'ab_eye','ab_glass']); W.receive('d',{t:'abyss',a:'pick',i:0}); }
+tick(2); ok('the bar fills to 20 (every copy takes a place)',arts().length===20,J(arts()));
+setOffer(['ab_heart','ab_eye','ab_glass']); sent.length=0; W.receive('d',{t:'abyss',a:'pick',i:1}); tick(4);
+ok('a 21st is refused with "throw one away first": the bar stays 20, the offer stays, no aba',arts().length===20&&Dq.gear.ab.run.offer!==null&&!evs('d','aba').length&&sent.some(s=>s[1].t==='snap'&&(s[1].ev||[]).some(e=>e&&e[0]==='toast'&&e[1]==='d'&&/throw one away/.test(e[2]))));
+// drop between rounds, then the pick goes through
+for(const bad of [20,-1,1.5,'0','__proto__',null,undefined,{},NaN]) W.receive('d',{t:'abyss',a:'drop',i:bad});
+ok('drop with a bad index does nothing',arts().length===20);
+const gone=arts()[19]; sent.length=0; W.receive('d',{t:'abyss',a:'drop',i:19}); W.receive('d',{t:'abyss',a:'pick',i:1}); tick(4);
+ok('drop 19 then pick: 20 again, the thrown id sent as aba with its copies, the pick went through',arts().length===20&&arts()[19]==='ab_eye'&&Dq.gear.ab.run.offer===null&&evs('d','aba').length===2&&evs('d','aba')[0][2]===gone,J(evs('d','aba')));
+// the real effect of the bar in a hit: damage dealt, damage taken, healing, lifesteal
+arts().length=0; Dq.ab=null;
+W.receive('d',{t:'abyss',a:'next'}); tick(Math.ceil(5/0.05)); rD=runOf(Dq); const mm=live(rD)[0];
+ok('(round 2 on, a monster to hit)',!!mm&&rD.abR===2);
+{ const R0=Math.random; Math.random=()=>0.5; try{
+    const dmg=()=>x.rollDmgS(Dq,1,mm,null).v, v0=dmg(); arts().push('ab_edge','ab_edge','ab_fang'); const v1=dmg();
+    ok('damage dealt: the same hit does x2.73 with the bar (rollDmgS)',Math.abs(v1/v0-2.7338)<0.02,v0+' -> '+v1);
+    arts().length=0; arts().push('ab_scale','ab_scale'); Dq.vbGrace=0; Dq.hp=Dq.maxHp; const h0=x.hurtP(Dq,50,mm); Dq.hp=Dq.maxHp; arts().length=0; const h1=x.hurtP(Dq,50,mm); Dq.vbGrace=1e12;
+    ok('damage taken: the same hit does x0.7225 with two Slate Scales (hurtP)',h1>20&&Math.abs(h0/h1-0.7225)<0.03,h1+' -> '+h0);
+    arts().length=0; arts().push('ab_thread'); Dq.hp=1; x.healP(Dq,100); const g1=Dq.hp-1; arts().length=0; Dq.hp=1; x.healP(Dq,100); const g0=Dq.hp-1;
+    ok('healing received x1.35 with Mender\'s Thread (healP)',g0===100&&g1===135,g0+' -> '+g1);
+    arts().length=0; for(let i=0;i<10;i++) arts().push('ab_leech'); mm.hp=1e9; Dq.hp=1; const dd=x.damageMonsterS(mm,1,Dq,mm.x+3,mm.z); const gain=Dq.hp-1;
+    ok('lifesteal: ten Leech Charms heal 20% (the cap) of the damage dealt',dd>0&&Math.abs(gain-0.2*dd)<=1.5,dd+' -> '+gain);
+  } finally { Math.random=R0; } arts().length=0; Dq.vbGrace=1e12; }
+// drop in the middle of a round is refused
+arts().push('ab_edge','ab_edge'); W.receive('d',{t:'abyss',a:'drop',i:0}); ok('drop in the middle of a round is refused',arts().length===2);
+ok('cooldown, attack speed and crit come from the bar too (rate stats)',(()=>{ arts().length=0; arts().push('ab_glass','ab_glass','ab_wraps','ab_eye'); const o=Math.abs(x.abP(Dq,'cdr')-0.12)<1e-9&&Math.abs(x.abP(Dq,'aspd')-0.08)<1e-9&&Math.abs(x.abP(Dq,'crit')-0.05)<1e-9; arts().length=0; return o; })());
+// the bar travels to the next round, and ends with the run
+upto(rD,600); arts().push('ab_heart','ab_heart'); Dq.ab=null; W.receive('d',{t:'abyss',a:'skip'}); W.receive('d',{t:'abyss',a:'next'}); tick(2); const rD3=runOf(Dq);
+ok('the bar goes on to the next round (3 rounds, the same copies)',rD3&&rD3.abR===3&&J(arts())==='["ab_heart","ab_heart"]'&&Math.abs(x.abP(Dq,'hp')-1.96)<1e-9);
+W.receive('d',{t:'dg',a:'leave'}); tick(2);
+ok('the run ends: the bar is gone, abP is 1, max health is back',!Dq.inst&&Dq.gear.ab.run===null&&x.abP(Dq,'hp')===1&&x.abP(Dq,'atk')===1&&Math.abs(Dq.maxHp-maxHp0)<=1,Dq.maxHp+' vs '+maxHp0);
+W.receive('d',{t:'abyss',a:'go',d:0}); tick(2); ok('a new run starts with an empty bar',J(Dq.gear.ab.run.arts)==='[]'&&Dq.gear.ab.run.offer===null); W.receive('d',{t:'dg',a:'leave'}); tick(2);
+// the Abyss with the flag off: pick / skip / drop are silence
+
 // the Test: kill the code and the test fails (see the usage note at the top)
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

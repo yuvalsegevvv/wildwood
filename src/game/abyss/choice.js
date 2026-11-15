@@ -1,0 +1,67 @@
+//@ The Abyss's artifact screens (B4-B5): the pick screen (3 cards, Pick / Skip), the artifact bar (icons with a copy count, n / 20), the discard dialog (a full bar, or between rounds); events abo and aba
+/* agent map (docs/ABYSS.md section 5; the server side: server/abyss/arts.js)
+   exports: abBarArts() (the saved bar from GEAR.ab.run.arts), abPickShow(ids), abPickHide(), abDropShow(pend), abDropHide(), abArtsRender(), abChoiceUpdate() (abUpdate calls it), EVH.abo, EVH.aba, AB_PK
+   markup: #abArts (the bar), #abPick / #abPickCards / #abSkip, #abDrop / #abDropList / #abDropNo (index.html); styles 42-abyss.css. The bar is read from GEAR (the `you` message carries gear.ab.run.arts and .offer).
+   messages sent: abyss{a:'pick',i} / {a:'skip'} / {a:'drop',i}. Test: tools/client-smoke.js (the Abyss artifacts case). */
+const AB_PK={offer:null,pend:-1,ign:0,sig:''};
+const abBarArts=()=>{ const r=GEAR&&GEAR.ab&&GEAR.ab.run; return r&&Array.isArray(r.arts)?r.arts:[]; };
+const abArtCopies=id=>abBarArts().filter(x=>x===id).length;
+function abMk(tag,cls,txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!==undefined) e.textContent=txt; return e; }
+// the groups of the bar: [id, copies, index of its first copy], in the order first taken
+function abGroups(){ const g=[], seen={}; abBarArts().forEach((id,i)=>{ if(seen[id]===undefined){ seen[id]=g.length; g.push([id,0,i]); } g[seen[id]][1]++; }); return g; }
+function abPickShow(ids){
+  const el=$('#abPick'), box=$('#abPickCards'); if(!el||!box) return;
+  const list=(ids||[]).filter(id=>abIsArt(id)); if(!list.length){ abPickHide(); return; }
+  AB_PK.offer=list; box.innerHTML='';
+  list.forEach((id,i)=>{
+    const a=AB_ARTS[id], held=abArtCopies(id), c=abMk('div','ab-card ab-'+a.rar);
+    c.append(abMk('div','ab-ic',a.icon),abMk('b','ab-nm',a.name),abMk('div','ab-rar',a.rar),abMk('p','ab-tx',a.text),abMk('span','ab-held',held?'You hold '+held+' (a copy makes it rank '+Math.min(AB_RANK_MAX,held+1)+')':'New'));
+    const b=abMk('button','chip buy ab-pick','Pick'); b.type='button'; b.dataset.i=i;
+    b.onclick=()=>{ UI_SFX.click(); if(abBarArts().length>=AB_ART_MAX){ abDropShow(i); return; } AB_PK.pend=-1; netSend({t:'abyss',a:'pick',i}); };
+    c.append(b); box.append(c);
+  });
+  $('#abPickN').textContent=abBarArts().length+' / '+AB_ART_MAX; el.hidden=false;
+}
+function abPickHide(){ AB_PK.offer=null; AB_PK.pend=-1; const el=$('#abPick'); if(el) el.hidden=true; abDropHide(); }
+// the discard dialog: pend >= 0 = the offer's card that wanted a place (thrown copy first, then the pick is retried)
+function abDropShow(pend){
+  const el=$('#abDrop'), box=$('#abDropList'); if(!el||!box) return; AB_PK.pend=pend===undefined?-1:pend; box.innerHTML='';
+  $('#abDropT').textContent=AB_PK.pend>=0?'Your bar is full ('+abBarArts().length+' / '+AB_ART_MAX+'): throw a copy away to take the new one.':'Throw a copy away (between rounds only).';
+  for(const [id,n,first] of abGroups()){
+    const a=AB_ARTS[id]; if(!a) continue; const b=abMk('button','ab-dr ab-'+a.rar); b.type='button';
+    b.append(abMk('span','ab-ic',a.icon),abMk('span','ab-nm',a.name+(n>1?' x'+n:'')),abMk('span','ab-tx',a.text));
+    b.onclick=()=>{ UI_SFX.click(); const pend=AB_PK.pend; netSend({t:'abyss',a:'drop',i:first}); abDropHide();
+      if(pend>=0){ AB_PK.ign=1; netSend({t:'abyss',a:'pick',i:pend}); } };   // the retry: the drop's aba comes first and must not close the pick screen
+    box.append(b);
+  }
+  el.hidden=false;
+}
+function abDropHide(){ const el=$('#abDrop'); if(el) el.hidden=true; AB_PK.pend=-1; }
+// the bar: one tile per artifact with its copies; a tap between rounds opens the discard dialog
+function abArtsRender(){
+  const el=$('#abArts'); if(!el) return; const arts=abBarArts(), run=NET.ab&&(dgIn()||AB_UI.won);
+  AB_PK.sig=arts.join(',')+'|'+(run?1:0); el.hidden=!run||!arts.length; el.innerHTML='';
+  if(el.hidden) return;
+  el.append(abMk('span','ab-cnt',arts.length+' / '+AB_ART_MAX));
+  for(const [id,n] of abGroups()){
+    const a=AB_ARTS[id]; if(!a) continue; const t=abMk('button','ab-tile ab-'+a.rar); t.type='button'; t.title=a.name+(n>1?' x'+n:'')+': '+a.text;
+    t.append(abMk('span','ab-ic',a.icon)); if(n>1) t.append(abMk('i','ab-n',String(n)));
+    t.onclick=()=>{ if(AB_UI.won) abDropShow(-1); else toast('Artifacts can be thrown away between rounds.',''); };
+    el.append(t);
+  }
+}
+function abChoiceUpdate(){
+  const run=!!(NET.ab&&(dgIn()||AB_UI.won)), sig=abBarArts().join(',')+'|'+(run?1:0);
+  if(sig!==AB_PK.sig) abArtsRender();
+  if(!run&&AB_PK.offer) abPickHide();   // the run is gone (a fall, out, a close)
+}
+// an offer: abo [pid, 'art', ids]
+EVH.abo=e=>{ if(e[1]!==NET.pid||e[2]!=='art') return; abPickShow(e[3]); };
+// a copy taken or thrown away: aba [pid, id, copies]; the pick screen closes when the pick landed
+EVH.aba=e=>{
+  if(e[1]!==NET.pid) return; const a=abIsArt(e[2])?AB_ARTS[e[2]]:null, n=e[3]|0;
+  if(a) toast(n>0?a.name+(n>1?' x'+n:'')+' on your bar.':a.name+' thrown away.','');
+  if(AB_PK.ign>0){ AB_PK.ign--; abArtsRender(); return; }
+  if(AB_PK.offer&&n>0&&AB_PK.offer.includes(e[2])) abPickHide();
+  abArtsRender();
+};

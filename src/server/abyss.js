@@ -2,8 +2,8 @@
 /* agent map (docs/ABYSS.md; numbers: shared/abyss.js)
    exports: abSanitize(g,out) (sanitizeGear hook), abOnS() (AB_ON || the test world || the dev tools), abMsgP (MSG.abyss)
    hooks marked `// abyss:` (docs/ABYSS.md section 3): players.js sanitizeGear
-   save: gear.ab = {top (difficulties cleared, 0-5), best (Infinite's best round), clears:[6], as (Abyssal Shards), lock (Void Anchors), sh:{d,n:{id:count}} (today's shop purchases), run:null | {d,r,at}}
-   messages in: abyss{a:'go',d} (a run, round 1), abyss{a:'next'} (after a won round), abyss{a:'out'} (between rounds; rounds.js), abyss{a:'open'} -> {t:'abyss',a:'info',on:1,top,best,diffs:[{id,name,lo,hi,rounds}],lv} (flag off: silence; below level AB_ENTRY_LV: a toast)
+   save: gear.ab = {top (difficulties cleared, 0-5), best (Infinite's best round), clears:[6], as (Abyssal Shards), lock (Void Anchors), sh:{d,n:{id:count}} (today's shop purchases), run:null | {d,r,at,arts:[ids],curses:[],offer:null | {k:'art',o:[ids]}}}
+   messages in: abyss{a:'go',d} (a run, round 1), abyss{a:'next'} (after a won round), abyss{a:'out'} (between rounds; rounds.js), abyss{a:'pick',i} / {a:'skip'} / {a:'drop',i} (artifacts: abyss/arts.js), abyss{a:'open'} -> {t:'abyss',a:'info',on:1,top,best,diffs:[{id,name,lo,hi,rounds}],lv} (flag off: silence; below level AB_ENTRY_LV: a toast)
    test: tools/abyss-smoke.js */
 const AB_SH_KEYS=64;   // at most this many ids in gear.ab.sh.n (the ids themselves are checked against the shop's rows in B10)
 // a saved run {d,r,at}: kept only while valid and younger than AB_RUN_KEEP_S (it is never resumed in B2: the next abyss message ends it, abStaleP)
@@ -11,7 +11,9 @@ function abRunSanitize(r){
   if(!r||typeof r!=='object'||Array.isArray(r)) return null;
   const now=Date.now(), at=+r.at, d=+r.d, n=+r.r; if(!isFinite(at)||!isFinite(d)||!isFinite(n)||typeof r.at==='boolean') return null;
   if(!Number.isInteger(d)||d<0||d>AB_INF||!Number.isInteger(n)||n<1||n>999999||(AB_DIFFS[d].rounds&&n>AB_DIFFS[d].rounds)||at<=0||now-at>AB_RUN_KEEP_S*1000) return null;
-  return {d,r:n,at:Math.min(at,now)};
+  const arts=[], held={}; if(Array.isArray(r.arts)) for(const id of r.arts){ if(arts.length>=AB_ART_MAX) break; if(!abIsArt(id)||(held[id]|0)>=AB_RANK_MAX) continue; held[id]=(held[id]|0)+1; arts.push(id); }
+  let offer=null, o=r.offer; if(o&&typeof o==='object'&&!Array.isArray(o)&&o.k==='art'&&Array.isArray(o.o)){ const ids=[]; for(const id of o.o) if(ids.length<AB_OFFER_N&&abIsArt(id)&&!ids.includes(id)) ids.push(id); if(ids.length) offer={k:'art',o:ids}; }
+  return {d,r:n,at:Math.min(at,now),arts,curses:[],offer};   // curses: reserved (B6), always empty here
 }
 function abSanitize(g,out){
   const s=g&&g.ab&&typeof g.ab==='object'&&!Array.isArray(g.ab)?g.ab:{}, cl=Array.isArray(s.clears)?s.clears:[], sh=s.sh&&typeof s.sh==='object'&&!Array.isArray(s.sh)?s.sh:{}, n={};
@@ -31,11 +33,15 @@ function abMsgP(p,msg){
     case 'go': abGoP(p,msg.d); return;   // abyss/rounds.js
     case 'next': abNextP(p); return;
     case 'out': abOutP(p); return;
+    case 'pick': abPickP(p,msg.i); return;   // abyss/arts.js
+    case 'skip': abSkipP(p); return;
+    case 'drop': abDropP(p,msg.i); return;
     case 'open': {
       abStaleP(p);
       if((p.level|0)<AB_ENTRY_LV){ toastTo(p.id,'The Abyss is for hikers of level '+AB_ENTRY_LV+' and up.','bad'); return; }
       const g=p.gear.ab||(p.gear.ab={top:0,best:0,clears:[0,0,0,0,0,0],as:0,lock:0,sh:{d:0,n:{}},run:null});
       sendTo(p.id,{t:'abyss',a:'info',on:1,top:g.top|0,best:g.best|0,diffs:AB_DIFFS.map(d=>({id:d.id,name:d.name,lo:d.lo,hi:d.hi,rounds:d.rounds})),lv:AB_ENTRY_LV});
+      abResendOfferP(p);   // the offer a won round stored shows again (arts.js)
       return;
     }
   }

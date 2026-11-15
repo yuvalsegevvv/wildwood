@@ -275,6 +275,7 @@ shared
   rift/bulwark.js                    The Bulwark Rift, the Amber Reach's rift (pays Armor Reroll Stones): its tear in the Amber Reach's wilds west of Tallgrass, a sky-blue and amber aura, six glass kinds of the savanna and a Herald; mode Heartwood, a broken square round the hub
   rift/charm.js                      The Charm Rift, the Emberwake Isles' rift (pays Accessory Reroll Stones): its tear on the isles east of Coralhaven, a sea-cyan and coral aura, six glass kinds of the isles and a Herald; mode Lanterns, a double comb
   abyss.js                           The Abyss (a solo roguelike mode, behind AB_ON): the flag, the six difficulties, the round level table, the boss rounds and the caps. Pure; loaded by both sides
+  abyss/artifacts-stat.js            The Abyss's stat artifacts (B4): twelve plain plus artifacts (damage, health, defence, healing, crit, cooldown, attack speed, lifesteal), two rarities; each entry is one defineAbArt row
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -377,6 +378,7 @@ server
   rift/gauntlet.js                   Rift mode Gauntlet (the Forge Rift): no waves; five forge champions one after another (a Herald-sized elite of the rift's kinds, tougher each time, with a few adds), fire vents flaring under you (a glowing ring, RIFT_VENT_WARN s, a fifth of your health), a RIFT_GAUNT_S clock: out of time = lost
   abyss.js                           The Abyss on the server (behind AB_ON): the save gear.ab cleaned field by field, the flag the server asks (abOnS) and the window message (abyss{a:'open'}). B2: Fight rounds (server/abyss/rounds.js)
   abyss/rounds.js                    The Abyss's run (B2): a Fight round is a fresh run object in an Abyss slot, three waves through the void's tears, plain monsters at the round's level; go, next, out, death, leaving; no world rewards
+  abyss/arts.js                      The Abyss's artifact engine (B4): the run's bar on the hiker, abP (the product / capped sum read by the hooks), the offer after a won round, pick, skip and drop
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
@@ -720,6 +722,7 @@ game
   rift/view.js                       The rift's void world on the client: frosted glass platforms and clear glass bridges with glowing rims, crystals hanging under them, the tears the waves come through, the hub's portal, an aura sky of drifting blue / purple / pink veils, floating shards, the light and fog, the music
   rift/rift.js                       Rifts on the client: the tear in the wild (a crack of light in a ring of glass shards, glassed trees round its clearing), the talk key, the rift window (energy bar and time to full, the Double, Enter), the wave banner
   abyss/abyss.js                     The Abyss on the client (behind the server's flag, NET.ab): the gate in Glasswell (a dark tear), the talk key, the difficulty window, the round banner and the between-rounds bar (Next round / Leave)
+  abyss/choice.js                    The Abyss's artifact screens (B4-B5): the pick screen (3 cards, Pick / Skip), the artifact bar (icons with a copy count, n / 20), the discard dialog (a full bar, or between rounds); events abo and aba
   bond/orbs.js                       Bond Orbs on the client: the orb stall's panel (24 characters, buy 1 or 10, the pouch's pick), the hour's Stirrings picks (BDC_STIR), the orb and stir events (the Bonds panel, the map glow and the pop-up are in bond/panel.js, stir.js, popup.js)
   bond/stir.js                       The hour's Stirrings on the client: the picks made drawable once (zone outlines, the boss's arena, the door, the raid), their glow on the land map, the minimap and the world map, and the "Stirrings this hour" box
   bond/popup.js                      The orb pop-up: a small card in the character's colour when stones arrive (the stones, the next Bond step's progress), stacked and merged while orbs keep opening

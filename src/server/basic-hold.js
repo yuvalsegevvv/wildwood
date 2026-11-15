@@ -4,7 +4,7 @@
             bhReleaseP (the held strength 0..1 of a skill-1 attack that is just being made, 0 = a press), bhAimAtS (the centre of a mage's held blast, resolveHitS calls it).
    hooks:   handleAttack (combat.js) and resolveHitS (combat.js), marked `// basic-hold:`; docs/BASIC-HOLD.md lists them.
    The server times the hold itself (the time between the two messages), never a number the client sent, so a client cannot claim a full charge it did not wait for. */
-const bhSpeedP=p=>p.pv?1:bhSpeedK(psP(p,'aspd'),rlP(p,'aspd'));   // pvp: nothing rolled or worn counts on the island
+const bhSpeedP=p=>p.pv?1:bhSpeedK(psP(p,'aspd'),rlP(p,'aspd')+abP(p,'aspd'));   // abyss: the bar's attack speed;   // pvp: nothing rolled or worn counts on the island
 const bhChargeP=p=>p.pv?1:bhChargeK(psP(p,'chg'),rlP(p,'chg'));
 MSG.hold=(p,msg)=>{ if(msg.k==='skill'){ shHoldP(p,msg); return; }   // skill-hold: a hold of skill 2 (server/skill-hold.js)
   p.holdT0=msg.on===1||msg.on===true?S.t+Math.max(0,p.cd.basic||0):null; };   // (the charge starts when skill 1 is ready again: a hold cannot be filled during the last swing's recovery)

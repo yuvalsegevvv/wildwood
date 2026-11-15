@@ -2,8 +2,10 @@
 /* agent map (docs/ABYSS.md; the plan: abyss-plan/PLAN.md)
    exports: AB_ON, abSwitch(on), AB_DIFFS (6 rows {id,name,lo,hi,rounds}: I-V then Infinite; hi / rounds 0 = no end), AB_INF (the index of Infinite, 5), abRoundLv(d,r), abRounds(d),
             abBossRounds(d) (the finite list; for Infinite the first AB_BOSS_SHOWN), abIsBossRound(d,r), AB_ART_MAX (20 artifacts at once), AB_RANK_MAX (5 copies), AB_CURSE_MAX (5),
-            AB_ENTRY_LV (40), AB_AS_MAX / AB_LOCK_MAX (save caps of gear.ab.as / .lock), AB_RUN_KEEP_S (a saved run older than this is dropped), AB_THEME (the rift def a run borrows its look and kinds from for now), AB_WAVES / AB_COUNT_S / AB_WAVE_S / AB_RELEASE_S / AB_ALIVE_MAX / AB_NEXT_PCT / AB_DEATH_S, abWaveSize(r,w), abLayout(seed), DG_HUD.abyss (the run's HUD row)
-   users: server/abyss.js (the flag, the window, the save), server/abyss/rounds.js (the run), game/dungeon/run.js (abLayout); later steps: the run, the artifacts, the client panel
+            AB_ENTRY_LV (40), AB_AS_MAX / AB_LOCK_MAX (save caps of gear.ab.as / .lock), AB_RUN_KEEP_S (a saved run older than this is dropped), AB_THEME (the rift def a run borrows its look and kinds from for now),
+            B4: AB_ARTS (the artifact registry, Object.create(null)), AB_ART_BAD, defineAbArt(row), AB_STATS / AB_RATE / AB_CAPS / AB_RARS / AB_RAR_W, abArtStat(arts,stat) (the pure product / capped sum of a bar), AB_OFFER_N (3), AB_WAVES / AB_COUNT_S / AB_WAVE_S / AB_RELEASE_S / AB_ALIVE_MAX / AB_NEXT_PCT / AB_DEATH_S, abWaveSize(r,w), abLayout(seed), DG_HUD.abyss (the run's HUD row)
+   users: server/abyss/arts.js (abP), shared/abyss/artifacts-stat.js (the entries), game/abyss/choice.js,
+          server/abyss.js (the flag, the window, the save), server/abyss/rounds.js (the run), game/dungeon/run.js (abLayout); later steps: the run, the artifacts, the client panel
    test: tools/abyss-smoke.js
    Round levels: every finite difficulty climbs 10 levels every 3 rounds, so ONE formula, abRoundLv(d,r) = lo + round((r-1)*10/3): difficulty I (lo 40) gives 40, 43, 47, 50, 53, 57, 60 (the
    last digit cycles 0, 3, 7), V reaches 140 at round 19, Infinite (lo 90, no end) reaches 180 at round 28. Boss rounds: 7, 13, 19... (every 6 from 7) and the last round of a finite difficulty. */
@@ -25,6 +27,37 @@ function abBossRounds(d){ const n=abRounds(d), out=[]; for(let r=7;n?r<=n:out.le
    at most AB_ALIVE_MAX alive; the round is won when the last wave is dead. The look and the monster kinds are the Shardmere's for now (B7 brings the tiles). */
 const AB_THEME='shardmere', AB_WAVES=3, AB_COUNT_S=3, AB_WAVE_S=30, AB_RELEASE_S=6, AB_ALIVE_MAX=30, AB_NEXT_PCT=0.75, AB_DEATH_S=3;
 const abWaveSize=(r,w)=>6+2*(w|0)+Math.floor(Math.max(1,r|0)/2);   // round 1 wave 1: 8, wave 3: 12
+/* ARTIFACTS (B4, plan section 5). An artifact is a data row defined through defineAbArt({id,name,fam,rar,icon,k,text}); every COPY held is one place of the AB_ART_MAX and its factors stack,
+   so the rank (copies, at most AB_RANK_MAX) is simply more copies. k = {stat: number per copy}. PRODUCT stats (atk: damage dealt, hp: max health, def: damage taken, heal: healing received) are a factor per copy
+   and the bar's copies multiply (def < 1 takes less; the 10% floor of hurtP still holds). RATE stats (crit: crit chance points, cdr: cooldown, aspd: attack speed, lifesteal: a share of the damage dealt healed)
+   are an amount per copy and add up, capped by AB_CAPS. A bad row is left out and listed in AB_ART_BAD (the smoke test fails naming it). */
+const AB_ARTS=Object.create(null), AB_ART_BAD=[], AB_OFFER_N=3;
+const AB_STATS=['atk','hp','def','heal','crit','cdr','aspd','lifesteal'], AB_RATE={crit:1,cdr:1,aspd:1,lifesteal:1};
+const AB_CAPS={crit:0.5,cdr:0.4,aspd:0.6,lifesteal:0.2};
+const AB_RARS=['common','rare'], AB_RAR_W={common:70,rare:30}, AB_FAMS=['stat','combat','wild'];
+function defineAbArt(r){
+  const bad=why=>{ AB_ART_BAD.push({id:r&&typeof r.id==='string'?r.id:'?',why}); return false; };
+  if(!r||typeof r!=='object') return bad('not an object');
+  if(typeof r.id!=='string'||!/^[a-z][a-z0-9_]{1,31}$/.test(r.id)) return bad('id');
+  if(AB_ARTS[r.id]) return bad('duplicate id');
+  if(typeof r.name!=='string'||!r.name||r.name.length>32) return bad('name');
+  if(AB_FAMS.indexOf(r.fam)<0) return bad('fam');
+  if(AB_RARS.indexOf(r.rar)<0) return bad('rar');
+  if(typeof r.icon!=='string'||!r.icon||r.icon.length>3) return bad('icon');
+  if(typeof r.text!=='string'||!r.text||r.text.length>160) return bad('text');
+  if(!r.k||typeof r.k!=='object'||Array.isArray(r.k)) return bad('k');
+  const ks=Object.keys(r.k); if(!ks.length) return bad('k is empty');
+  for(const s of ks){ const v=r.k[s]; if(AB_STATS.indexOf(s)<0) return bad('stat '+s); if(typeof v!=='number'||!isFinite(v)) return bad('value of '+s);
+    if(AB_RATE[s]?(v<=0||v>AB_CAPS[s]):(v<=0||v>100)) return bad('range of '+s); }
+  AB_ARTS[r.id]={id:r.id,name:r.name,fam:r.fam,rar:r.rar,icon:r.icon,k:Object.assign({},r.k),text:r.text}; return true;
+}
+const abIsArt=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(AB_ARTS,id);
+// the value of one stat over a bar (an array of artifact ids, a repeat id counts again): a product (1 with none) or, for a rate stat, the capped sum (0 with none)
+function abArtStat(arts,stat){
+  const rate=!!AB_RATE[stat]; let v=rate?0:1;
+  for(const id of arts||[]){ const a=abIsArt(id)?AB_ARTS[id]:null, k=a&&a.k[stat]; if(k) v=rate?v+k:v*k; }
+  return rate?Math.min(AB_CAPS[stat],v):v;
+}
 // the run's layout, rebuilt by the client from the seed (game/dungeon/run.js): for now the Shardmere's plus; the seed is for the tiles of B7
 const abLayout=seed=>riftLayout(RIFT_DEFS[AB_THEME]);
 // the snapshot's numbers (run.hud): [round, rounds (0 = Infinite), monsters alive or on their way, wave, waves, seconds to the next wave]  (dg[3]...dg[8])
