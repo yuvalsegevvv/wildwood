@@ -276,6 +276,9 @@ shared
   rift/charm.js                      The Charm Rift, the Emberwake Isles' rift (pays Accessory Reroll Stones): its tear on the isles east of Coralhaven, a sea-cyan and coral aura, six glass kinds of the isles and a Herald; mode Lanterns, a double comb
   abyss.js                           The Abyss (a solo roguelike mode, behind AB_ON): the flag, the six difficulties, the round level table, the boss rounds and the caps. Pure; loaded by both sides
   abyss/artifacts-stat.js            The Abyss's stat artifacts (B4): twelve plain plus artifacts (damage, health, defence, healing, crit, cooldown, attack speed, lifesteal), two rarities; each entry is one defineAbArt row
+  abyss/artifacts-combat.js          The Abyss's combat artifacts (B6): ten rules and procs (kills heal, every 5th hit, boss damage, a round-start shield, thorns, execute, Last Breath: death prevention); one defineAbArt row each
+  abyss/artifacts-wild.js            The Abyss's wildcards (B6): eight artifacts with a real plus and a real minus (damage for health, health for damage, crits for healing...); fam 'wild', the minus is shown in red
+  abyss/curses.js                    The Abyss's curses (B6): ten burdens a run can carry beside its 20 artifacts (stronger monsters, less healing, fewer offered cards); one defineAbCurse row each; Events (B8) hand them out
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -379,6 +382,7 @@ server
   abyss.js                           The Abyss on the server (behind AB_ON): the save gear.ab cleaned field by field, the flag the server asks (abOnS) and the window message (abyss{a:'open'}). B2: Fight rounds (server/abyss/rounds.js)
   abyss/rounds.js                    The Abyss's run (B2): a Fight round is a fresh run object in an Abyss slot, three waves through the void's tears, plain monsters at the round's level; go, next, out, death, leaving; no world rewards
   abyss/arts.js                      The Abyss's artifact engine (B4): the run's bar on the hiker, abP (the product / capped sum read by the hooks), the offer after a won round, pick, skip and drop
+  abyss/combat.js                    The Abyss's combat rules (B6): every 5th hit, boss and execute damage, kills heal, thorns, the round-start shield, Last Breath (death prevention), curses on the run (give, spawn factors); one small function per hook
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 

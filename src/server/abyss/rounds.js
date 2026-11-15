@@ -26,6 +26,7 @@ function abRunNewS(p,d,r,dropRun){
 function abStartRoundS(p,run){
   const g=abSaveOf(p), old=g.run; g.run={d:run.abD,r:run.abR,at:Date.now(),arts:old&&old.arts||[],curses:old&&old.curses||[],offer:null}; p.dirty=true;   // the bar goes on from round to round
   dgEnterS(run,p); abArtsDirtyP(p); recalcP(p); dgSetupS(run);   // abyss: the bar's health counts from the moment the hiker is in the run
+  run.abCK=abCurseKS(p); abShieldS(p);   // abyss: the curses' monster factors for this round and the bar's round-start shield (abyss/combat.js)
   dgEvTo('abr',p.id,run.abR,abRounds(run.abD),run.L);
   toastTo(p.id,'Round '+run.abR+(abRounds(run.abD)?' of '+abRounds(run.abD):'')+': level '+run.L+'.','');
 }
@@ -74,6 +75,7 @@ function abSpawnS(run,defId,lx,lz){
   const m=makeMon(d,W.x,W.z,{x:W.x,z:W.z},1,true);
   if(m.inst!==run.id) dgAdoptS(m);
   m.dgK=dgKOf(d,run.L); m.dgHunt=true;
+  const ck=run.abCK; if(ck&&(ck.mhp!==1||ck.mdmg!==1)){ const k=m.dgK; m.dgK={lv:k.lv,hp:k.hp*ck.mhp,dmg:k.dmg*ck.mdmg,xp:k.xp}; }   // abyss: the curses (a copy: dgKOf's answers are cached)
   ev('spawn',monRoster(m)); S.ctx=c0; return m;
 }
 function abPickS(run){ const kinds=run.theme.kinds, tw=kinds.reduce((s,c)=>s+c.w,0); let r=Math.random()*tw; for(const c of kinds){ r-=c.w; if(r<=0) return c.id; } return kinds[0].id; }
@@ -113,9 +115,11 @@ DG_KITS.abyss={
   onKill(run,m){ run.k.kills++; if(m.abW===run.k.w) run.k.dead++; },
   hud(run){ abHudS(run); },
 };
-// testing tool (devP 'abyss', v: the top difficulty 0-5, r: skip to round r of difficulty d now: needs no run, leaves one)
+// testing tool (devP 'abyss', v: the top difficulty 0-5, r: skip to round r of difficulty d now: needs no run, leaves one; art: an artifact id onto the bar, curse: a curse id, both in a live run)
 function abDevP(p,msg){
   const g=abSaveOf(p);
   if(msg.v!==undefined){ g.top=clampInt(msg.v,0,5,0); p.dirty=true; toastTo(p.id,'Abyss: difficulty '+g.top+' open.','good'); }
+  if(typeof msg.art==='string'&&abGiveArtP(p,msg.art)) toastTo(p.id,'Abyss: '+AB_ARTS[msg.art].name+' on the bar.','good');   // abyss/combat.js
+  if(typeof msg.curse==='string') abCurseAddP(p,msg.curse);
   if(msg.r!==undefined&&abRunOf(p)){ const old=abRunOf(p); if(g.run) g.run.offer=null; old.abR=clampInt(msg.r,1,Math.max(1,abRounds(old.abD)||99),1)-1; old.abWon=true; old.endT=0; abNextP(p); }
 }

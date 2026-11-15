@@ -2,7 +2,7 @@
 
 A solo roguelike mode: one hiker, one life, rounds of small tiles with choices between them, artifacts that live for the run, paid only in Abyssal Shards. Plan, numbers and decisions: the project's `abyss-plan/PLAN.md` (version 5). Stem `abyss`, prefix `ab` / `AB_`.
 
-**Status: B0-B5 built, behind `AB_ON`** (false until step B12). The server asks `abOnS()` = `AB_ON || io.test || S.dev`, so the test world and dev servers have it, the deploy (`--no-dev`) does not. Built so far: the slot split, the rules tables, the save `gear.ab`, the window message, and (B2) the server run with Fight rounds only: three waves of the Shardmere's glass kinds at the round's level with plain numbers (no `RIFT_HP_K` / `RIFT_DMG_K`), `go` / `next` / `out`, death and leaving end the run, no XP, coins or loot from Abyss kills. B3 (the client shell): the flag reaches the client as `welcome.ab`, the gate stands in Glasswell, the window lists the six difficulties, the `abr` banner, the `abw` event and the between-rounds bar (Next round / Leave); the HUD row `DG_HUD.abyss` and the void look were already there. B4-B5 (artifacts): the registry, twelve stat artifacts, the run's bar in the save, `abP`, an offer after every won round, pick / skip / drop, and the client's pick screen, bar and discard dialog. Still none: combat / wild artifacts and curses (B6), tiles, bosses, shards, a `game/abyss/view.js`.
+**Status: B0-B6 built, behind `AB_ON`** (false until step B12). The server asks `abOnS()` = `AB_ON || io.test || S.dev`, so the test world and dev servers have it, the deploy (`--no-dev`) does not. Built so far: the slot split, the rules tables, the save `gear.ab`, the window message, and (B2) the server run with Fight rounds only: three waves of the Shardmere's glass kinds at the round's level with plain numbers (no `RIFT_HP_K` / `RIFT_DMG_K`), `go` / `next` / `out`, death and leaving end the run, no XP, coins or loot from Abyss kills. B3 (the client shell): the flag reaches the client as `welcome.ab`, the gate stands in Glasswell, the window lists the six difficulties, the `abr` banner, the `abw` event and the between-rounds bar (Next round / Leave); the HUD row `DG_HUD.abyss` and the void look were already there. B4-B5 (artifacts): the registry, twelve stat artifacts, the run's bar in the save, `abP`, an offer after every won round, pick / skip / drop, and the client's pick screen, bar and discard dialog. B6: ten combat artifacts, eight wildcards, ten curses (the engine, a dev way to give one) and the balance yardstick `tools/abyss-sim.js`, sections 3c-3e. Still none: tiles, bosses, shards, a `game/abyss/view.js`, the Events that hand out curses (B8).
 
 ## 1. Files
 
@@ -17,6 +17,9 @@ A solo roguelike mode: one hiker, one life, rounds of small tiles with choices b
 | `server/abyss/arts.js` | (B4) `abP(p,stat)`, the offer after a won round (`abOfferP`, stored in `gear.ab.run.offer` before `abo` is sent), `abPickP` / `abSkipP` / `abDropP` |
 | `game/abyss/choice.js` | (B5) the pick screen (`#abPick`), the artifact bar (`#abArts`), the discard dialog (`#abDrop`), `EVH.abo`, `EVH.aba` |
 | `styles/42-abyss.css` | the window, the bar, the pick screen, the artifact bar and the discard dialog |
+| `shared/abyss/artifacts-combat.js`, `artifacts-wild.js`, `curses.js` | (B6) ten combat rows, eight wildcards (with their `minus` text), ten curses (`defineAbCurse`) |
+| `server/abyss/combat.js` | (B6) the rules: `abHitS` (every 5th hit, boss, execute), `abKillP`, `abThornsS`, `abLastS` (Last Breath), `abShieldS`, `abCurseKS` / `abCurseAddP`, `abGiveArtP` (dev) |
+| `tools/abyss-sim.js` | (B6) the balance yardstick (section 3e); `--check` is the test row `abyss-sim` |
 | `tools/abyss-smoke.js` | the test (server side); the client side is the Abyss case of `tools/client-smoke.js` |
 
 ## 2. Numbers (`shared/abyss.js`)
@@ -55,6 +58,10 @@ Save: `gear.ab = {top (0-5), best, clears:[6], as, lock, sh:{d,n:{id:count}}, ru
 | `server/players.js` `healP` | healing x `abP(p,'heal')` |
 | `server/basic-hold.js` `bhSpeedP` | `abP(p,'aspd')` beside `rlP(p,'aspd')` |
 | `server/abyss/rounds.js` `abRoundWonS`, `abNextP` | `abOfferP` after a won round; `next` refused while an offer is pending |
+| `server/combat.js` `damageMonsterS` | (B6) `abHitS`: every 5th hit, boss and execute damage of the bar |
+| `server/combat.js` `killMonsterS` | (B6) `abKillP`: kills heal |
+| `server/players.js` `hurtP` | (B6) `abThornsS` after a monster's hit; `abLastS` when the hit would kill (Last Breath); and `abP(p,'def')` now multiplies AFTER the 10% floor (see 3e) |
+| `server/abyss/rounds.js` `abStartRoundS`, `abSpawnS`, `abDevP` | (B6) the curses' monster factors (`run.abCK`) and the round-start shield; `devP abyss` `art` / `curse` |
 | `game/village/talking.js` | the talk key and its prompt (`abHere`, two lines) |
 | `game/main/loop.js` | `abUpdate(dt)` |
 | `game/ui/panels.js` | `'abyss'` in `PANELS` |
@@ -64,26 +71,87 @@ Save: `gear.ab = {top (0-5), best, clears:[6], as, lock, sh:{d,n:{id:count}}, ru
 
 ## 3b. Artifacts (B4-B5)
 
-A run's bar is `gear.ab.run.arts` (ids, at most 20, a repeat id again, at most 5 of one); `abP(p,stat)` is the product of its copies' factors (the sum for a rate stat, capped by `AB_CAPS`) for a hiker in a live Abyss run, 1 (0) otherwise; it is cached on `p.ab` and read where `rlP` is read (hooks above). A copy's factor stacks, so a rank is just more copies. The numbers are a first guess sized for plan section 4's budget (x400-800 damage, x45-80 toughness from a full bar); B6's sim tunes them.
+A run's bar is `gear.ab.run.arts` (ids, at most 20, a repeat id again, at most 5 of one); `abP(p,stat)` is the product of its copies' factors (the sum for a rate stat, capped by `AB_CAPS`) for a hiker in a live Abyss run, 1 (0) otherwise; it is cached on `p.ab` and read where `rlP` is read (hooks above). A copy's factor stacks, so a rank is just more copies. The numbers below were tuned by B6's sim (section 3e).
 
 | Id | Name | Rarity | Per copy |
 |---|---|---|---|
-| `ab_edge` | Honed Edge | common | damage dealt x1.35 |
-| `ab_fang` | Ravener's Fang | common | damage dealt x1.5 |
-| `ab_dread` | Dread Sigil | rare | damage dealt x1.9 |
-| `ab_heart` | Heartwood Knot | common | max health x1.4 |
-| `ab_marrow` | Titan's Marrow | rare | max health x1.9 |
-| `ab_scale` | Slate Scale | common | damage taken x0.85 |
-| `ab_carapace` | Void Carapace | rare | damage taken x0.68 |
-| `ab_thread` | Mender's Thread | common | healing received x1.35 |
+| `ab_edge` | Honed Edge | common | damage dealt x1.75 |
+| `ab_fang` | Ravener's Fang | common | damage dealt x2.2 |
+| `ab_dread` | Dread Sigil | rare | damage dealt x3.6 |
+| `ab_heart` | Heartwood Knot | common | max health x1.9 |
+| `ab_marrow` | Titan's Marrow | rare | max health x3.2 |
+| `ab_scale` | Slate Scale | common | damage taken x0.74 |
+| `ab_carapace` | Void Carapace | rare | damage taken x0.5 |
+| `ab_thread` | Mender's Thread | common | healing received x1.7 |
 | `ab_eye` | Keen Eye | common | crit chance +5 points (sum capped at 50) |
 | `ab_glass` | Quick Hourglass | common | cooldowns -6 points (capped at 40) |
 | `ab_wraps` | Fleet Wraps | common | attack speed +8 points (capped at 60) |
-| `ab_leech` | Leech Charm | rare | heal 2% of the damage dealt (capped at 20%) |
+| `ab_leech` | Leech Charm | rare | heal 0.04% of the damage dealt (capped at 1%: the hiker deals 10 to 300 times its health a second, so a percent of damage is a flood) |
 
-Offers: a won round (not the last of a finite difficulty) draws 3 different ids by rarity weight (`AB_RAR_W` common 70, rare 30; an id held 5 times is left out), stores `gear.ab.run.offer = {k:'art',o:[ids]}` and only then sends `abo`. `abyss{a:'open'}` during a run sends the stored offer again. `pick,i` (i an integer 0-2 against the stored offer; a full bar or a 6th copy is refused with a toast), `skip`, `drop,i` (an index into the bar, between rounds only); `next` is refused while an offer is pending. The run's end (out, fall, close) clears the bar and `recalcP` takes the health back. Curses are reserved (`gear.ab.run.curses`, always empty until B6).
+Offers: a won round (not the last of a finite difficulty) draws 3 different ids by rarity weight (`AB_RAR_W` common 70, rare 30; an id held 5 times is left out), stores `gear.ab.run.offer = {k:'art',o:[ids]}` and only then sends `abo`. `abyss{a:'open'}` during a run sends the stored offer again. `pick,i` (i an integer 0-2 against the stored offer; a full bar or a 6th copy is refused with a toast), `skip`, `drop,i` (an index into the bar, between rounds only); `next` is refused while an offer is pending. The run's end (out, fall, close) clears the bar and `recalcP` takes the health back. Curses (B6) sit on `gear.ab.run.curses`, outside the 20.
 
 Client (B5): the pick screen shows one card per id (icon glyph, name, rarity, text, the copies already held, Pick) and Skip; with a full bar Pick opens the discard dialog (no message is sent), a choice there sends `drop` then the `pick` again; the bar `#abArts` (from `GEAR.ab.run.arts`, so it follows every `you`) shows a tile per artifact with its copy count and `n / 20`, a tap between rounds opens the dialog.
+
+## 3c. Combat artifacts (B6, `shared/abyss/artifacts-combat.js`, rules in `server/abyss/combat.js`)
+
+New stats in `abArtStat` (`shared/abyss.js`): products `boss`, `exec`, `nth`; amounts that add up under `AB_CAPS` `killheal` (0.3), `shield` (3), `thorns` (0.2), `last` (0.3). Constants `AB_NTH` 5 (every 5th hit), `AB_EXEC_HP` 0.2, `AB_DEF_MIN` 0.1.
+
+| Id | Name | Rarity | Per copy |
+|---|---|---|---|
+| `ab_bloodletter` | Bloodletter | common | every kill heals 3% of max health |
+| `ab_echo` | Echoing Strike | common | every 5th hit x2.5 |
+| `ab_bane` | Titanbane | common | damage to bosses x1.7 |
+| `ab_ward` | Round Ward | common | a shield of 12% max health at each round's start (`p.shield`, `done:true`) |
+| `ab_thorn` | Thornmail | common | a monster that hits you loses 0.4% of ITS max health (a boss a tenth); percent of damage taken would be nothing against 100x-health monsters |
+| `ab_exec` | Executioner | common | hits on a monster under 20% health x1.55 |
+| `ab_last` | Last Breath | rare | **death prevention**: a hit that would kill leaves you at 30% (1.5 s grace); that copy is used up and leaves the bar (`aba` with the copies left); one use a copy |
+| `ab_vampedge` | Vampiric Edge | rare | kills heal 5%, heal 0.06% of damage dealt |
+| `ab_bastion` | Bastion Sigil | rare | round-start shield 40% |
+| `ab_warbrand` | Warbrand | rare | every 5th hit x5 |
+
+## 3d. Wildcards and curses (B6)
+
+**Wildcards** (`artifacts-wild.js`, `fam:'wild'`, a row needs a `minus` text; a factor below 1 on damage / health / healing, or damage taken above 1, is the minus; shown in red on the card and the bar tile; thrown away between rounds like any artifact):
+
+| Id | Name | Rarity | Plus | Minus |
+|---|---|---|---|---|
+| `ab_w_glass` | Glass Cannon | rare | damage x2.9 | damage taken x1.75 |
+| `ab_w_colossus` | Colossus Heart | rare | max health x2.6 | damage x0.5 |
+| `ab_w_pact` | Bloodless Pact | rare | crit +15 points | healing x0.05 |
+| `ab_w_berserk` | Berserker Mask | rare | damage x2.2 | max health x0.5 |
+| `ab_w_turtle` | Turtle Shell | common | damage taken x0.4 | damage x0.62 |
+| `ab_w_haste` | Hummingbird Charm | common | attack speed +24, cooldowns -12 points | max health x0.68 |
+| `ab_w_bargain` | Devil's Bargain | rare | damage x4 | max health x0.74, healing x0.4 |
+| `ab_w_thirst` | Thirsting Blade | common | heal 0.1% of damage dealt | damage taken x1.45 |
+
+**Curses** (`curses.js`, `defineAbCurse`, registry `AB_CURSES` / `AB_CURSE_BAD`, ids `ab_c_...`): on `gear.ab.run.curses`, at most 5 (`AB_CURSE_MAX`), a repeat stacks, they do NOT use the 20 places. The hiker's own factors (`atk`, `hp`, `def`, `heal`) multiply into `abP`; `mhp` / `mdmg` multiply every monster of the run (`run.abCK`, read at a round's start and by `abCurseAddP`, applied in `abSpawnS` to a COPY of the cached `dgKOf` answer); `offer` takes cards off an offer (at least 1 stays). `abSanitize` keeps own-property curse ids only, at most 5. B6 has no source: `devP abyss` `curse:id` (and `art:id`) on a dev server; Events (B8) hand them out and a Shrine removes one.
+
+| Id | Name | Effect |
+|---|---|---|
+| `ab_c_hides` / `ab_c_horde` | Thick Hides / Swollen Horde | monsters +25% / +50% health |
+| `ab_c_claws` / `ab_c_frenzy` | Whetted Claws / Frenzy | monsters +25% / +50% damage |
+| `ab_c_ruin` | Creeping Ruin | monsters +10% health and damage |
+| `ab_c_famine` | Famine | healing x0.7 |
+| `ab_c_narrow` | Narrow Offers | one card fewer in every offer |
+| `ab_c_frail` | Frail Frame | max health x0.85 |
+| `ab_c_dull` | Dull Blades | damage x0.85 |
+| `ab_c_hollow` | Hollow Ward | damage taken x1.2 |
+
+## 3e. The sim (`tools/abyss-sim.js`) and the tuned numbers
+
+`node tools/abyss-sim.js [--runs 300] [--inf 60] [--picks n] [--pow x] [--seed n]`; `--check` (3 s, the test row `abyss-sim`) asserts the targets. A model, not the game: the shared rules come from `src/` through `loadShared` (`defAt`, `lvDmgK`, the tables, the rows), the hero is `HERO` at the top of the file. **The hero** (sim110's maxed level-75 hero, rerun here with its item codes fixed to the one roll line a level-40 piece takes): 300k health, 87% armour (a guard potion = the 10% floor), 3.0M damage a second to a level-100 monster (6.0M before the x0.5 level debuff), a level-100 mob (34M health) down in 11 s, the level-100 boss (198M) beaten in 165 s with 3 potions while dodging 60% of its hits (a no-artifact hero takes about 110% of its health doing it: it is on the edge, which is the definition). A fight round at level 100 (36 monsters) takes 221% of its health: lost. Assumptions that are mine, not measured: boss damage uptime 0.4, a boss strike is 0.25 of its `defAt` hit at 1.3 a second, mobs hit every 2 s with 3 at a time and the hero dodges 30% of them, crit 30% x2.2, attack speed counts 0.8 and cooldowns 0.5; potions are three heals of 40% a round.
+
+Results (500 runs a cell, Infinite 1500; picks as the plan: a boss round 3, any other 0 / 1 / 2, about 1.5 a round; "random" takes any of the 3 cards, "greedy" the card that lowers the damage taken in a reference fight ten levels on most and throws away the copy that hurts least):
+
+| Picker | I | II | III | IV | V | Infinite: median / deepest round, share reaching level 180 (round 28) |
+|---|---|---|---|---|---|---|
+| none | 100% | 100% | **0%** (dies in round 12) | 0% | 0% | 3 / 3, 0% |
+| random | 100% | 100% | 100% | 63% | 9% | 5 / 23, 0% |
+| greedy | 100% | 100% | 100% | 98% | **79%** | 7 / 30, 1% |
+
+With exactly one pick a plain round (what the code gives until B8): greedy V 64%, IV 99%, random V 8%, Infinite deepest 26. Targets met: no artifacts fail III, a good bar clears V (level 140), level 180 is a 1-in-100 run. Infinite starts at level 90 with an empty bar, so its median (round 7, level 113) is below what V's 19 rounds reach: that is the plan's shape (B12 tunes Infinite). The factors were found with `--pow` (every product factor to one power): x1.35 on the first-guess numbers of B4; rates (leech, thorns, kill heal, shield) were sized by their order of magnitude against the hero's numbers.
+
+**Two findings for the owner.** (1) The hero is already at hurtP's 10% damage-taken floor, so the B4 rule "the bar's damage taken sits inside the floor" would have made every defence artifact dead. The bar's `def` now multiplies AFTER the floor (`hurtP`, one hook line), never below `AB_DEF_MIN` x0.1 for the bar, so the lowest possible hit is 1% (plan section 4 had no number for this). (2) Percent-of-damage effects (lifesteal, thorns) scale with the hero's damage, which is 10 to 300 times its health a second here, so their per-copy numbers are tiny (0.04%, 0.4% of the monster's own health).
 
 ## 4. Messages
 

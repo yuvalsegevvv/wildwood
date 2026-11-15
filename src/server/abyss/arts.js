@@ -3,9 +3,10 @@
    exports: abP(p,stat) (1 / 0 for a rate stat outside a live Abyss run), abArtsOf(p), abArtsDirtyP(p) (the bar changed: forget the cache), abDrawOfferS(arts), abOfferP(run,p) (store + send the offer of a won round),
             abPickP(p,i), abSkipP(p), abDropP(p,i), abResendOfferP(p)
    hooks marked `// abyss:` (docs/ABYSS.md section 3): combat.js rollDmgS / damageMonsterS / the cooldown line, players.js hurtP / recalcP / healP, basic-hold.js bhSpeedP
-   save: gear.ab.run.arts (ids, at most AB_ART_MAX, a repeat id again, at most AB_RANK_MAX of one id), .curses (reserved, empty in B4), .offer {k:'art',o:[ids]} (stored BEFORE the event abo is sent)
+   save: gear.ab.run.arts (ids, at most AB_ART_MAX, a repeat id again, at most AB_RANK_MAX of one id), .curses (B6: curse ids, at most AB_CURSE_MAX, outside the 20; abP multiplies their atk / hp / def / heal factors into the bar's), .offer {k:'art',o:[ids]} (stored BEFORE the event abo is sent)
    events: abo [pid,'art',ids] (an offer), aba [pid,id,copies] (a copy taken or thrown away; copies = the copies of that id now); messages abyss{a:'pick',i|'skip'|'drop',i} (server/abyss.js routes them)
-   test: tools/abyss-smoke.js.   p.ab = {src,n,v:{stat:value}}: the cache of the bar, rebuilt when the array or its length changes or abArtsDirtyP is called. */
+   test: tools/abyss-smoke.js.   p.ab = {src,n,cn,v:{stat:value}}: the cache of the bar and the curses, rebuilt when the array or its length changes or abArtsDirtyP is called.
+   B6: the combat rules (every 5th hit, kills heal, thorns, Last Breath, the shield, curses on spawns) are in server/abyss/combat.js; abP's def is applied AFTER hurtP's 10% floor and never below AB_DEF_MIN. */
 const AB_TXT_FULL='Your bar is full: throw one away first.';
 function abArtsOf(p){ const g=p&&p.gear&&p.gear.ab, r=g&&g.run; return r&&Array.isArray(r.arts)?r.arts:null; }
 function abArtsDirtyP(p){ p.ab=null; }
@@ -13,16 +14,21 @@ function abArtsDirtyP(p){ p.ab=null; }
 function abP(p,stat){
   const neutral=AB_RATE[stat]?0:1;
   if(!p.inst||p.pv) return neutral;
-  const arts=abArtsOf(p); if(!arts||!arts.length) return neutral;
+  const arts=abArtsOf(p), cur=abCursesOf(p); if(!(arts&&arts.length)&&!(cur&&cur.length)) return neutral;
   const run=DG_RUNS.get(p.inst); if(!run||!run.ab) return neutral;
-  let c=p.ab; if(!c||c.src!==arts||c.n!==arts.length){ c={src:arts,n:arts.length,v:Object.create(null)}; for(const s of AB_STATS) c.v[s]=abArtStat(arts,s); p.ab=c; }
+  let c=p.ab; if(!c||c.src!==arts||c.n!==(arts?arts.length:0)||c.cn!==(cur?cur.length:0)){
+    c={src:arts,n:arts?arts.length:0,cn:cur?cur.length:0,v:Object.create(null)};
+    for(const s of AB_STATS){ let v=abArtStat(arts,s); if(s==='atk'||s==='hp'||s==='def'||s==='heal') v*=abCurseStat(cur,s); if(s==='def') v=Math.max(AB_DEF_MIN,v);  c.v[s]=v; }   // B6: the curses' own-stat factors join the bar's
+    p.ab=c; }
   const v=c.v[stat]; return v===undefined?neutral:v;
 }
+const abCursesOf=p=>{ const g=p&&p.gear&&p.gear.ab, r=g&&g.run; return r&&Array.isArray(r.curses)?r.curses:null; };
 // three different ids by rarity weight (an artifact already held 5 times is not offered); fewer if the pool runs short
-function abDrawOfferS(arts){
+function abDrawOfferS(arts,n){
+  n=n>=1?Math.min(AB_OFFER_N,n|0):AB_OFFER_N;
   const held={}; for(const id of arts) held[id]=(held[id]||0)+1;
   const pool=Object.keys(AB_ARTS).filter(id=>(held[id]||0)<AB_RANK_MAX), out=[];
-  while(out.length<AB_OFFER_N&&pool.length){
+  while(out.length<n&&pool.length){
     let tw=0; for(const id of pool) tw+=AB_RAR_W[AB_ARTS[id].rar]||1;
     let r=Math.random()*tw, i=0; for(;i<pool.length-1;i++){ r-=AB_RAR_W[AB_ARTS[pool[i]].rar]||1; if(r<=0) break; }
     out.push(pool.splice(i,1)[0]);
@@ -32,7 +38,7 @@ function abDrawOfferS(arts){
 // a won round: draw, STORE, then tell (a reopen shows the very same offer)
 function abOfferP(run,p){
   const g=abSaveOf(p); if(!g.run) return;
-  const ids=abDrawOfferS(g.run.arts||(g.run.arts=[])); if(!ids.length) return;
+  const ids=abDrawOfferS(g.run.arts||(g.run.arts=[]),AB_OFFER_N-abCurseStat(g.run.curses,'offer'));   // B6: a curse takes cards off the offer (at least 1 stays) if(!ids.length) return;
   g.run.offer={k:'art',o:ids}; p.dirty=true; dgEvTo('abo',p.id,'art',ids);
 }
 function abResendOfferP(p){ const g=abSaveOf(p), o=g.run&&g.run.offer; if(o&&o.k==='art'&&abRunOf(p)) dgEvTo('abo',p.id,'art',o.o.slice()); }

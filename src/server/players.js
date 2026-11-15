@@ -221,10 +221,12 @@ function gainExpP(p,v,monId){
 function hurtP(p,v,m,by){   // returns the damage taken; by: the fighter who hit (pvp, no monster)
   if(p.dead||(p.cave&&p.cave.bur>S.t)||(p.vbGrace>S.t)) return 0;   // volcano: a moment's grace after waking on the spot   // cave: Burrow, nothing can hit you
   const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
-  v=Math.max(1,Math.round(v*(K?K.dmg:1)*mstWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,shdBlockK(p)*(1-p.red)*(1-psP(p,'red')-ssCondP(p,'red',m))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))*(1-allyP(p,'guard'))*abP(p,'def'))));   // abyss: the bar's damage taken (inside the 10% floor)   // statuses: weak lowers what a monster deals; dgrev D7: shdBlockK, the shield's block (inside the 10% floor)
+  v=Math.max(1,Math.round(v*(K?K.dmg:1)*mstWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,shdBlockK(p)*(1-p.red)*(1-psP(p,'red')-ssCondP(p,'red',m))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))*(1-allyP(p,'guard')))*abP(p,'def')));   // abyss: the bar's damage taken, AFTER the 10% floor (a hiker with armour and potions is at the floor already; abP's def is at least AB_DEF_MIN)   // statuses: weak lowers what a monster deals; dgrev D7: shdBlockK, the shield's block (inside the 10% floor)
   v=caveHurtS(p,v,m); if(v<=0){ p.lastHit=S.t; return 0; }   // cave: Shield-Wall, Stopped Hour, Bell Echo, Embalm, Eagle's Perch
   if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(p.shield.v<=0&&!p.shield.done){ p.shield.done=true; ssShieldBreakS(p); } if(v<=0){ p.lastHit=S.t; return 0; } }   // skillsets: a shield soaks the hit first
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v); shdWardS(p);   // dgrev D7: the shield's block is in the damage line above; the Last Ward here
+  if(m&&p.inst) abThornsS(p,m);   // abyss: thorns (the attacker loses a share of its own health)
+  if(p.hp<=0&&p.inst) abLastS(p);   // abyss: Last Breath stands you up instead of the fall
   if(p.hp<=0){
     p.hp=0; p.dead=true; p.deadT=0; p.act=null; p.glvS=null; ev('down',p.id); gsStatP(p,'die'); mqHardHintP(p);   // gems: the knock-out counter; main quest: a step that is hard for your level says to explore first
     for(const mm of MONS) if(mm.tgt===p.id){ mm.aggro=false; mm.tgt=null; mm.state='return'; mm.pendingHit=-1; }

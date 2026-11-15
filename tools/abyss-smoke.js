@@ -7,8 +7,9 @@
 // Usage: node tools/abyss-smoke.js
 const {loadServer}=require('./load');
 const sent=[];
-const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K','abP','AB_ARTS','AB_ART_BAD','defineAbArt','abArtStat','AB_CAPS','rollDmgS','hurtP','healP','damageMonsterS','abDrawOfferS']);
+const {api:W,x}=loadServer({dev:false,log(){},send(to,m){ sent.push([to,JSON.parse(JSON.stringify(m))]); }},['AB_DIFFS','AB_INF','abRoundLv','abRounds','abBossRounds','abIsBossRound','abSwitch','abSanitize','abOnS','AB_ART_MAX','AB_RANK_MAX','AB_CURSE_MAX','AB_ENTRY_LV','AB_AS_MAX','AB_LOCK_MAX','AB_SLOT0','DG_MAX_INST','RIFT_SLOT0','sanitizeGear','DG_RUNS','DG_SLOT_RUN','killMonsterS','xpFor','abWaveSize','AB_WAVES','AB_RUN_KEEP_S','DG_EMPTY_S','dgCloseS','dgKOf','RIFT_DMG_K','abP','AB_ARTS','AB_ART_BAD','defineAbArt','abArtStat','AB_CAPS','rollDmgS','hurtP','healP','damageMonsterS','abDrawOfferS','AB_CURSES','AB_CURSE_BAD','defineAbCurse','abCurseStat','abIsCurse','abHitS','abKillP','abThornsS','abShieldS','abCurseAddP','abGiveArtP','abSpawnS','DEF_BY_ID','AB_NTH','monK']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefined?'  ('+i+')':'')); if(!c) fails++; };
+const K=(id,s)=>x.AB_ARTS[id].k[s];   // the numbers are tuned by tools/abyss-sim.js: the tests read them from the rows
 const J=JSON.stringify, tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const lvs=(d,n)=>Array.from({length:n},(_,i)=>x.abRoundLv(d,i+1));
 // the tables
@@ -124,17 +125,17 @@ ok('difficulty II is open now, III is not',(()=>{ W.receive('c',{t:'abyss',a:'go
 
 // ---- B4: artifacts
 { const N=Object.keys(x.AB_ARTS).length;
-  ok('the registry: 12 stat artifacts, none left out, every row has factors',N===12&&x.AB_ART_BAD.length===0&&Object.values(x.AB_ARTS).every(a=>a.fam==='stat'&&Object.keys(a.k).length&&a.text&&a.icon),N+' '+J(x.AB_ART_BAD));
+  ok('the registry: 12 stat artifacts (B4) beside the combat and wild ones (B6), none left out, every row has factors',Object.values(x.AB_ARTS).filter(a=>a.fam==='stat').length===12&&x.AB_ART_BAD.length===0&&Object.values(x.AB_ARTS).every(a=>Object.keys(a.k).length&&a.text&&a.icon),N+' '+J(x.AB_ART_BAD));
   const bads=[null,{id:'__proto__',name:'x',fam:'stat',rar:'common',icon:'a',k:{atk:2},text:'t'},{id:'ab_edge',name:'dup',fam:'stat',rar:'common',icon:'a',k:{atk:2},text:'t'},{id:'ab_zz1',name:'x',fam:'stat',rar:'mythic',icon:'a',k:{atk:2},text:'t'},
     {id:'ab_zz2',name:'x',fam:'stat',rar:'rare',icon:'a',k:{luck:2},text:'t'},{id:'ab_zz3',name:'x',fam:'stat',rar:'rare',icon:'a',k:{atk:NaN},text:'t'},{id:'ab_zz4',name:'x',fam:'stat',rar:'rare',icon:'a',k:{crit:5},text:'t'},{id:'ab_zz5',name:'x',fam:'stat',rar:'rare',icon:'a',k:{},text:'t'}];
   for(const b of bads) x.defineAbArt(b);
   ok('bad rows are left out and listed in AB_ART_BAD',Object.keys(x.AB_ARTS).length===N&&x.AB_ART_BAD.length===bads.length&&Object.getPrototypeOf(x.AB_ARTS)===null,x.AB_ART_BAD.length); x.AB_ART_BAD.length=0;
   const st=(a,s)=>x.abArtStat(a,s);
-  ok('abArtStat: copies multiply (x1.35 twice and x1.5 once), an empty bar is 1 / 0',Math.abs(st(['ab_edge','ab_fang','ab_edge'],'atk')-1.35*1.35*1.5)<1e-9&&st([],'atk')===1&&st([],'crit')===0&&Math.abs(st(['ab_scale','ab_scale'],'def')-0.7225)<1e-9);
-  ok('five copies of x1.35 is x4.49; rate stats add up and stop at their cap',Math.abs(st(Array(5).fill('ab_edge'),'atk')-Math.pow(1.35,5))<1e-9&&Math.abs(st(['ab_eye','ab_eye'],'crit')-0.10)<1e-9&&st(Array(20).fill('ab_eye'),'crit')===x.AB_CAPS.crit&&st(Array(20).fill('ab_wraps'),'aspd')===x.AB_CAPS.aspd);
+  ok('abArtStat: copies multiply (Honed Edge twice and Ravener\'s Fang once), an empty bar is 1 / 0',Math.abs(st(['ab_edge','ab_fang','ab_edge'],'atk')-K('ab_edge','atk')*K('ab_edge','atk')*K('ab_fang','atk'))<1e-9&&st([],'atk')===1&&st([],'crit')===0&&Math.abs(st(['ab_scale','ab_scale'],'def')-K('ab_scale','def')**2)<1e-9);
+  ok('five copies of Honed Edge multiply (rank 5); rate stats add up and stop at their cap',Math.abs(st(Array(5).fill('ab_edge'),'atk')-Math.pow(K('ab_edge','atk'),5))<1e-9&&Math.abs(st(['ab_eye','ab_eye'],'crit')-0.10)<1e-9&&st(Array(20).fill('ab_eye'),'crit')===x.AB_CAPS.crit&&st(Array(20).fill('ab_wraps'),'aspd')===x.AB_CAPS.aspd);
   ok('a bar of garbage ids is neutral',st(['__proto__','constructor','nope',7,null],'atk')===1); }
 { const o=x.sanitizeGear({ab:{top:1,run:{d:0,r:2,at:Date.now(),arts:['ab_edge','__proto__','constructor','nope',7,null,{},'ab_edge',...Array(10).fill('ab_heart'),...Array(10).fill('ab_fang'),...Array(10).fill('ab_scale'),...Array(10).fill('ab_thread')],curses:['x','y'],offer:{k:'art',o:['ab_fang','__proto__','ab_fang','ab_eye','ab_wraps','ab_glass']}}}}).ab.run;
-  ok('a saved run keeps own-property ids only, at most 20 and 5 of one, no curses yet, an offer of at most 3 different ids',o&&o.arts.length===x.AB_ART_MAX&&o.arts.every(id=>x.AB_ARTS[id])&&o.arts.filter(i=>i==='ab_heart').length===5&&o.arts.filter(i=>i==='ab_edge').length===2&&J(o.curses)==='[]'&&J(o.offer)===J({k:'art',o:['ab_fang','ab_eye','ab_wraps']}),J(o));
+  ok('a saved run keeps own-property ids only, at most 20 and 5 of one, curses cleaned, an offer of at most 3 different ids',o&&o.arts.length===x.AB_ART_MAX&&o.arts.every(id=>x.AB_ARTS[id])&&o.arts.filter(i=>i==='ab_heart').length===5&&o.arts.filter(i=>i==='ab_edge').length===2&&J(o.curses)==='[]'&&J(o.offer)===J({k:'art',o:['ab_fang','ab_eye','ab_wraps']}),J(o));
   ok('a bad offer or bar is dropped',(()=>{ const c=clean({run:{d:0,r:2,at:Date.now(),arts:'x',offer:{k:'tile',o:['ab_edge']}}}).run; const c2=clean({run:{d:0,r:2,at:Date.now(),offer:{k:'art',o:['zz']}}}).run; return c.arts.length===0&&c.offer===null&&c2.offer===null; })()); }
 const Dq=mk('d',60); Dq.gear.ab.top=0; 
 // outside a run abP is neutral, even with a bar written into the save
@@ -157,15 +158,15 @@ ok('pick with a bad index, string, __proto__ or object is refused: nothing taken
 const setOffer=o=>{ Dq.gear.ab.run.offer={k:'art',o}; }, arts=()=>Dq.gear.ab.run.arts;
 setOffer(['ab_edge','ab_fang','ab_heart']); sent.length=0; W.receive('d',{t:'abyss',a:'pick',i:0}); tick(1);
 ok('pick 0 adds the copy, clears the offer and sends aba [pid, id, 1]',J(arts())==='["ab_edge"]'&&Dq.gear.ab.run.offer===null&&evs('d','aba').some(e=>e[2]==='ab_edge'&&e[3]===1));
-ok('abP now multiplies: x1.35 damage',Math.abs(x.abP(Dq,'atk')-1.35)<1e-9);
+ok('abP now multiplies: Honed Edge\'s damage',Math.abs(x.abP(Dq,'atk')-K('ab_edge','atk'))<1e-9);
 W.receive('d',{t:'abyss',a:'pick',i:0}); ok('a pick with no offer does nothing',arts().length===1);
 setOffer(['ab_edge','ab_fang','ab_heart']); W.receive('d',{t:'abyss',a:'pick',i:0}); setOffer(['ab_fang','ab_heart','ab_eye']); W.receive('d',{t:'abyss',a:'pick',i:0});
-ok('two copies of one and one other: atk x1.35 x1.35 x1.5 = x2.73',J(arts())==='["ab_edge","ab_edge","ab_fang"]'&&Math.abs(x.abP(Dq,'atk')-1.35*1.35*1.5)<1e-9,x.abP(Dq,'atk'));
+ok('two copies of one and one other: the factors multiply',J(arts())==='["ab_edge","ab_edge","ab_fang"]'&&Math.abs(x.abP(Dq,'atk')-K('ab_edge','atk')**2*K('ab_fang','atk'))<1e-9,x.abP(Dq,'atk'));
 // skip
 setOffer(['ab_heart','ab_eye','ab_glass']); W.receive('d',{t:'abyss',a:'skip'}); ok('skip clears the offer and takes nothing',Dq.gear.ab.run.offer===null&&arts().length===3);
 // max health follows the bar at once
 setOffer(['ab_heart','ab_eye','ab_glass']); const hpBefore=Dq.maxHp; W.receive('d',{t:'abyss',a:'pick',i:0});
-ok('max health x1.4 with Heartwood Knot, applied at once',Math.abs(Dq.maxHp/hpBefore-1.4)<0.01&&Math.abs(x.abP(Dq,'hp')-1.4)<1e-9,Dq.maxHp+' / '+hpBefore);
+ok('max health x Heartwood Knot, applied at once (the bar already holds none: abP hp is its factor)',Math.abs(Dq.maxHp/hpBefore-K('ab_heart','hp'))<0.01&&Math.abs(x.abP(Dq,'hp')-K('ab_heart','hp'))<1e-9,Dq.maxHp+' / '+hpBefore);
 // rank 5: a sixth copy of one is refused
 for(let i=0;i<3;i++){ setOffer(['ab_edge','ab_fang','ab_eye']); W.receive('d',{t:'abyss',a:'pick',i:0}); }
 ok('five copies of one artifact (rank 5)',arts().filter(i=>i==='ab_edge').length===5&&arts().length===7);
@@ -188,24 +189,77 @@ W.receive('d',{t:'abyss',a:'next'}); tick(Math.ceil(5/0.05)); rD=runOf(Dq); cons
 ok('(round 2 on, a monster to hit)',!!mm&&rD.abR===2);
 { const R0=Math.random; Math.random=()=>0.5; try{
     const dmg=()=>x.rollDmgS(Dq,1,mm,null).v, v0=dmg(); arts().push('ab_edge','ab_edge','ab_fang'); const v1=dmg();
-    ok('damage dealt: the same hit does x2.73 with the bar (rollDmgS)',Math.abs(v1/v0-2.7338)<0.02,v0+' -> '+v1);
+    ok('damage dealt: the same hit does the bar\'s factor more (rollDmgS)',Math.abs(v1/v0-K('ab_edge','atk')**2*K('ab_fang','atk'))<0.02*K('ab_edge','atk')**2*K('ab_fang','atk'),v0+' -> '+v1);
     arts().length=0; arts().push('ab_scale','ab_scale'); Dq.vbGrace=0; Dq.hp=Dq.maxHp; const h0=x.hurtP(Dq,50,mm); Dq.hp=Dq.maxHp; arts().length=0; const h1=x.hurtP(Dq,50,mm); Dq.vbGrace=1e12;
-    ok('damage taken: the same hit does x0.7225 with two Slate Scales (hurtP)',h1>20&&Math.abs(h0/h1-0.7225)<0.03,h1+' -> '+h0);
+    ok('damage taken: the same hit does the factor of two Slate Scales (hurtP)',h1>20&&Math.abs(h0/h1-K('ab_scale','def')**2)<0.03,h1+' -> '+h0);
     arts().length=0; arts().push('ab_thread'); Dq.hp=1; x.healP(Dq,100); const g1=Dq.hp-1; arts().length=0; Dq.hp=1; x.healP(Dq,100); const g0=Dq.hp-1;
-    ok('healing received x1.35 with Mender\'s Thread (healP)',g0===100&&g1===135,g0+' -> '+g1);
+    ok('healing received x Mender\'s Thread (healP)',g0===100&&g1===Math.round(100*K('ab_thread','heal')),g0+' -> '+g1);
     arts().length=0; for(let i=0;i<10;i++) arts().push('ab_leech'); mm.hp=1e9; Dq.hp=1; const dd=x.damageMonsterS(mm,1,Dq,mm.x+3,mm.z); const gain=Dq.hp-1;
-    ok('lifesteal: ten Leech Charms heal 20% (the cap) of the damage dealt',dd>0&&Math.abs(gain-0.2*dd)<=1.5,dd+' -> '+gain);
+    ok('lifesteal: ten Leech Charms heal their sum, at the cap, of the damage dealt',dd>0&&Math.abs(gain-Math.min(x.AB_CAPS.lifesteal,10*K('ab_leech','lifesteal'))*dd)<=1.5,dd+' -> '+gain);
   } finally { Math.random=R0; } arts().length=0; Dq.vbGrace=1e12; }
 // drop in the middle of a round is refused
 arts().push('ab_edge','ab_edge'); W.receive('d',{t:'abyss',a:'drop',i:0}); ok('drop in the middle of a round is refused',arts().length===2);
 ok('cooldown, attack speed and crit come from the bar too (rate stats)',(()=>{ arts().length=0; arts().push('ab_glass','ab_glass','ab_wraps','ab_eye'); const o=Math.abs(x.abP(Dq,'cdr')-0.12)<1e-9&&Math.abs(x.abP(Dq,'aspd')-0.08)<1e-9&&Math.abs(x.abP(Dq,'crit')-0.05)<1e-9; arts().length=0; return o; })());
 // the bar travels to the next round, and ends with the run
 upto(rD,600); arts().push('ab_heart','ab_heart'); Dq.ab=null; W.receive('d',{t:'abyss',a:'skip'}); W.receive('d',{t:'abyss',a:'next'}); tick(2); const rD3=runOf(Dq);
-ok('the bar goes on to the next round (3 rounds, the same copies)',rD3&&rD3.abR===3&&J(arts())==='["ab_heart","ab_heart"]'&&Math.abs(x.abP(Dq,'hp')-1.96)<1e-9);
+ok('the bar goes on to the next round (3 rounds, the same copies)',rD3&&rD3.abR===3&&J(arts())==='["ab_heart","ab_heart"]'&&Math.abs(x.abP(Dq,'hp')-K('ab_heart','hp')**2)<1e-9);
 W.receive('d',{t:'dg',a:'leave'}); tick(2);
 ok('the run ends: the bar is gone, abP is 1, max health is back',!Dq.inst&&Dq.gear.ab.run===null&&x.abP(Dq,'hp')===1&&x.abP(Dq,'atk')===1&&Math.abs(Dq.maxHp-maxHp0)<=1,Dq.maxHp+' vs '+maxHp0);
 W.receive('d',{t:'abyss',a:'go',d:0}); tick(2); ok('a new run starts with an empty bar',J(Dq.gear.ab.run.arts)==='[]'&&Dq.gear.ab.run.offer===null); W.receive('d',{t:'dg',a:'leave'}); tick(2);
 // the Abyss with the flag off: pick / skip / drop are silence
 
+
+// ---- B6: combat artifacts, wildcards, curses
+{ const arts6=Object.values(x.AB_ARTS), fam=f=>arts6.filter(a=>a.fam===f), curses=Object.values(x.AB_CURSES);
+  ok('the registry: ten combat artifacts, eight wildcards (each with its minus text), ten curses, no bad row',fam('combat').length===10&&fam('wild').length===8&&fam('wild').every(a=>a.minus&&a.minus.length)&&curses.length===10&&x.AB_ART_BAD.length===0&&x.AB_CURSE_BAD.length===0,x.AB_ART_BAD.length+' '+x.AB_CURSE_BAD.length);
+  const isMinus=([st,v])=>st==='def'?v>1:(st==='atk'||st==='hp'||st==='heal')&&v<1, isPlus=([st,v])=>st==='def'?v<1:(st==='atk'||st==='hp'||st==='heal')?v>1:true;
+  ok('every wildcard has a real plus and a real minus (a factor below 1 on damage / health / healing, or damage taken above 1)',fam('wild').every(a=>Object.entries(a.k).some(isMinus)&&Object.entries(a.k).some(isPlus)),fam('wild').filter(a=>!Object.entries(a.k).some(isMinus)).map(a=>a.id).join());
+  const nBad=x.AB_CURSE_BAD.length; for(const b of [null,{id:'ab_c_x1',name:'x',icon:'a',k:{luck:2},text:'t'},{id:'nope',name:'x',icon:'a',k:{mhp:2},text:'t'},{id:'ab_c_hides',name:'dup',icon:'a',k:{mhp:2},text:'t'},{id:'ab_c_x2',name:'x',icon:'a',k:{mhp:NaN},text:'t'},{id:'ab_c_x3',name:'x',icon:'a',k:{},text:'t'}]) x.defineAbCurse(b);
+  ok('a bad curse row is left out and listed',Object.keys(x.AB_CURSES).length===10&&x.AB_CURSE_BAD.length===nBad+6&&Object.getPrototypeOf(x.AB_CURSES)===null); x.AB_CURSE_BAD.length=0;
+  x.defineAbArt({id:'ab_zw',name:'x',fam:'wild',rar:'rare',icon:'a',k:{atk:2},text:'t'}); ok('a wildcard row without its minus is left out',!x.AB_ARTS.ab_zw&&x.AB_ART_BAD.pop().why.includes('minus')); }
+// a clean saved run keeps own-property curse ids only, at most 5
+{ const c=clean({run:{d:0,r:2,at:Date.now(),arts:[],curses:['ab_c_hides','__proto__','constructor','nope',7,null,{},'ab_c_famine','ab_c_hides','ab_c_hides','ab_c_hides','ab_c_hides','ab_c_hides'],offer:null}}).run;
+  ok('abSanitize drops unknown curse ids (prototype names, numbers, objects) and keeps at most 5',c&&J(c.curses)==='["ab_c_hides","ab_c_famine","ab_c_hides","ab_c_hides","ab_c_hides"]'&&clean({run:{d:0,r:2,at:Date.now(),curses:'x'}}).run.curses.length===0,J(c&&c.curses)); }
+W.receive('d',{t:'abyss',a:'go',d:0}); tick(Math.ceil(5/0.05)); rD=runOf(Dq); const A6=()=>Dq.gear.ab.run.arts, C6=()=>Dq.gear.ab.run.curses; Dq.ab=null;
+{ const mm6=live(rD)[0]; mm6.maxHp=1000; mm6.hp=1000;
+  // every 5th hit, boss damage, execute
+  A6().push('ab_echo'); Dq.ab=null; Dq.abHits=0; const hits=[1,2,3,4,5,6,7,8,9,10].map(()=>x.abHitS(Dq,mm6,100));
+  ok('Echoing Strike: every 5th hit deals more (hits 5 and 10), the others are plain',hits.filter(v=>v===100).length===8&&hits[4]===Math.round(100*K('ab_echo','nth'))&&hits[9]===hits[4],J(hits));
+  A6().length=0; A6().push('ab_exec'); Dq.ab=null; Dq.abHits=1; mm6.hp=500; const e1=x.abHitS(Dq,mm6,100); mm6.hp=150; const e2=x.abHitS(Dq,mm6,100); mm6.hp=1000;
+  ok('Executioner: only a monster under 20% health takes more',e1===100&&e2===Math.round(100*K('ab_exec','exec')),e1+' '+e2);
+  A6().length=0; A6().push('ab_bane'); Dq.ab=null; const b0=x.abHitS(Dq,mm6,100); mm6.boss=true; const b1=x.abHitS(Dq,mm6,100); mm6.boss=false; ok('Titanbane: only bosses take more',b0===100&&b1===Math.round(100*K('ab_bane','boss')),b0+' '+b1);
+  // kills heal, the round-start shield, thorns
+  A6().length=0; A6().push('ab_bloodletter','ab_bloodletter'); Dq.ab=null; Dq.hp=1; x.abKillP(Dq,mm6); ok('Bloodletter: a kill heals its share of max health (two copies add up)',Math.abs(Dq.hp-1-Dq.maxHp*2*K('ab_bloodletter','killheal'))<=1.5,Dq.hp);
+  A6().length=0; A6().push('ab_ward'); Dq.ab=null; Dq.shield=null; x.abShieldS(Dq); ok('Round Ward: a shield of its share of max health (done: true, no skill-set trigger)',Dq.shield&&Math.abs(Dq.shield.v-Dq.maxHp*K('ab_ward','shield'))<1.5&&Dq.shield.done===true); Dq.shield=null;
+  A6().length=0; A6().push('ab_thorn'); Dq.ab=null; mm6.hp=1000; mm6.dead=false; x.abThornsS(Dq,mm6); ok('Thornmail: the attacker loses a share of its own max health',Math.abs(1000-mm6.hp-1000*K('ab_thorn','thorns'))<1e-6,mm6.hp);
+  // a wildcard's minus really applies
+  A6().length=0; A6().push('ab_w_glass'); Dq.ab=null; ok('a wildcard: its plus AND its minus are in abP (damage x, damage taken x)',Math.abs(x.abP(Dq,'atk')-K('ab_w_glass','atk'))<1e-9&&Math.abs(x.abP(Dq,'def')-K('ab_w_glass','def'))<1e-9&&x.abP(Dq,'def')>1);
+  { const R0=Math.random; Math.random=()=>0.5; try{ Dq.vbGrace=0; Dq.hp=Dq.maxHp; const hg=x.hurtP(Dq,50,mm6); A6().length=0; Dq.ab=null; Dq.hp=Dq.maxHp; const h0g=x.hurtP(Dq,50,mm6); Dq.vbGrace=1e12;
+      ok('a wildcard\'s minus: the same hit really hurts more (hurtP: x1.75 above the 10% floor)',h0g>20&&Math.abs(hg/h0g-K('ab_w_glass','def'))<0.05,h0g+' -> '+hg); } finally { Math.random=R0; } }
+  A6().length=0; A6().push('ab_w_colossus'); Dq.ab=null; ok('Colossus Heart: max health up, damage down (both factors in abP)',x.abP(Dq,'hp')>1&&x.abP(Dq,'atk')<1); A6().length=0; Dq.ab=null; }
+// Last Breath: saves once per copy, is consumed, the bar loses it
+{ A6().push('ab_last','ab_last','ab_edge'); Dq.ab=null; x.recalcP&&0; Dq.hp=Dq.maxHp; Dq.dead=false; Dq.vbGrace=0; sent.length=0;
+  const mmL=live(rD)[0]; x.hurtP(Dq,1e15,mmL);
+  ok('Last Breath: a lethal hit leaves you alive at 30% health and uses one copy up (the bar loses it)',!Dq.dead&&Math.abs(Dq.hp/Dq.maxHp-0.3)<0.01&&A6().filter(i=>i==='ab_last').length===1&&A6().length===2,Dq.hp+'/'+Dq.maxHp+' '+J(A6()));
+  tick(2); ok('Last Breath: aba tells the client the copies left',evs('d','aba').some(e=>e[2]==='ab_last'&&e[3]===1),J(evs('d','aba')));
+  Dq.vbGrace=0; Dq.hp=10; x.hurtP(Dq,1e15,mmL); ok('the second copy saves again, then none are left',!Dq.dead&&A6().filter(i=>i==='ab_last').length===0);
+  Dq.vbGrace=0; Dq.hp=10; x.hurtP(Dq,1e15,mmL); ok('with no copy left the same hit kills',Dq.dead===true); Dq.dead=false; Dq.hp=Dq.maxHp; Dq.vbGrace=1e12; A6().length=0; Dq.ab=null;
+  // outside a run nothing is saved (the hook asks p.inst)
+}
+// curses: engine, cap 5, outside the 20, a spawned monster is stronger, healing and offers
+{ for(let i=0;i<20;i++) A6().push('ab_fang'); Dq.ab=null;
+  ok('a full bar of 20 and a curse: the curse takes no place',x.abCurseAddP(Dq,'ab_c_hides')&&A6().length===20&&C6().length===1&&A6().length<=x.AB_ART_MAX);
+  const k0=x.dgKOf(x.DEF_BY_ID.riftmite,rD.L), m1=x.abSpawnS(rD,'riftmite',0,0);
+  ok('a curse raises a spawned monster\'s health (x1.25) and leaves the cached dgKOf alone',m1&&Math.abs(m1.dgK.hp/k0.hp-x.AB_CURSES.ab_c_hides.k.mhp)<1e-9&&Math.abs(m1.dgK.dmg-k0.dmg)<1e-9&&x.dgKOf(x.DEF_BY_ID.riftmite,rD.L).hp===k0.hp,J(m1&&m1.dgK)+' '+J(k0));
+  ok('...and in the number the fight uses (monK): the monster takes that much more to kill',Math.abs(x.monK(m1,Dq).hp/k0.hp-1.25)<1e-6);
+  x.abCurseAddP(Dq,'ab_c_claws'); const m2=x.abSpawnS(rD,'riftmite',0,0); ok('Whetted Claws: monsters deal more (x1.25 on top)',Math.abs(m2.dgK.dmg/k0.dmg-1.25)<1e-9&&Math.abs(m2.dgK.hp/k0.hp-1.25)<1e-9);
+  x.abCurseAddP(Dq,'ab_c_famine'); Dq.ab=null; ok('Famine: healing x0.7 (a curse of the hiker\'s own stat joins the bar in abP)',Math.abs(x.abP(Dq,'heal')-0.7)<1e-9);
+  x.abCurseAddP(Dq,'ab_c_frail'); ok('Frail Frame: max health x0.85 at once',Math.abs(x.abP(Dq,'hp')-0.85)<1e-9);
+  x.abCurseAddP(Dq,'ab_c_narrow'); ok('five curses held; Narrow Offers takes one card off an offer (2 of 3), never all',C6().length===5&&x.abDrawOfferS(A6().slice(0,5),3-x.abCurseStat(C6(),'offer')).length===2&&x.abDrawOfferS([],0).length>=1);
+  sent.length=0; ok('a 6th curse is refused (at most AB_CURSE_MAX) and the bar is still 20',!x.abCurseAddP(Dq,'ab_c_dull')&&C6().length===5&&A6().length===20);
+  ok('a curse id that is not one (prototype names, an artifact id) is refused',!x.abCurseAddP(Dq,'__proto__')&&!x.abCurseAddP(Dq,'constructor')&&!x.abCurseAddP(Dq,'ab_fang')&&C6().length===5);
+  ok('the save carries the curses (the `you` message and sanitizeGear keep them)',(()=>{ const o=x.sanitizeGear({ab:{top:1,run:JSON.parse(JSON.stringify(Dq.gear.ab.run))}}); return o.ab.run&&J(o.ab.run.curses)===J(C6()); })());
+  // a curse never counts toward the 20: a pick onto a full bar is still refused by the bar only
+  ok('the curses are gone with the run, and so are their factors',(()=>{ W.receive('d',{t:'dg',a:'leave'}); tick(2); return !Dq.inst&&Dq.gear.ab.run===null&&x.abP(Dq,'heal')===1; })()); }
 // the Test: kill the code and the test fails (see the usage note at the top)
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

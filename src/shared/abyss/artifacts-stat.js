@@ -8,15 +8,15 @@
    of the 20 places are what you give up. Toughness is health x (1 / damage taken) x healing: 1.4 / 1.9 health and 0.85 / 0.68 damage taken per copy, so 5 health copies (~x15) with 4 defence
    copies (~x3.7) give ~x55, and the two rate-free multipliers fight for the same places as the damage. The rates (crit +5, cooldown +6, attack speed +8 points a copy, capped by AB_CAPS) are the
    small useful picks that never run away. FIRST GUESS: B6's sim (tools/abyss-sim.js) tunes every number here. */
-defineAbArt({id:'ab_edge',name:'Honed Edge',fam:'stat',rar:'common',icon:'▲',k:{atk:1.35},text:'Damage dealt x1.35.'});
-defineAbArt({id:'ab_fang',name:"Ravener's Fang",fam:'stat',rar:'common',icon:'◣',k:{atk:1.5},text:'Damage dealt x1.5.'});
-defineAbArt({id:'ab_dread',name:'Dread Sigil',fam:'stat',rar:'rare',icon:'✶',k:{atk:1.9},text:'Damage dealt x1.9.'});
-defineAbArt({id:'ab_heart',name:'Heartwood Knot',fam:'stat',rar:'common',icon:'●',k:{hp:1.4},text:'Maximum health x1.4.'});
-defineAbArt({id:'ab_marrow',name:"Titan's Marrow",fam:'stat',rar:'rare',icon:'⬢',k:{hp:1.9},text:'Maximum health x1.9.'});
-defineAbArt({id:'ab_scale',name:'Slate Scale',fam:'stat',rar:'common',icon:'■',k:{def:0.85},text:'Damage taken x0.85.'});
-defineAbArt({id:'ab_carapace',name:'Void Carapace',fam:'stat',rar:'rare',icon:'◈',k:{def:0.68},text:'Damage taken x0.68.'});
-defineAbArt({id:'ab_thread',name:"Mender's Thread",fam:'stat',rar:'common',icon:'✚',k:{heal:1.35},text:'Healing received x1.35.'});
+defineAbArt({id:'ab_edge',name:'Honed Edge',fam:'stat',rar:'common',icon:'▲',k:{atk:1.75},text:'Damage dealt x1.75.'});
+defineAbArt({id:'ab_fang',name:"Ravener's Fang",fam:'stat',rar:'common',icon:'◣',k:{atk:2.2},text:'Damage dealt x2.2.'});
+defineAbArt({id:'ab_dread',name:'Dread Sigil',fam:'stat',rar:'rare',icon:'✶',k:{atk:3.6},text:'Damage dealt x3.6.'});
+defineAbArt({id:'ab_heart',name:'Heartwood Knot',fam:'stat',rar:'common',icon:'●',k:{hp:1.9},text:'Maximum health x1.9.'});
+defineAbArt({id:'ab_marrow',name:"Titan's Marrow",fam:'stat',rar:'rare',icon:'⬢',k:{hp:3.2},text:'Maximum health x3.2.'});
+defineAbArt({id:'ab_scale',name:'Slate Scale',fam:'stat',rar:'common',icon:'■',k:{def:0.74},text:'Damage taken x0.74.'});
+defineAbArt({id:'ab_carapace',name:'Void Carapace',fam:'stat',rar:'rare',icon:'◈',k:{def:0.5},text:'Damage taken x0.5.'});
+defineAbArt({id:'ab_thread',name:"Mender's Thread",fam:'stat',rar:'common',icon:'✚',k:{heal:1.7},text:'Healing received x1.7.'});
 defineAbArt({id:'ab_eye',name:'Keen Eye',fam:'stat',rar:'common',icon:'◉',k:{crit:0.05},text:'Crit chance +5 points (at most +50).'});
 defineAbArt({id:'ab_glass',name:'Quick Hourglass',fam:'stat',rar:'common',icon:'⧖',k:{cdr:0.06},text:'Cooldowns 6 points shorter (at most 40).'});
 defineAbArt({id:'ab_wraps',name:'Fleet Wraps',fam:'stat',rar:'common',icon:'▶',k:{aspd:0.08},text:'Attack speed +8 points (at most +60).'});
-defineAbArt({id:'ab_leech',name:'Leech Charm',fam:'stat',rar:'rare',icon:'❀',k:{lifesteal:0.02},text:'Heal 2% of the damage you deal (at most 20%).'});
+defineAbArt({id:'ab_leech',name:'Leech Charm',fam:'stat',rar:'rare',icon:'❀',k:{lifesteal:0.0004},text:'Heal 0.04% of the damage you deal (at most 1%).'});

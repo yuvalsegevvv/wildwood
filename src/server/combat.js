@@ -48,6 +48,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(m.immune){ ev('imm',m.id); return 0; }
   if(m.boss && m.B.stunT>0) mult*=1.5;
   const d=rollDmgS(p,mult,m,el);
+  if(p.inst) d.v=abHitS(p,m,d.v);   // abyss: every 5th hit, boss and execute damage of the bar
   const vk=mstVulnK(m); if(vk) d.v=Math.max(1,Math.round(d.v*(1+vk)));   // statuses: a vulnerable monster takes more, whoever hits it
   if(p.ss&&p.ss.amp.length) d.v=Math.max(1,Math.round(d.v*ssAmpK(p,m)));   // skillsets: the owner's marks make a marked target take more from them
   p.lastDealt=S.t;   // skillsets: in a fight (tick triggers run only then)
@@ -76,6 +77,7 @@ function killMonsterS(m,p){
   ev('kill',m.id,p?p.id:null);
   if(p) ssTriggerS(p,'kill',{m});   // skillsets: on kill rows
   if(p){ caveKillS(p,m); caveDropS(p,m); }   // cave: kill refunds and grave hands; the floor's material (server/cave.js)
+  if(p&&p.inst) abKillP(p,m);   // abyss: kills heal (the bar's killheal)
   if(m.inst){ dgKilledS(m,p); return; }   // dungeons: a run's kill pays every member present (rewardAllS) and tells the mission; its boss ends the run
   if(!m.T.noXp){
     for(const [pid,tm] of m.hitters){ const q=S.players.get(pid); if(!q||S.t-tm>30||Math.hypot(q.x-m.x,q.z-m.z)>80) continue; rewardKill(q,m); }

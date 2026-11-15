@@ -3,7 +3,7 @@
    exports: AB_ON, abSwitch(on), AB_DIFFS (6 rows {id,name,lo,hi,rounds}: I-V then Infinite; hi / rounds 0 = no end), AB_INF (the index of Infinite, 5), abRoundLv(d,r), abRounds(d),
             abBossRounds(d) (the finite list; for Infinite the first AB_BOSS_SHOWN), abIsBossRound(d,r), AB_ART_MAX (20 artifacts at once), AB_RANK_MAX (5 copies), AB_CURSE_MAX (5),
             AB_ENTRY_LV (40), AB_AS_MAX / AB_LOCK_MAX (save caps of gear.ab.as / .lock), AB_RUN_KEEP_S (a saved run older than this is dropped), AB_THEME (the rift def a run borrows its look and kinds from for now),
-            B4: AB_ARTS (the artifact registry, Object.create(null)), AB_ART_BAD, defineAbArt(row), AB_STATS / AB_RATE / AB_CAPS / AB_RARS / AB_RAR_W, abArtStat(arts,stat) (the pure product / capped sum of a bar), AB_OFFER_N (3), AB_WAVES / AB_COUNT_S / AB_WAVE_S / AB_RELEASE_S / AB_ALIVE_MAX / AB_NEXT_PCT / AB_DEATH_S, abWaveSize(r,w), abLayout(seed), DG_HUD.abyss (the run's HUD row)
+            B4: AB_ARTS (the artifact registry, Object.create(null)), AB_ART_BAD, defineAbArt(row), AB_STATS / AB_RATE / AB_CAPS / AB_RARS / AB_RAR_W, abArtStat(arts,stat) (the pure product / capped sum of a bar), AB_OFFER_N (3), B6: AB_NTH / AB_EXEC_HP / AB_DEF_MIN, AB_CURSES / AB_CURSE_BAD / defineAbCurse(row) / abIsCurse / abCurseStat(curses,stat) (the curse registry), AB_WAVES / AB_COUNT_S / AB_WAVE_S / AB_RELEASE_S / AB_ALIVE_MAX / AB_NEXT_PCT / AB_DEATH_S, abWaveSize(r,w), abLayout(seed), DG_HUD.abyss (the run's HUD row)
    users: server/abyss/arts.js (abP), shared/abyss/artifacts-stat.js (the entries), game/abyss/choice.js,
           server/abyss.js (the flag, the window, the save), server/abyss/rounds.js (the run), game/dungeon/run.js (abLayout); later steps: the run, the artifacts, the client panel
    test: tools/abyss-smoke.js
@@ -32,8 +32,12 @@ const abWaveSize=(r,w)=>6+2*(w|0)+Math.floor(Math.max(1,r|0)/2);   // round 1 wa
    and the bar's copies multiply (def < 1 takes less; the 10% floor of hurtP still holds). RATE stats (crit: crit chance points, cdr: cooldown, aspd: attack speed, lifesteal: a share of the damage dealt healed)
    are an amount per copy and add up, capped by AB_CAPS. A bad row is left out and listed in AB_ART_BAD (the smoke test fails naming it). */
 const AB_ARTS=Object.create(null), AB_ART_BAD=[], AB_OFFER_N=3;
-const AB_STATS=['atk','hp','def','heal','crit','cdr','aspd','lifesteal'], AB_RATE={crit:1,cdr:1,aspd:1,lifesteal:1};
-const AB_CAPS={crit:0.5,cdr:0.4,aspd:0.6,lifesteal:0.2};
+// B6 adds the combat artifacts' stats: PRODUCTS boss (damage to bosses), exec (damage to a monster under 20% health), nth (every AB_NTH-th hit deals this much); RATES killheal (share of max health healed
+// per kill), shield (share of max health as a shield at the start of a round), thorns (share of an attacker's max health it takes each time it hits you; a tenth of that for a boss), last (the share of max
+// health you stand up with when a hit would kill you: Last Breath, one copy used up)
+const AB_STATS=['atk','hp','def','heal','crit','cdr','aspd','lifesteal','boss','exec','nth','killheal','shield','thorns','last'], AB_RATE={crit:1,cdr:1,aspd:1,lifesteal:1,killheal:1,shield:1,thorns:1,last:1};
+const AB_CAPS={crit:0.5,cdr:0.4,aspd:0.6,lifesteal:0.01,killheal:0.3,shield:3,thorns:0.2,last:0.3};
+const AB_NTH=5, AB_EXEC_HP=0.2, AB_DEF_MIN=0.1;   // every 5th hit; "below 20% health"; the bar's damage-taken factor never goes under x0.1 (it is applied after the 10% floor of hurtP: the hiker of the sim is AT that floor already)
 const AB_RARS=['common','rare'], AB_RAR_W={common:70,rare:30}, AB_FAMS=['stat','combat','wild'];
 function defineAbArt(r){
   const bad=why=>{ AB_ART_BAD.push({id:r&&typeof r.id==='string'?r.id:'?',why}); return false; };
@@ -45,11 +49,13 @@ function defineAbArt(r){
   if(AB_RARS.indexOf(r.rar)<0) return bad('rar');
   if(typeof r.icon!=='string'||!r.icon||r.icon.length>3) return bad('icon');
   if(typeof r.text!=='string'||!r.text||r.text.length>160) return bad('text');
+  if(r.fam==='wild'&&(typeof r.minus!=='string'||!r.minus||r.minus.length>80)) return bad('a wildcard needs its minus (text)');
+  if(r.minus!==undefined&&(typeof r.minus!=='string'||r.minus.length>80)) return bad('minus');
   if(!r.k||typeof r.k!=='object'||Array.isArray(r.k)) return bad('k');
   const ks=Object.keys(r.k); if(!ks.length) return bad('k is empty');
   for(const s of ks){ const v=r.k[s]; if(AB_STATS.indexOf(s)<0) return bad('stat '+s); if(typeof v!=='number'||!isFinite(v)) return bad('value of '+s);
     if(AB_RATE[s]?(v<=0||v>AB_CAPS[s]):(v<=0||v>100)) return bad('range of '+s); }
-  AB_ARTS[r.id]={id:r.id,name:r.name,fam:r.fam,rar:r.rar,icon:r.icon,k:Object.assign({},r.k),text:r.text}; return true;
+  AB_ARTS[r.id]={id:r.id,name:r.name,fam:r.fam,rar:r.rar,icon:r.icon,k:Object.assign({},r.k),text:r.text,minus:r.minus||''}; return true;
 }
 const abIsArt=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(AB_ARTS,id);
 // the value of one stat over a bar (an array of artifact ids, a repeat id counts again): a product (1 with none) or, for a rate stat, the capped sum (0 with none)
@@ -57,6 +63,30 @@ function abArtStat(arts,stat){
   const rate=!!AB_RATE[stat]; let v=rate?0:1;
   for(const id of arts||[]){ const a=abIsArt(id)?AB_ARTS[id]:null, k=a&&a.k[stat]; if(k) v=rate?v+k:v*k; }
   return rate?Math.min(AB_CAPS[stat],v):v;
+}
+/* CURSES (B6): a row defined through defineAbCurse({id,name,icon,k,text}) in shared/abyss/curses.js; they sit on gear.ab.run.curses (at most AB_CURSE_MAX, a repeat stacks), OUTSIDE the 20 places.
+   k = {stat: factor}: the hiker's own stats atk / hp / def / heal multiply into abP with the bar (def < 1 helps, so a curse on it is > 1); mhp and mdmg multiply every monster the run spawns (abSpawnS);
+   offer is a count (offered cards fewer by that much, at least 1 stays). Events (B8) will hand them out; B6 has the engine and a dev way (devP 'abyss' curse). */
+const AB_CURSES=Object.create(null), AB_CURSE_BAD=[], AB_CURSE_STATS=['atk','hp','def','heal','mhp','mdmg','offer'];
+function defineAbCurse(r){
+  const bad=why=>{ AB_CURSE_BAD.push({id:r&&typeof r.id==='string'?r.id:'?',why}); return false; };
+  if(!r||typeof r!=='object') return bad('not an object');
+  if(typeof r.id!=='string'||!/^ab_c_[a-z0-9_]{1,24}$/.test(r.id)) return bad('id');
+  if(AB_CURSES[r.id]||AB_ARTS[r.id]) return bad('duplicate id');
+  if(typeof r.name!=='string'||!r.name||r.name.length>32) return bad('name');
+  if(typeof r.icon!=='string'||!r.icon||r.icon.length>3) return bad('icon');
+  if(typeof r.text!=='string'||!r.text||r.text.length>160) return bad('text');
+  if(!r.k||typeof r.k!=='object'||Array.isArray(r.k)) return bad('k');
+  const ks=Object.keys(r.k); if(!ks.length) return bad('k is empty');
+  for(const s of ks){ const v=r.k[s]; if(AB_CURSE_STATS.indexOf(s)<0) return bad('stat '+s); if(typeof v!=='number'||!isFinite(v)||v<=0||v>100) return bad('value of '+s); }
+  AB_CURSES[r.id]={id:r.id,name:r.name,icon:r.icon,k:Object.assign({},r.k),text:r.text}; return true;
+}
+const abIsCurse=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(AB_CURSES,id);
+// a stat over the curses held: the product of the factors (1 with none), or for `offer` the count (0 with none)
+function abCurseStat(curses,stat){
+  let v=stat==='offer'?0:1;
+  for(const id of curses||[]){ const c=abIsCurse(id)?AB_CURSES[id]:null, k=c&&c.k[stat]; if(k) v=stat==='offer'?v+k:v*k; }
+  return v;
 }
 // the run's layout, rebuilt by the client from the seed (game/dungeon/run.js): for now the Shardmere's plus; the seed is for the tiles of B7
 const abLayout=seed=>riftLayout(RIFT_DEFS[AB_THEME]);
