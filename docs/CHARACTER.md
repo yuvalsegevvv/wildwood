@@ -67,6 +67,9 @@ A look field that is not a slider (hair style, colours, face shape) still follow
 | `eyeTilt` | Eyes | Eye tilt | -1 .. 1 | 0 | -0.7 .. 0.7 | Droopy / Upturned |
 | `brow` | Eyes | Brows | -1 .. 1 | 0 | -0.7 .. 0.7 | Gentle / Stern |
 | `noseSize` | Features | Nose | 0.6 .. 1.4 | 1 | 0.7 .. 1.25 | Tiny / Larger |
+| `noseBridge` | Features | Nose bridge | -1 .. 1 | 0 | - | Flat / High |
+| `noseWidth` | Features | Nose width | 0.7 .. 1.5 | 1 | - | Narrow / Broad |
+| `noseTip` | Features | Nose tip | -1 .. 1 | 0 | - | Upturned / Drooping |
 | `mouthSize` | Features | Mouth width | 0.7 .. 1.4 | 1 | 0.8 .. 1.25 | Small / Wide |
 | `lips` | Features | Lips | 0.6 .. 1.6 | 1 | 0.7 .. 1.4 | Thin / Full |
 | `smile` | Features | Expression | -1 .. 1 | 0 | -0.6 .. 0.9 | Serious / Smiling |

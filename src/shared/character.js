@@ -49,6 +49,9 @@ const BODY_SLIDERS=[
   {k:'brow',     g:'Eyes',     label:'Brows',         min:-1,   max:1,    def:0, ends:['Gentle','Stern']},
   // Features
   {k:'noseSize', g:'Features', label:'Nose',          min:0.6,  max:1.4,  def:1, ends:['Tiny','Larger']},
+  {k:'noseBridge',g:'Features', label:'Nose bridge',   min:-1,   max:1,    def:0, ends:['Flat','High']},      // -1 a button nose with almost no bridge, +1 a strong straight bridge with a slight hump (model-face.js: faceNoseH)
+  {k:'noseWidth', g:'Features', label:'Nose width',    min:0.7,  max:1.5,  def:1, ends:['Narrow','Broad']},
+  {k:'noseTip',   g:'Features', label:'Nose tip',      min:-1,   max:1,    def:0, ends:['Upturned','Drooping']},
   {k:'mouthSize',g:'Features', label:'Mouth width',   min:0.7,  max:1.4,  def:1, ends:['Small','Wide']},
   {k:'lips',     g:'Features', label:'Lips',          min:0.6,  max:1.6,  def:1, ends:['Thin','Full']},
   {k:'smile',    g:'Features', label:'Expression',    min:-1,   max:1,    def:0, ends:['Serious','Smiling']},

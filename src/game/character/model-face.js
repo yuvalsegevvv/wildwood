@@ -48,11 +48,11 @@ function faceSkullGeo(r,w,h){
    (a low bridge growing out of the brow, a small rounded tip, the hint of two wings, an underside plane back to the lip) and the muzzle a little forward round the mouth.
    R = {ex, ey, SW, SH, E, nS, wk, yR, yT, yB, Ht, fem}. Anime-subtle: from the front the nose is only a little light and shade; the side profile reads as a nose. */
 function faceNoseH(R,x,y){
-  const {nS,wk,yR,yT,yB,Ht}=R, G=faceG, sm=faceSm, t=clamp((yR-y)/(yR-yT)), sig=lerp(0.0042,0.006,t)*wk;
-  let h=y>=yT?sm(yR+0.014,yR,y)*(0.0012+(Ht-0.0012)*Math.pow(t,1.35)):Ht*(1-sm(yT,yB,y));   // the bridge rises slowly to the tip, then the underside falls back
+  const {nS,nB,nT,wk,yR,yT,yB,Ht}=R, G=faceG, sm=faceSm, t=clamp((yR-y)/(yR-yT)), sig=lerp(0.0046,0.0068,t)*wk, low=0.0014*Math.max(0.2,1+1.2*nB);
+  let h=y>=yT?sm(yR+0.014,yR,y)*(low+(Ht-low)*Math.pow(t,1.35-0.65*nB)+0.0022*Math.max(0,nB)*G(t,0.42,0.2)):Ht*(1-sm(yT,yB,y));   // the bridge rises to the tip (a high bridge rises early and carries a slight hump, a flat one stays low until the tip), then the underside falls back
   h*=G(x,0,sig);
-  h+=0.0019*nS*G(x,0,0.0052*wk)*G(y,yT+0.0008,0.004);                                      // the tip's soft ball
-  h+=0.0016*nS*(G(x,-0.0068*wk,0.0033*wk)+G(x,0.0068*wk,0.0033*wk))*G(y,yT-0.0014,0.0036); // the wings
+  h+=0.0026*nS*(1+0.25*Math.abs(nT))*G(x,0,0.0056*wk)*G(y,yT+0.0008-0.0024*nT,0.0042);   // the tip's soft ball (raised for an upturned nose, lowered for a drooping one)
+  h+=0.0023*nS*(G(x,-0.0076*wk,0.0036*wk)+G(x,0.0076*wk,0.0036*wk))*G(y,yT-0.0012,0.0038);   // the wings
   return h;
 }
 function faceRelief(g,R){
@@ -103,7 +103,7 @@ function buildFace(X){
   const {L,S,fem,sg,skin,skinPaint,hairCol}=X, kF=X.kit&&X.kit.sl.face, fs=faceShape(L), sculpt=headSculptFn(X), G=faceG, parts=[];
   const ES=(kF&&kF.eyes)||{}, eI=ES.iris||1, eHt=ES.h||1, eWd=ES.w||1, eLs=ES.lash||1;   // an outfit's eye style: iris size, eye height / width, lash weight, highlight count, tilt (docs/CHARACTER.md section 9)
   const E=S.eyeSize*(fem?1.03:0.9)*0.74, ex=0.046*S.eyeGap*fs[0], ey=(-0.002+0.012*S.eyeHeight)*HEAD_TALL, SW=0.0295*E*eWd, SH=0.0245*E*eHt*0.9*S.eyeOpen;   // 0.9: the base eye is a tenth less tall than it was; eyeOpen narrows / widens the opening only (the iris stays round, the lids cover more of it)
-  const nS=S.noseSize*(fem?0.88:1), yT=-0.028*HEAD_TALL, R={ex,ey,SW,SH,E,fem,nS,wk:lerp(1,nS,0.6),yR:ey+0.009,yT,yB:yT-0.0075*nS,Ht:0.0098*nS};
+  const nS=S.noseSize*(fem?0.88:1), yT=-0.028*HEAD_TALL, nB=clamp(S.noseBridge,-1,1), nT=clamp(S.noseTip,-1,1), R={ex,ey,SW,SH,E,fem,nS,nB,nT,wk:lerp(1,nS,0.6)*clamp(S.noseWidth,0.7,1.5),yR:ey+0.009,yT,yB:yT-0.0075*nS,Ht:0.0128*nS*(1+0.12*nB)};   // (Ht: the tip stands 13 mm off the face; at 10 it was a pinch from the front and a nub in profile)
   const skull=smoothN(faceRelief(sculpt(faceSkullGeo(0.105,sg(60),sg(40)),false).scale(fs[0],fs[1],1),R)), zAt=frontSurface(skull);
   const blushC=new THREE.Color(0xe98c88), pos=skull.attributes.position;
   let earX=0.095; { let m=0; for(let i=0;i<pos.count;i++){ if(Math.abs(pos.getY(i)+0.008)<0.012&&pos.getZ(i)>-0.02&&pos.getZ(i)<0.03) m=Math.max(m,Math.abs(pos.getX(i))); } if(m>0) earX=m; }
@@ -113,7 +113,7 @@ function buildFace(X){
     if(z<-0.03) c.lerp(blushC,Math.min(0.8,(fem?0.3:0.22)+0.45*S.blush)*G(Math.abs(x),0.058*fs[0],0.026)*G(y,-0.03*HEAD_TALL,0.024));     // a faint blush on the cheeks (raised: at game distance it used to vanish)
     if(z<-0.04){ const so=G(x,-ex,SW*1.3)*G(y,ey+SH*0.95,SH*0.75)+G(x,ex,SW*1.3)*G(y,ey+SH*0.95,SH*0.75);   // a soft shade in the upper socket, under the brow
       c.multiplyScalar(1-(fem?0.08:0.06)*so); if(fem) c.lerp(blushC,0.08*so);
-      c.multiplyScalar(1+0.03*G(x,0,0.004)*G(y,(R.yR+yT)/2,0.012)+0.035*G(x,0,0.005)*G(y,yT+0.002,0.004)-0.12*G(x,0,0.0075)*G(y,yT-0.0048,0.0026)); } }));   // the nose: light on the bridge and tip, shade under it
+      c.multiplyScalar(1+0.04*G(x,0,0.0035)*G(y,(R.yR+yT)/2,0.012)+0.05*G(x,0,0.005)*G(y,yT+0.002,0.004)-0.1*G(x,0,0.0085*R.wk)*G(y,yT-0.0052,0.0026)-0.05*(G(x,-0.0105*R.wk,0.003)+G(x,0.0105*R.wk,0.003))*G(y,yT+0.004,0.008)); } }));   // the nose: light on the bridge and tip, shade under it
   // put a feature (built around the origin, facing -z) on the face at (x,y), `push` metres out of the surface, turned to follow the surface's slope
   const place=(g,x,y,push)=>{ const d=0.004, z=zAt(x,y), n=new THREE.Vector3((zAt(x+d,y)-zAt(x-d,y))/(2*d),(zAt(x,y+d)-zAt(x,y-d))/(2*d),-1).normalize();
     g.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,-1),n)));
@@ -175,7 +175,7 @@ function buildFace(X){
   }
 
   /* nose: sculpted into the skull (faceNoseH in faceRelief: bridge, tip, wings, underside) and shaded in its paint; only the two nostrils are pieces, small dark ovals on the underside */
-  for(const sd of [-1,1]) parts.push(col(place(el(0.0017*nS,0.0011*nS,0.0012*nS,0,0,0),sd*0.0034*R.wk,yT-0.0042*nS,-0.0004),skin.clone().multiplyScalar(0.55).getHex()));
+  for(const sd of [-1,1]) parts.push(col(place(el(0.002*nS,0.0012*nS,0.0012*nS,0,0,0),sd*0.004*R.wk,yT-0.0042*nS,-0.0004),skin.clone().multiplyScalar(0.55).getHex()));
 
   /* mouth: a fine line whose corners lift with a smile, a fuller lower lip (and an upper one on a female face) */
   { const mw=0.0165*S.mouthSize*(fem?0.92:1), my=(-0.062+0.008*S.mouthHeight)*HEAD_TALL, sm=S.smile, lipsC=skin.clone().lerp(_tint.set(Number.isFinite(L.lipColor)&&L.lipColor>=0?L.lipColor:0xb04a52),Number.isFinite(L.lipColor)&&L.lipColor>=0?0.8:fem?0.62:0.4), line=lipsC.clone().multiplyScalar(0.45).getHex();
