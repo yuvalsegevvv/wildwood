@@ -18,10 +18,11 @@ function oxSkirt(X,D,o){
 function oxMantle(X,D,o){
   const {sg}=X, TK=D.TK, s=torsoSize(X,D,0.5), cols=o.cols, y1=(o.flat?0.45:(o.drop||0.36))*TK, rings=[], ex=o.out||0.1;
   const prof=o.flat?[[0.565*TK,0.09],[0.535*TK,s.rx+ex*0.45],[0.51*TK,s.rx+ex*0.85],[0.47*TK,s.rx+ex],[0.45*TK,s.rx+ex*0.94]]:[[0.575*TK,0.09],[0.545*TK,s.rx*0.9+ex*0.45],[0.5*TK,s.rx+ex*0.85],[(0.5*TK+y1)/2,s.rx+ex],[y1,s.rx+ex*0.9]];
-  for(const [y,rx] of prof) rings.push({y,rx,rz:Math.max(0.085,rx*0.88)});
+  // front to back it follows the body (the chest, the bust, the shoulder blades at that height) and stands off half as far as it does at the sides: a mantle lies on the shoulders; as deep as it was wide it floated round the neck like a plate
+  for(const [y,rx] of prof){ const t=torsoSize(X,D,y/TK); rings.push({y,rx,rz:Math.max(0.085,Math.min(rx*0.88,Math.max(t.rz,t.rzBack)+0.016+0.5*Math.max(0,rx-s.rx)))}); }
   const g=ofLoft(rings,sg(26),0,TAU), top=(o.flat?0.565:0.575)*TK, span=top-y1;
   const out=[pc(g,(x,y,z,c)=>{ const t=clamp((top-y)/span,0,0.999); c.set(cols[Math.floor(t*cols.length)]); })];
-  if(o.trim) out.push(solid(ofRingAt([0,y1+0.004,0],[0,1,0],rings[4].rx,o.trimR||0.02,sg(8)),o.trim));
+  if(o.trim) out.push(solid(ofRingAt([0,y1+0.004,0],[0,1,0],rings[4].rx,o.trimR||0.02,sg(8)).scale(1,1,rings[4].rz/rings[4].rx),o.trim));   // (the hem's roll, squeezed to the hem's oval)
   return out; }
 function oxDisc(X,D,o){
   const {sg}=X, TK=D.TK, zb=torsoSize(X,D,0.3).rzBack+0.05, R=o.R||0.17, y=(o.y||0.3)*TK, out=[];
