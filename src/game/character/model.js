@@ -130,6 +130,7 @@ function buildCharacter(L,opt){
   rig.left=!!L.left; rig.noWpn=L.noWeapon===true; rig.sillyS=sillyId(L,'strong'); rig.sillyW=sillyId(L,'weak');   // handedness (Settings > Left-handed: the weapon and shield swap hands, pose.js mirrors the arms) and the silly hand items that replace the weapon / the shield (model-silly.js)
   shieldDress(rig,X);   // the optional shield of look.shield on the left forearm (character/model-shields.js)
   sillyDress(rig,X);   // the silly items of look.strongItem / weakItem, in the hands (character/model-silly.js)
+  X.face=face;
   decoDress(rig,X);   // the up to three small decorations of look.deco1..3 (character/model-decos.js)
   cosDress(rig,X);   // cosmetics: the cape and the aura of look.cape / look.aura (character/cosmetics.js)
   return rig;

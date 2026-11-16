@@ -22,11 +22,40 @@ decoReg('scarf','neck',F=>{ const {c,sg}=F;   // a thick wrap round the neck wit
   const p=[solid(gmRingAt([0,-0.004,0.002],[0,1,0.15],0.066,0.0165,sg(12)),c),solid(gmRingAt([0,-0.024,0.002],[0,1,0.15],0.07,0.0125,sg(12)),F.k)];
   p.push(pc(ofRibbon([[0.04,-0.01,-0.07],[0.05,-0.08,-0.085],[0.05,-0.16,-0.09],[0.046,-0.23,-0.088]],u=>0.024*(1-0.3*u),{up:[0,0,-1],seg:sg(10),th:0.006}),(x,y,z,cc)=>{ cc.set(c); if(y<-0.2||Math.abs(y+0.12)<0.006) cc.set(F.l); }));
   return {parts:p}; });
-decoReg('glasses','face',F=>{ const {c,sg}=F;   // round spectacles
-  const p=[]; for(const s of [-1,1]){ p.push(solid(gmRingAt([s*0.036,0.012,-0.012],[0,0,1],0.021,0.0025,sg(12)),c)); p.push(pc(new THREE.CircleGeometry(0.0205,sg(14)).translate(s*0.036,0.012,-0.0125),(x,y,z,cc)=>cc.set(0xcfe8ff))); p.push(solid(sweepTube([[s*0.057,0.012,-0.01],[s*0.085,0.012,0.04],[s*0.1,0.008,0.12]],[0.0022,0.0022,0.0022],4,{cap:'round',rings:6}),c)); }
-  p.push(solid(sweepTube([[-0.0155,0.016,-0.0125],[0,0.026,-0.0125],[0.0155,0.016,-0.0125]],[0.002,0.002,0.002],4,{cap:'round',rings:6}),c)); return {parts:p}; });
-decoReg('eyepatch','face',F=>{ const {c,sg}=F;   // a patch over the left eye on a strap round the head
-  return {parts:[solid(csph(0.026,sg(12),sg(8)).scale(1,0.85,0.35).translate(0.036,0.008,-0.0155),c),solid(sweepTube([[0.058,0.018,-0.008],[0.105,0.03,0.1],[0,0.062,0.206],[-0.105,0.03,0.1],[-0.01,0.018,-0.017]],[0.0028,0.0028,0.0028,0.0028,0.0028],4,{cap:'round',rings:sg(18)}),F.k)]}; });
+// ---- worn on the face: fitted to THIS face (F.f: the eyes' place and half size, the ears' x, z(x,y) the skin's depth in the anchor's frame), so glasses frame the eyes and a mask lies on the skin whatever the sliders say ----
+function decoFaceOf(X){ const fc=X.face, e=(fc&&fc.eye)||{ex:0.046,ey:0.01,SW:0.02,SH:0.015}, zA=fc&&fc.zAt;
+  return {ex:e.ex,ey:e.ey,w:e.SW,h:e.SH,ear:(fc&&fc.earX)||0.1,z:(x,y)=>{ let v=zA?zA(x,y):1e9; if(!(v<1)) v=-Math.sqrt(Math.max(0.0004,0.011-x*x-y*y)); return v+0.1; }}; }
+function decoLay(f,g,off,dome){ const p=g.attributes.position; for(let i=0;i<p.count;i++) p.setZ(i,f.z(p.getX(i),p.getY(i))-off-(dome?dome(p.getX(i),p.getY(i)):0)); g.computeVertexNormals(); return g; }   // lays a flat piece on the skin, `off` metres proud of it
+function decoLoop(f,cx,cy,rx,ry,r,off,n){ const P=[]; for(let i=0;i<=n;i++){ const a=i/n*TAU, x=cx+Math.cos(a)*rx, y=cy+Math.sin(a)*ry; P.push([x,y,f.z(cx+Math.cos(a)*rx*0.6,cy+Math.sin(a)*ry*0.6)-off]); } return sweepTube(P,P.map(()=>r),5,{cap:'round',rings:n}); }   // an oval rim standing off the skin
+function decoTemple(f,s,x,y,off,r){ return sweepTube([[s*x,y,f.z(s*x*0.9,y)-off],[s*(f.ear+0.004),y+0.002,0.085],[s*(f.ear+0.002),y-0.004,0.125]],[r,r,r],4,{cap:'round',rings:6}); }   // an arm from the rim back over the ear
+function decoGlint(f,cx,cy,rx,ry,off){ return [0.9,0.45].map((k,i)=>pc(decoLay(f,new THREE.PlaneGeometry(rx*k,ry*0.16,2,1).rotateY(Math.PI).rotateZ(0.75).translate(cx-rx*0.28+i*rx*0.3,cy+ry*0.3-i*ry*0.3,0),off),(x,y,z,cc)=>cc.set(0xffffff))); }   // two slanted strokes of light: the glass, without hiding the eye
+decoReg('glasses','face',F=>{ const {c,sg,f}=F, rx=f.w*1.32, ry=f.h*1.5, p=[];   // round spectacles: clear lenses (a rim and a glint), a bridge, arms over the ears
+  for(const s of [-1,1]){ p.push(solid(decoLoop(f,s*f.ex,f.ey,rx,ry,0.0023,0.014,sg(20)),c),...decoGlint(f,s*f.ex,f.ey,rx,ry,0.0135),solid(decoTemple(f,s,f.ex+rx,f.ey,0.012,0.002),c)); }
+  const bx=f.ex-rx; p.push(solid(sweepTube([[-bx,f.ey+ry*0.25,f.z(-bx,f.ey)-0.014],[0,f.ey+ry*0.5,f.z(0,f.ey)-0.011],[bx,f.ey+ry*0.25,f.z(bx,f.ey)-0.014]],[0.002,0.002,0.002],4,{cap:'round',rings:6}),c)); return {parts:p}; });
+decoReg('shades','face',F=>{ const {c,sg,f}=F, rx=f.w*1.5, ry=f.h*1.35, p=[];   // dark glasses: solid lenses with a sheen, a heavy top bar
+  for(const s of [-1,1]){ const cx=s*f.ex, cy=f.ey-0.001;
+    p.push(pc(decoLay(f,new THREE.CircleGeometry(1,sg(16)).rotateY(Math.PI).scale(rx,ry,1).translate(cx,cy,0),0.013),(x,y,z,cc)=>{ cc.set(c).lerp(decoW,0.3*clamp((y-cy)/ry*0.5+0.5)*clamp(0.5+(x-cx)/rx)); }),solid(decoLoop(f,cx,cy,rx,ry,0.0022,0.0135,sg(18)),F.k),solid(decoTemple(f,s,f.ex+rx,cy+ry*0.5,0.012,0.0028),F.k)); }
+  const X0=f.ex+rx, P=[]; for(let i=0;i<=8;i++){ const x=lerp(-X0,X0,i/8); P.push([x,f.ey+ry*0.92,f.z(x*0.8,f.ey)-0.0155]); }
+  p.push(solid(sweepTube(P,P.map(()=>0.0034),5,{cap:'round',rings:sg(12)}),F.k)); return {parts:p}; });
+decoReg('monocle','face',F=>{ const {c,sg,f}=F, r=f.w*1.22, cx=-f.ex, p=[];   // a monocle on the right eye, its chain falling to the collar
+  p.push(solid(decoLoop(f,cx,f.ey,r,Math.max(r*0.9,f.h*1.4),0.003,0.014,sg(20)),c),...decoGlint(f,cx,f.ey,r,r,0.0135));
+  p.push(solid(sweepTube([[cx-r,f.ey-0.004,f.z(cx-r*0.6,f.ey)-0.012],[cx-r-0.014,f.ey-0.05,f.z(cx-r,f.ey-0.05)-0.004],[cx-r-0.004,f.ey-0.1,0.06],[cx-0.006,f.ey-0.14,0.045]],[0.0012,0.0012,0.0012,0.0012],4,{cap:'round',rings:sg(14)}),F.l)); return {parts:p}; });
+decoReg('eyepatch','face',F=>{ const {c,sg,f}=F, rx=f.w*1.42, ry=f.h*1.6, cx=f.ex, cy=f.ey-0.001;   // a patch over the left eye, cupped, with a stitched edge, on a strap round the head
+  const dome=(x,y)=>0.007*Math.max(0,1-Math.pow((x-cx)/rx,2)-Math.pow((y-cy)/ry,2));
+  return {parts:[pc(decoLay(f,new THREE.CircleGeometry(1,sg(16)).rotateY(Math.PI).scale(rx,ry,1).translate(cx,cy,0),0.006,dome),(x,y,z,cc)=>{ cc.set(c); const d=Math.hypot((x-cx)/rx,(y-cy)/ry); if(d>0.72&&d<0.84) cc.set(F.l); }),solid(decoLoop(f,cx,cy,rx,ry,0.002,0.0065,sg(18)),F.k),
+    solid(sweepTube([[cx+rx,cy+ry*0.5,f.z(cx+rx*0.7,cy)-0.005],[0.105,0.03,0.1],[0,0.062,0.206],[-0.105,0.03,0.1],[-0.06,0.036,f.z(-0.06,0.036)-0.004],[0,0.032,f.z(0,0.032)-0.004],[cx-rx*0.7,cy+ry*0.8,f.z(cx-rx*0.7,cy+ry*0.8)-0.005]],[0.0028,0.0028,0.0028,0.0028,0.0028,0.0028,0.0028],4,{cap:'round',rings:sg(24)}),F.k)]}; });
+decoReg('domino','face',F=>{ const {c,sg,f}=F, rx=f.w*1.12, ry=f.h*1.2, p=[];   // a masquerade half mask: an opening for each eye, winged at the temples, a trimmed edge
+  for(const s of [-1,1]){ const g=new THREE.RingGeometry(1,2.1,sg(18),2).rotateY(Math.PI), q=g.attributes.position;
+    for(let i=0;i<q.count;i++){ const u=q.getX(i), v=q.getY(i), r0=Math.hypot(u,v), o=clamp((r0-1)/1.1), m=0.015*o, wing=u*s>0?o*clamp(v/r0+0.3):0; q.setX(i,u/r0*(rx+m)+s*f.ex+s*0.01*wing); q.setY(i,v/r0*(ry+m)+f.ey+0.008*wing); }   // a band 15 mm wide round the eye's opening, drawn out to a wing at the temple
+    p.push(pc(decoLay(f,g,0.006),(x,y,z,cc)=>{ const d=Math.hypot((Math.abs(x)-f.ex)/(rx+0.015),(y-f.ey)/(ry+0.015)); cc.set(d>0.97&&Math.abs(x)>f.ex-rx*0.5?F.l:c); }),solid(decoTemple(f,s,f.ex+rx+0.014,f.ey+0.004,0.005,0.0018),F.k)); }
+  p.push(pc(decoLay(f,new THREE.PlaneGeometry(Math.max(0.012,(f.ex-rx)*2+0.006),ry*2.6,2,3).rotateY(Math.PI).translate(0,f.ey+ry*0.1,0),0.0058),(x,y,z,cc)=>cc.set(c))); return {parts:p}; });
+decoReg('banditmask','face',F=>{ const {c,sg,f}=F, top=f.ey-f.h*1.45, bot=-0.09, H=top-bot, p=[];   // a cloth tied over the nose and mouth, folded along the top
+  const g=new THREE.PlaneGeometry(0.14,H,sg(16),sg(12)).rotateY(Math.PI).translate(0,(top+bot)/2,0), q=g.attributes.position;
+  for(let i=0;i<q.count;i++){ const t=clamp((top-q.getY(i))/H); q.setX(i,q.getX(i)*lerp(1,0.5,t*t)); if(t>0.8) q.setY(i,q.getY(i)-0.012*(1-Math.min(1,Math.abs(q.getX(i))/0.03))*(t-0.8)/0.2); }   // narrows to the chin, the hem dips to a point
+  p.push(pc(decoLay(f,g,0.0055),(x,y,z,cc)=>{ const t=(top-y)/H; cc.set(t<0.1?F.k:c).multiplyScalar(0.92+0.1*Math.sin(t*26+Math.abs(x)*40)); }));
+  for(const s of [-1,1]) p.push(solid(decoTemple(f,s,0.068,top-0.006,0.004,0.0024),F.k)); return {parts:p}; });
+decoReg('plaster','face',F=>{ const {c,sg,f}=F, cy=f.ey-f.h*1.25-0.006;   // a sticking plaster across the bridge of the nose
+  return {parts:[pc(decoLay(f,new THREE.PlaneGeometry(0.04,0.012,8,2).rotateY(Math.PI).rotateZ(-0.1).translate(0,cy,0),0.0016),(x,y,z,cc)=>{ cc.set(Math.abs(x)<0.007?F.l:c); if(Math.abs(Math.abs(x)-0.014)<0.0015) cc.multiplyScalar(0.85); })]}; });
 decoReg('kitsunemask','headTop',F=>{ const {c,sg}=F;   // a fox mask pushed up to the side of the head
   const p=[pc(csph(0.056,sg(14),sg(10)).scale(0.9,1.1,0.32).translate(0.075,0.06,-0.06).rotateZ(-0.35),(x,y,z,cc)=>{ cc.set(c); if(Math.abs(x-0.075)>0.034||Math.abs(y-0.06)>0.052) cc.set(0xd03030); }),solid(new THREE.ConeGeometry(0.02,0.05,4).rotateY(Math.PI/4).translate(0.04,0.115,-0.06).rotateZ(0.2),c),solid(new THREE.ConeGeometry(0.02,0.05,4).rotateY(Math.PI/4).translate(0.12,0.105,-0.06).rotateZ(-0.5),c),solid(new THREE.ConeGeometry(0.015,0.05,6).rotateX(-Math.PI/2).translate(0.085,0.04,-0.085),c)];
   for(const s of [-1,1]) p.push(solid(csph(0.0065,sg(6),sg(5)).scale(1.7,0.6,0.5).translate(0.075+s*0.02,0.072,-0.08),0x1a1a22));
@@ -76,13 +105,14 @@ decoReg('starbadge','chest',F=>{ const {c,sg}=F;   // a gold star badge on the c
   const sh=new THREE.Shape(); for(let i=0;i<10;i++){ const a=i/10*TAU, r=i%2?0.011:0.026; if(i) sh.lineTo(Math.sin(a)*r,Math.cos(a)*r); else sh.moveTo(0,r); }
   return {parts:[solid(new THREE.ExtrudeGeometry(sh,{depth:0.006,bevelEnabled:false}).translate(0.05,0.04,-0.07),c),solid(csph(0.005,sg(6),sg(5)).translate(0.05,0.04,-0.074),F.l)]}; });
 // the colour a decoration has: the look's own choice (decoColor<n>, -1 = as designed) or the design's
-const DECO_COL={heartclip:0xe84a7a,catears:0x3a3a48,bunnyears:0xf6eef0,choker:0x7a2a4a,crownlet:0xe6c240,starbadge:0xf0c040,flower:0xf08ab0,feather:0xd8d0b0,bell:0xe6c240,scarf:0xc83a3a,glasses:0x3a3a40,eyepatch:0x22222a,kitsunemask:0xf2eee6,earrings:0xe6c240,horns:0xd9d2c0,halo:0xffe27a,brooch:0x3a8ae0,pouch:0x8a5a34,lantern:0xffb040,tail:0xd9812a,wings:0xf4f0e6,bow:0xe0508a,moth:0x9ad8ff,bracelet:0xc0c8d0,anklet:0xe6c240};
+const decoW=new THREE.Color(0xffffff);
+const DECO_COL={shades:0x16161c,monocle:0xe6c240,domino:0x7a1f3a,banditmask:0x8a2a2a,plaster:0xe8c8a0,heartclip:0xe84a7a,catears:0x3a3a48,bunnyears:0xf6eef0,choker:0x7a2a4a,crownlet:0xe6c240,starbadge:0xf0c040,flower:0xf08ab0,feather:0xd8d0b0,bell:0xe6c240,scarf:0xc83a3a,glasses:0x3a3a40,eyepatch:0x22222a,kitsunemask:0xf2eee6,earrings:0xe6c240,horns:0xd9d2c0,halo:0xffe27a,brooch:0x3a8ae0,pouch:0x8a5a34,lantern:0xffb040,tail:0xd9812a,wings:0xf4f0e6,bow:0xe0508a,moth:0x9ad8ff,bracelet:0xc0c8d0,anklet:0xe6c240};
 function decoTint(L,i){ const v=L['decoColor'+(i+1)]; return typeof v==='number'&&v>=0&&v<=0xffffff?v:null; }
 function decoDress(rig,X){
   const L=X.L; for(let i=0;i<3;i++){ const id=L[DECO_FIELDS[i]]; if(typeof id!=='string'||!id||!Object.prototype.hasOwnProperty.call(DECOS,id)) continue;
     const D=DECOS[id], anchor=rig.anchors[D.anchor]; if(!anchor) continue;
     const main=decoTint(L,i), c=new THREE.Color(main===null?DECO_COL[id]:main), k=c.clone().multiplyScalar(0.62), l=c.clone().lerp(new THREE.Color(0xffffff),0.45);
-    const R=D.fn({c:c.getHex(),k:k.getHex(),l:l.getHex(),sg:X.sg}); if(!R.parts.length) continue;
+    const R=D.fn({c:c.getHex(),k:k.getHex(),l:l.getHex(),sg:X.sg,f:D.anchor==='face'?decoFaceOf(X):null}); if(!R.parts.length) continue;
     const m=new THREE.Mesh(merge(R.parts),cosCapeMat); m.castShadow=false; anchor.add(m);
     if(D.anchor==='headTop') m.position.y=-0.11*rig.dims.faceScale[1];   // (these were drawn from the head's centre, the anchor is its crown)
     const base=m.position.y; if(R.bob||R.sway){ rig.anims=rig.anims||[]; rig.anims.push((t,dt,mv)=>{ if(R.bob) m.position.y=base+0.006*Math.sin(t*2+i); if(R.sway){ m.rotation.y=Math.sin(t*1.6+i)*0.12+Math.sin(t*5)*0.04*mv; m.rotation.x=0.04*Math.sin(t*1.1)-0.1*mv; } }); }
