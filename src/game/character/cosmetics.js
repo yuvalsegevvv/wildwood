@@ -94,11 +94,15 @@ function cosBuildCape(rig,X,def){
   const D=X.D, sg=X.sg, cheap=(typeof LITE!=='undefined'&&LITE)||(typeof LOW!=='undefined'&&LOW);
   const H=Math.min((D.shY+0.3)*def.len*X.S.capeLen,D.hipY+D.shY-0.1), w0=2*D.shX+0.06, w1=w0*1.55, z0=0.11*D.B+0.025, top=D.shY+0.02, A=0.95, NS=4, NC=cheap?9:16;
   const w=y=>w0+(w1-w0)*y/H, cut=[0,0.25,0.5,0.75,1].map(f=>f*H);
+  // the cloth clears the body it hangs on: capeOut(y) is how far behind the hinge line it must be at y below the shoulders (the shoulder blades and above all the seat, which grows with the
+  // hip sliders: torsoSize's rzBack), and it never comes back in under the widest point (it hangs from there); capeWrap(y) flattens the wrap at the top, where a full curve cut through the shoulders
+  const capeTab=[]; { let run=0; for(let i=0;i<=24;i++){ const yd=(top-H*i/24)/D.TK, d=torsoSize(X,D,Math.max(yd,-0.13)).rzBack+0.03-z0; run=Math.max(run,d,0); capeTab.push(run); } }
+  const capeOut=y=>{ const f=clamp(y/H)*24, i=Math.min(23,Math.floor(f)); return lerp(capeTab[i],capeTab[i+1],f-i); }, capeWrap=y=>0.3+0.5*faceSm(0,0.3*H,y);
   // one panel: the rows ya..yb (distance below the hinge line), curved round the back and rippled; drawn in its own frame (its top at y = 0)
   const panel=(ya,yb)=>{
     const nr=cheap?2:4, pos=[], idx=[];
     for(let i=0;i<=nr;i++){ const y=ya+(yb-ya)*i/nr, R=w(y)/(2*Math.sin(A)), rip=0.014*(0.3+0.7*y/H);
-      for(let j=0;j<=NC;j++){ const a=-A+2*A*j/NC; pos.push(Math.sin(a)*R,-(y-ya),(Math.cos(a)-1)*R+rip*Math.sin(a*7+y*4)*(0.4+0.6*Math.abs(a)/A)); } }
+      for(let j=0;j<=NC;j++){ const a=-A+2*A*j/NC; pos.push(Math.sin(a)*R,-(y-ya),(Math.cos(a)-1)*R*capeWrap(y)+capeOut(y)+rip*Math.sin(a*7+y*4)*(0.4+0.6*Math.abs(a)/A)); } }
     for(let i=0;i<nr;i++) for(let j=0;j<NC;j++){ const a=i*(NC+1)+j, b=a+1, c=a+NC+1, d=c+1; idx.push(a,b,c,b,d,c); }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); smoothN(g);
     return pc(g,(x,y,z,c)=>{ const yy=ya-y; cosPattern(def,c,x/(w(yy)/2),yy/H); });
