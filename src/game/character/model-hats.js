@@ -66,9 +66,9 @@ function htBase(X,F,parts){
   } else if(id==='cap'){
     parts.push(pc(scl(sculpt(shell(0.119,0,0.435*Math.PI,0,0.33,sg(34),sg(16)),false)),(x,y,z,c)=>{ tone(c,1); const a=((Math.atan2(x,z)/TAU*6)%1+1)%1; if(a<0.035||a>0.965) tone(c,0.72); }));   // six panels with seams
     parts.push(pc(csph(0.011,sg(8),sg(6)).translate(0,0.1195*fs[1]-0.004,0.0),c=>tone(c,0.8)));   // the button
-    { const mk=up=>{ const g=new THREE.RingGeometry(0.0001,0.105,sg(24),4,0,Math.PI).rotateX(up?-Math.PI/2:Math.PI/2), p=g.attributes.position;
+    { const mk=up=>{ const g=new THREE.RingGeometry(0.0001,0.105,sg(24),sg(10),0,Math.PI).rotateX(up?-Math.PI/2:Math.PI/2), p=g.attributes.position;
         for(let k=0;k<p.count;k++){ const r=Math.hypot(p.getX(k),p.getZ(k))/0.105; p.setY(k,0.056*fs[1]-0.05*r*r+(up?0:-0.004)); } g.translate(0,0,-0.075); return smoothN(g); };
-      parts.push(pc(mk(true),(x,y,z,c)=>{ tone(c,0.85); if(z<-0.172) c.set(0xf0ede4).multiplyScalar(0.9); }),pc(mk(false),c=>tone(c,0.6))); }   // the curved bill, with a light stitched edge
+      parts.push(pc(mk(true),(x,y,z,c)=>{ tone(c,0.85); const r=Math.hypot(x,z+0.075)/0.105; if(r>0.93) tone(c,0.62); else if(r>0.8&&r<0.84) tone(c,0.8); }),pc(mk(false),c=>tone(c,0.6))); }   // the curved bill: a dark piped edge and a stitch line (the old pale edge, on four coarse rings, smeared into a white patch over the brow)
     parts.push(pc(vbox(0.03,0.013,0.008,0,0.05*fs[1],0.118),c=>c.set(0xd8d4c8)),pc(vbox(0.02,0.005,0.009,0,0.05*fs[1],0.1185),c=>c.set(0x2a2a2a)));   // the back strap's adjuster
   } else if(id==='bandana'){
     parts.push(pc(scl(sculpt(shell(0.119,0,0.43*Math.PI,0,0.3,sg(34),sg(12)),false)),(x,y,z,c)=>{ tone(c,1); const d=h3(Math.round(x*70),Math.round(y*70),Math.round(z*70)); if(d>0.84) lerpHex(c,0xf6f0e0,0.9); }));   // printed dots
