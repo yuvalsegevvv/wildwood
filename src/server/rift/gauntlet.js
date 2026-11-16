@@ -13,7 +13,7 @@ RIFT_MODE_KITS.gauntlet={
       dgObjDelS(run,v.ob); k.vents.splice(k.vents.indexOf(v),1); }
     riftPourS(run); G.hud(run); },
   // champion i (0-4): one of the rift's kinds as a Herald-sized elite, x (0.6 + 0.25 i) more health, on the farthest platform, with 3 + i adds through the tears
-  champion(run){ const k=run.k, R=RIFT_DEFS[run.rift], far=riftBigIslesS(run,1)[0], id=R.kinds[(k.c+1)%R.kinds.length].id;
+  champion(run){ const k=run.k, R=riftDefOf(run), far=riftBigIslesS(run,1)[0], id=R.kinds[(k.c+1)%R.kinds.length].id;
     const m=riftSpawnS(run,id,far.x,far.z,true); if(!m) return; m.maxHp=m.hp=m.maxHp*(0.6+0.25*k.c); m.riftChamp=true; k.champ=m;
     riftQueueS(run,3+k.c,4,1+2*k.c,''); toastTo(null,'Forge champion '+(k.c+1)+' of '+RIFT_CHAMPS+': '+m.name+'!','bad'); },
   vent(run){ const k=run.k, p=dgPresentS(run).find(q=>!q.dead); if(!p) return; const a=Math.random()*TAU, r=Math.random()*2, L=dgLocalS(run,p.x+Math.sin(a)*r,p.z+Math.cos(a)*r);

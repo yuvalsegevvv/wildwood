@@ -37,7 +37,7 @@ function netHandle(msg){
   }
 }
 function onWelcome(msg){
-  NET.pid=msg.pid; NET.dev=msg.dev; NET.ready=true; NET.lastMsg=performance.now();
+  NET.pid=msg.pid; NET.dev=msg.dev; NET.ab=msg.ab?1:0; NET.ready=true; NET.lastMsg=performance.now();   // abyss: NET.ab, the flag
   adoptLook(msg.look);
   clearMonViews(); clearRemotes(); clearBossVisuals(); CB.projs.forEach(p=>scene.remove(p.mesh)); CB.projs.length=0; CB.target=null;
   (msg.players||[]).forEach(remoteAdd);

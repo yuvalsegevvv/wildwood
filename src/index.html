@@ -74,7 +74,7 @@
 <div id="rdStrip" hidden role="status"></div>
 <div id="bossbar" hidden><div class="bb-top"><b id="bbName">The Rootwarden</b><span class="bb-lv" id="bbLv">Lv 15 boss</span><span id="bbEl"></span><span id="bbPhase"></span></div><div class="bb-bar"><i id="bbHp"></i><u class="bb-tick" style="left:60%"></u><u class="bb-tick" style="left:30%"></u><span id="bbPct">100%</span></div></div>
 <div id="inv" class="panel" hidden role="dialog" aria-label="Gear & bag">
-  <div class="pn-head"><span class="pn-t">Gear &amp; bag</span><button class="chip pn-skills" id="invShops" type="button">Shops</button><button class="chip pn-skills" id="invDelves" type="button">Delves</button><button class="chip pn-skills" id="invSkills" data-kb="skills" data-kbx="Skills ({k})">Skills (K)</button><span class="pn-coins" id="invCoins"></span><span class="pn-gems" id="invGems"></span><span class="pn-amber" id="invAmber"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-head"><span class="pn-t">Gear &amp; bag</span><button class="chip pn-skills" id="invShops" type="button">Shops</button><button class="chip pn-skills" id="invDelves" type="button">Delves</button><button class="chip pn-skills" id="invSkills" data-kb="skills" data-kbx="Skills ({k})">Skills (K)</button><span class="pn-coins" id="invCoins"></span><span class="pn-gems" id="invGems"></span><span class="pn-amber" id="invAmber"></span><span class="pn-amber pn-shards" id="invShards" hidden></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="invBody"></div>
 </div>
 <div id="mats" class="panel" hidden role="dialog" aria-label="Materials">
@@ -189,6 +189,14 @@
   <div class="pn-head"><span class="pn-t">The Shardmere</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="riftBody"></div>
 </div>
+<div id="abyss" class="panel" hidden role="dialog" aria-label="The Abyss">
+  <div class="pn-head"><span class="pn-t">The Abyss</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="abBody"></div>
+</div>
+<div id="abBar" hidden><span id="abBarT"></span><button class="chip buy" id="abNext" type="button">Next round</button><button class="chip" id="abOut" type="button">Leave</button></div>
+<div id="abArts" hidden></div>
+<div id="abPick" hidden role="dialog" aria-label="Choose an artifact"><div class="ab-pk"><div class="ab-pk-h"><b id="abPickT">Choose an artifact</b><span id="abPickN"></span></div><div id="abPickCards"></div><div class="ab-pk-f"><button class="chip" id="abSkip" type="button">Skip</button></div></div></div>
+<div id="abDrop" hidden role="dialog" aria-label="Throw an artifact away"><div class="ab-pk"><div class="ab-pk-h"><b id="abDropT"></b></div><div id="abDropList"></div><div class="ab-pk-f"><button class="chip" id="abDropNo" type="button">Cancel</button></div></div></div>
 <div id="puzzle" class="panel" hidden role="dialog" aria-label="Puzzle">
   <div class="pn-head"><span class="pn-t" id="pzTitle">Puzzle</span><span class="pn-coins" id="pzClock"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="pzBody"><div id="pzHost"></div><div class="chips" id="pzBar" hidden><button class="chip" id="pzUndo">Undo</button><button class="chip" id="pzReset">Start over</button><button class="chip" id="pzSkip" hidden></button></div><p class="muted" id="pzMsg"></p></div>
@@ -243,7 +251,7 @@
 </div>
 <div id="friends" class="panel" hidden role="dialog" aria-label="Friends and ranking">
   <div class="pn-head"><span class="pn-t">Friends</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <div class="chips pn-tabs"><button class="chip" id="frTabF" type="button">Friends</button><button class="chip" id="frTabR" type="button">Ranking</button></div>
+  <div class="chips pn-tabs"><button class="chip" id="frTabF" type="button">Friends</button><button class="chip" id="frTabR" type="button">Ranking</button><button class="chip" id="frTabA" type="button" hidden>Abyss</button></div>
   <div class="pn-body" id="frBody"></div>
 </div>
 <div id="pshop" class="panel" hidden role="dialog" aria-label="Player shops">

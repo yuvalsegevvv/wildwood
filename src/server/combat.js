@@ -15,7 +15,7 @@ function handleAttack(p,msg){
   const ab=hold>0?bhHoldAb(ab0,cls,hold):k==='basic'?Object.assign({},ab0,{mult:bhPressMult(ab0)}):alt?shCastAb(ab0,alt):ab0;
   const [kind,dur0,hitAt0]=ab.act, dur=bhActDur(dur0,spd,1), hitAt=hitAt0;   // (a buff's basic-cooldown x paces the swings, not how long one swing takes)
   const lvl=skillLvOf(SK,ab.id);
-  p.cd[k]=k==='basic'?bhInterval(ab,SK,spd,bcd,hold):abilityCd(ab,SK,LV,cls,rlP(p,'cdr'))*(1-allyP(p,'haste'));   // skillsets: an ally haste buff shortens the cooldowns of skill 2 and burst
+  p.cd[k]=k==='basic'?bhInterval(ab,SK,spd,bcd,hold):abilityCd(ab,SK,LV,cls,rlP(p,'cdr')+abP(p,'cdr'))*(1-allyP(p,'haste'));   // abyss: the bar's cooldown;   // skillsets: an ally haste buff shortens the cooldowns of skill 2 and burst
   if(k!=='basic') p.cd[k]*=ultCdK(p,ab.id);   // ult: a boosted active's own cooldown x
   caveCastS(p,k,ab);   // cave: this cast pays its charge once, on its first hit
   ssTriggerS(p,'cast'+(1+SLOTS.indexOf(k)),{m:MON_BY_ID.get(msg.tg)});   // skillsets: on cast rows of slot 1, 2, 3
@@ -36,8 +36,8 @@ function elemHitS(p,el,m){ el=elemEffS(p,el);
   if(m.pl) return el==='basic'?1:foeMult(el,elOf(m.T),PVP.elemBoost);   // pvp: between fighters advantage and disadvantage are x1.15 and /1.15, a fighter's element is their basic slot skill's (the proxy's T.el), and basic is neutral
   return foeMult(el,elOf(m.T)); }
 function rollDmgS(p,mult,m,el){   // cave: caveCritP (Overdrive: a sure crit) and caveBonusK (Grapple Line: the next hit) are read below
-  const b=p.buff, cr0=CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m,el)+pendP(p,'crit')+rlP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)+glvP(p,'crit')+glvStreakP(p), crit=caveCritP(p)||Math.random()<Math.max(0,Math.min(CRIT_CAP,cr0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
-  return {v:Math.max(1,Math.round(p.dmg*mult*caveBonusK(p)*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m,el))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.max(1,Math.min(CRIT_MULT_CAP,CRIT_MULT+glvP(p,'critdmg')+glvOverP(p,cr0)+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m,el))):1))),crit,fx:elemEffS(p,el)==='basic'?0:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt (an element-less hit's x1.1 shows no arrow)
+  const b=p.buff, cr0=CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m,el)+pendP(p,'crit')+rlP(p,'crit')+abP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)+glvP(p,'crit')+glvStreakP(p), crit=caveCritP(p)||Math.random()<Math.max(0,Math.min(CRIT_CAP,cr0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
+  return {v:Math.max(1,Math.round(p.dmg*mult*abP(p,'atk')*caveBonusK(p)*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m,el))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.max(1,Math.min(CRIT_MULT_CAP,CRIT_MULT+glvP(p,'critdmg')+glvOverP(p,cr0)+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m,el))):1))),crit,fx:elemEffS(p,el)==='basic'?0:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt (an element-less hit's x1.1 shows no arrow)   // abyss: crit chance and damage of the bar (abP)
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.pl) return pvpHitS(m,mult,p,fromX,fromZ,kb,el);   // pvp: m is another fighter on the island (server/pvp.js)
@@ -48,6 +48,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(m.immune){ ev('imm',m.id); return 0; }
   if(m.boss && m.B.stunT>0) mult*=1.5;
   const d=rollDmgS(p,mult,m,el);
+  if(p.inst) d.v=abHitS(p,m,d.v);   // abyss: every 5th hit, boss and execute damage of the bar
   const vk=mstVulnK(m); if(vk) d.v=Math.max(1,Math.round(d.v*(1+vk)));   // statuses: a vulnerable monster takes more, whoever hits it
   if(p.ss&&p.ss.amp.length) d.v=Math.max(1,Math.round(d.v*ssAmpK(p,m)));   // skillsets: the owner's marks make a marked target take more from them
   p.lastDealt=S.t;   // skillsets: in a fight (tick triggers run only then)
@@ -61,6 +62,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(!m.aggro||!S.players.get(m.tgt)){ m.aggro=true; m.tgt=p.id; }
   if(d.fx) ev('dmg',m.id,d.v,d.crit?1:0,p.id,d.fx); else ev('dmg',m.id,d.v,d.crit?1:0,p.id);
   shdLeechS(p,d.v);   // dgrev D7: the shield's Lifeblood heals a share of the hit
+  if(p.inst){ const ls=abP(p,'lifesteal'); if(ls>0) healP(p,d.v*ls); }   // abyss: the bar's lifesteal
   if(d.crit) glvHitS(m,p,d);   // dgrev: gloves: Hot Streak's stack and Echo's second hit (server/dungeon-gear.js)
   if(m.hp<=0&&m.boss&&vbPartDownS(m)){}   // volcano: a part ended, not the boss
   else if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
@@ -75,6 +77,7 @@ function killMonsterS(m,p){
   ev('kill',m.id,p?p.id:null);
   if(p) ssTriggerS(p,'kill',{m});   // skillsets: on kill rows
   if(p){ caveKillS(p,m); caveDropS(p,m); }   // cave: kill refunds and grave hands; the floor's material (server/cave.js)
+  if(p&&p.inst) abKillP(p,m);   // abyss: kills heal (the bar's killheal)
   if(m.inst){ dgKilledS(m,p); return; }   // dungeons: a run's kill pays every member present (rewardAllS) and tells the mission; its boss ends the run
   if(!m.T.noXp){
     for(const [pid,tm] of m.hitters){ const q=S.players.get(pid); if(!q||S.t-tm>30||Math.hypot(q.x-m.x,q.z-m.z)>80) continue; rewardKill(q,m); }

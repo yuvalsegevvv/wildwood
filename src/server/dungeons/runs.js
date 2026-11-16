@@ -36,7 +36,7 @@ function dgAskS(run,q,kind){
 const dgJoinableS=run=>!run.endT&&!run.boss&&run.phase==='objectives'&&dgPresentS(run).length<DG_MAX_PARTY;
 function dgSetupS(run){
   if(run.ready||run.endT) return; run.ready=true; run.t=0;
-  const kit=DG_KITS[run.mission], c0=S.ctx; S.ctx=run.id; if(kit) kit.setup(run); if(!run.rift) pzDgSetupS(run); S.ctx=c0;   // rift: no puzzle stones in a rift   // puzzles: the run's three stones
+  const kit=DG_KITS[run.mission], c0=S.ctx; S.ctx=run.id; if(kit) kit.setup(run); if(!run.rift&&!run.ab) pzDgSetupS(run); S.ctx=c0;   // rift: no puzzle stones in a rift   // puzzles: the run's three stones
 }
 function updateInstsS(dt){
   dgSecT-=dt; const sec=dgSecT<=0; if(sec) dgSecT=1;
@@ -100,6 +100,7 @@ function dgGoneP(p){ const run=dgRunOf(p); if(run){ const mb=dgMemberOf(run,p); 
 // downed in a run (the updatePlayersS hook, instead of the world's wake in a village after 3 s): DG_DOWN_S to be revived, then a respawn at the entrance, or out
 function dgDownTickS(p,dt){
   const run=dgRunOf(p); if(!run){ p.inst=0; return; }
+  if(run.ab) return abDownTickS(run,p,dt);   // abyss: a fall ends the run, nothing is lost
   if(run.rift) return riftDownTickS(run,p,dt);   // rift: one respawn after 5 s, then the run is over
   const mb=dgMemberOf(run,p); if(!mb||mb.out||run.endT) return;
   p.deadT+=dt; if(p.deadT<DG_DOWN_S) return;
@@ -168,6 +169,7 @@ function dgCloseS(run){
   for(const p of dgPresentS(run)) dgExitS(run,p);
   if(run.boss) clearBossFxS(run.boss);
   for(const m of [...run.mons]) dgRemoveS(run,m);
+  if(run.ab) abCloseS(run);   // abyss: whoever is online has no run in the save now
   if(DG_SLOT_RUN[run.slot]===run.id) DG_SLOT_RUN[run.slot]=0;
   DG_RUNS.delete(run.id);
   S.ctx=c0;

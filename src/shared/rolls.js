@@ -37,24 +37,45 @@ const rlSacFor=it=>Math.max(1,Math.round(RL_SAC[it.rar]*(RL_SAC_LV[it.lv]||1)));
 const RL_COST=1;             // stones one roll (the first or a reroll) costs: of the kind of the piece (weapon pieces use weapon stones)
 const RL_STONE_KIND={weapon:'rsw',armor:'rsa',ring:'rsr',pendant:'rsr',talisman:'rsr',cape:'rsr',gloves:'rsr',shield:'rsa'}, RL_STONE_NAME={rsw:'Weapon Reroll Stone',rsa:'Armor Reroll Stone',rsr:'Accessory Reroll Stone'}, RL_STONE_MAX=9999;   // rsr: the ring's own stone (gear.rsr), made by sacrificing level-30+ rings or dropped by world bosses
 const RL_STONE_ORDER=['rsw','rsa','rsr'];   // the gear.* fields of the three stone kinds (a boss drop picks one at random; the forge lists them in this order)
-const RL_CODE_RE=/^~(?:[a-m]\d\d){1,3}$/;
-// one roll: n (1-3, default 1) different stats, each a quality 0..99 (rnd returns [0,1), Math.random on the server)
-function rlRoll(rnd,n){
-  rnd=rnd||Math.random; n=n>=1?Math.min(RL_LINES_MAX,n|0):1; const keys=RL_STATS.map(s=>s.k); let out='~';
-  for(let i=0;i<n;i++){ const j=Math.min(keys.length-1,Math.floor(rnd()*keys.length)), k=keys.splice(j,1)[0], q=Math.min(99,Math.floor(rnd()*100)); out+=k+(q<10?'0':'')+q; }
+// abyss: the code is '~' + an optional '!' (an Ascendant Prism is on the piece) + 1-3 lines of 3 characters, one of them optionally led by '*' (a Void Anchor holds that line, only on a piece of 2-3 lines):
+// '~!*a57k12c90' = prism, line a locked. One spelling a state (the '!' first, at most one '*', a '*' always before a line), so an id stays unique and ITEM's Proxy makes one record a piece
+const RL_CODE_RE=/^~!?(?:\*?[a-m]\d\d){1,3}$/, RL_PRISM_ADD=10;
+// a line's quality from a draw: 0..99, with a prism g=1 +RL_PRISM_ADD capped at 99 (so 99 comes up 11 times as often as any one other grade, and 0-9 never)   // abyss:
+const rlGradeQ=(rnd,g)=>Math.min(99,Math.floor(rnd()*100)+(g?RL_PRISM_ADD:0));
+// one roll: n (1-3, default 1) different stats, each a quality 0..99 (rnd returns [0,1), Math.random on the server).
+// abyss: keep = {k: stat key, q, i: position} is a locked line: it stays at position i with its stat and quality and the others never roll its stat; g = 1: the piece carries a prism (the grade rule, '!' in the code)
+function rlRoll(rnd,n,keep,g){
+  rnd=rnd||Math.random; n=n>=1?Math.min(RL_LINES_MAX,n|0):1; g=g?1:0; const keys=RL_STATS.map(s=>s.k).filter(k=>!keep||k!==keep.k), ki=keep?Math.max(0,Math.min(n-1,keep.i|0)):-1; let out='~'+(g?'!':'');
+  for(let i=0;i<n;i++){
+    if(i===ki){ out+='*'+keep.k+(keep.q<10?'0':'')+keep.q; continue; }
+    const j=Math.min(keys.length-1,Math.floor(rnd()*keys.length)), k=keys.splice(j,1)[0], q=rlGradeQ(rnd,g); out+=k+(q<10?'0':'')+q;
+  }
   return out;
 }
-// '~a57k12c90' -> [{s: stat record, q: 57}, ...], or null when the code is not 1-3 different stats (or, when n is given, not exactly n of them: a piece's code must match its level)
-function rlParseCode(code,n){
+// '~!*a57k12c90' -> {lines:[{s: stat record, q: 57}, ...], g: 1 (a prism), lock: the index of the locked line or -1}, or null when the code is not 1-3 different stats (or, when n is given, not exactly n of them: a piece's code must match its level), has two '*', or a '*' on a 1-line piece
+function rlParseFull(code,n){
   if(typeof code!=='string'||!RL_CODE_RE.test(code)) return null;
-  const cnt=(code.length-1)/3; if(n!==undefined&&cnt!==n) return null;
-  const out=[]; for(let i=0;i<cnt;i++){ const s=RL_BY_KEY[code[1+i*3]], q=+code.slice(2+i*3,4+i*3); if(!s||out.some(l=>l.s===s)) return null; out.push({s,q}); }
-  return out;
+  let i=1, g=0, lock=-1; if(code[1]==='!'){ g=1; i=2; }
+  const lines=[]; while(i<code.length){
+    if(code[i]==='*'){ if(lock>=0) return null; lock=lines.length; i++; }
+    const s=RL_BY_KEY[code[i]], q=+code.slice(i+1,i+3); if(!s||lines.some(l=>l.s===s)) return null; lines.push({s,q}); i+=3;
+  }
+  if(n!==undefined&&lines.length!==n) return null;
+  if(lock>=0&&lines.length<2) return null;
+  return {lines,g,lock};
 }
-// the lines of a code on a piece of kind 'weapon' | 'armor' | 'ring': [{stat, q, v}] with v the value as a fraction (critdmg: added to the multiplier)
+// '~a57k12c90' -> [{s: stat record, q: 57}, ...] (the lines only: rlParseFull has the markers), or null
+function rlParseCode(code,n){ const P=rlParseFull(code,n); return P?P.lines:null; }
+// the canonical code of lines [{k, q}], a prism g and a locked index (-1: none)
+function rlFormatCode(lines,g,lock){ let out='~'+(g?'!':''); lines.forEach((l,i)=>{ out+=(i===lock?'*':'')+l.k+(l.q<10?'0':'')+l.q; }); return out; }
+// the same code with a prism: every line +RL_PRISM_ADD (at most 99); null when it already has one   // abyss:
+function rlPrismCode(code){ const P=rlParseFull(code); if(!P||P.g) return null; return rlFormatCode(P.lines.map(l=>({k:l.s.k,q:Math.min(99,l.q+RL_PRISM_ADD)})),1,P.lock); }
+// the same code with line i locked (the lock moves there); null for a 1-line piece, a bad index or the line already locked   // abyss:
+function rlLockCode(code,i){ const P=rlParseFull(code); if(!P||P.lines.length<2||!Number.isInteger(i)||i<0||i>=P.lines.length||P.lock===i) return null; return rlFormatCode(P.lines.map(l=>({k:l.s.k,q:l.q})),P.g,i); }
+// the lines of a code on a piece of kind 'weapon' | 'armor' | 'ring': [{stat, q, v}] with v the value as a fraction (critdmg: added to the multiplier); the locked line has lock:true
 function rlLinesOf(code,kind,n){
-  const L=rlParseCode(code,n), K=RL_KIND_K[kind]; if(!L||!K) return null;
-  return L.map(({s,q})=>({stat:s.id,q,v:Math.round((s.lo+(s.hi-s.lo)*q/99)*K[s.kind]*10000)/10000}));
+  const P=rlParseFull(code,n), K=RL_KIND_K[kind]; if(!P||!K) return null;
+  return P.lines.map(({s,q},i)=>{ const l={stat:s.id,q,v:Math.round((s.lo+(s.hi-s.lo)*q/99)*K[s.kind]*10000)/10000}; if(i===P.lock) l.lock=true; return l; });
 }
 const rlPct=v=>String(Math.round(v*1000)/10);
 function rlText(line){ const s=RL_BY_ID[line.stat]; return '+'+(s.x?(Math.round(line.v*100)/100).toFixed(2):rlPct(line.v))+s.text; }
