@@ -90,28 +90,59 @@ function cosTint(def,L,kind){
   const o=Object.assign({},def); if(a>=0) o.col=a; if(b>=0){ if(kind==='cape') o.trim=b; else o.col2=b; } return o;
 }
 // the cape on a rig: hinges at the back of the shoulders, four panels down to a hem near the knees, a collar, a clasp and, for some, a shoulder cape
+/* The cut of each cloth cape (by id; a cape not listed is the plain rectangle). Capes used to differ only in their pattern: the cut gives each its own outline.
+   hem: the shape of the bottom edge ('round' long in the middle, 'points' / 'flame' teeth, 'scallop' hanging arcs, 'swallow' two tails, 'ragged' torn, 'diag' one side long, 'fringe' strips);
+   n: how many teeth / arcs; len: length x; top / wide: the width at the shoulders x and the hem's width over the top's (1.55 = the plain flare); half: worn over one shoulder;
+   split: a vent up the middle; collar: 'high' a standing collar, 'hood' a hood lying on the back. */
+const COS_CUT={
+  wayfarer:{collar:'hood'}, moss:{hem:'ragged',collar:'hood',len:0.92}, hunter:{hem:'ragged',len:0.8,wide:1.35}, ember:{hem:'flame',n:4}, ashen:{hem:'ragged',split:1,len:0.95},
+  midnight:{hem:'round',collar:'high',wide:1.75}, tide:{hem:'scallop',n:3}, sunrise:{half:1,hem:'diag',len:0.85}, leafweave:{hem:'points',n:3,wide:1.4}, drake:{hem:'swallow',top:0.86,wide:1.3},
+  petal:{hem:'scallop',n:4,len:0.72}, dune:{hem:'diag',wide:1.7}, rime:{hem:'round',collar:'hood'}, gloam:{hem:'swallow',split:1,wide:1.75}, regal:{hem:'round',wide:1.95,collar:'high'},
+  lovebird:{hem:'scallop',n:5,len:0.6,wide:1.3}, dawnray:{hem:'points',n:5,wide:1.9,len:0.8}, emberwing:{hem:'flame',n:3,split:1,wide:1.9}, rootcloak:{hem:'fringe',collar:'hood'},
+  frostmantle:{hem:'round',len:0.85,wide:1.35}, sunmirror:{half:1,hem:'points',n:2}, savannaweave:{hem:'fringe',len:0.75,wide:1.3}, tideking:{hem:'scallop',n:2,half:1}, wyrmscale:{hem:'points',n:6,top:0.9,wide:1.25},
+  greatcoat:{split:1,collar:'high',top:0.92,wide:1.2}, dawnseat:{hem:'flame',n:5,len:0.7,wide:1.8}, tidecape:{hem:'diag',split:1}
+};
+// the hem's length factor for the cape's last panel at u (-1 left edge .. 1 right edge): 1 = the plain straight hem
+function cosHem(cut,u){
+  const n=cut.n||3, au=Math.abs(u), f=(u+1)/2*n, k=f-Math.floor(f);
+  switch(cut.hem){
+    case 'round': return 0.5+1.05*Math.sqrt(Math.max(0,1-0.85*u*u));
+    case 'points': return 0.45+1.15*(1-Math.abs(2*k-1));
+    case 'flame': return 0.4+1.25*Math.pow(1-Math.abs(2*k-1),0.6)*(0.7+0.3*cosHash(Math.floor(f),7));
+    case 'scallop': return 0.55+0.85*Math.sqrt(Math.max(0,1-Math.pow(2*k-1,2)));
+    case 'swallow': return 0.3+1.4*Math.pow(Math.sin(Math.min(1,au*1.15)*Math.PI*0.9),0.8);
+    case 'ragged': return 0.55+0.9*cosHash(Math.round(u*8),3);
+    case 'diag': return 1+0.7*u;
+    default: return 1;
+  }
+}
 function cosBuildCape(rig,X,def){
   const D=X.D, sg=X.sg, cheap=(typeof LITE!=='undefined'&&LITE)||(typeof LOW!=='undefined'&&LOW);
-  const H=Math.min((D.shY+0.3)*def.len*X.S.capeLen,D.hipY+D.shY-0.1), w0=2*D.shX+0.06, w1=w0*1.55, z0=0.11*D.B+0.025, top=D.shY+0.02, A=0.95, NS=4, NC=cheap?9:16;
-  const w=y=>w0+(w1-w0)*y/H, cut=[0,0.25,0.5,0.75,1].map(f=>f*H);
+  const cut=Object.prototype.hasOwnProperty.call(COS_CUT,def.id)?COS_CUT[def.id]:{};   // (the cape's own outline)
+  const H=Math.min((D.shY+0.3)*def.len*X.S.capeLen*(cut.len||1),D.hipY+D.shY-0.1), w0=(2*D.shX+0.06)*(cut.top||1), w1=w0*(cut.wide||1.55), z0=0.11*D.B+0.025, top=D.shY+0.02, A=0.95, NS=4, NC=cheap?10:16, A0=cut.half?-A*0.12:-A;
+  const w=y=>w0+(w1-w0)*y/H, cuts=[0,0.25,0.5,0.75,1].map(f=>f*H);
   // the cloth clears the body it hangs on: capeOut(y) is how far behind the hinge line it must be at y below the shoulders (the shoulder blades and above all the seat, which grows with the
   // hip sliders: torsoSize's rzBack), and it never comes back in under the widest point (it hangs from there); capeWrap(y) flattens the wrap at the top, where a full curve cut through the shoulders
   const capeTab=[]; { let run=0; for(let i=0;i<=24;i++){ const yd=(top-H*i/24)/D.TK, d=torsoSize(X,D,Math.max(yd,-0.13)).rzBack+0.03-z0; run=Math.max(run,d,0); capeTab.push(run); } }
   const capeOut=y=>{ const f=clamp(y/H)*24, i=Math.min(23,Math.floor(f)); return lerp(capeTab[i],capeTab[i+1],f-i); }, capeWrap=y=>0.3+0.5*faceSm(0,0.3*H,y);
   // one panel: the rows ya..yb (distance below the hinge line), curved round the back and rippled; drawn in its own frame (its top at y = 0)
-  const panel=(ya,yb)=>{
+  const panel=(ya,yb,last,low)=>{
     const nr=cheap?2:4, pos=[], idx=[];
     for(let i=0;i<=nr;i++){ const y=ya+(yb-ya)*i/nr, R=w(y)/(2*Math.sin(A)), rip=0.014*(0.3+0.7*y/H);
-      for(let j=0;j<=NC;j++){ const a=-A+2*A*j/NC; pos.push(Math.sin(a)*R,-(y-ya),(Math.cos(a)-1)*R*capeWrap(y)+capeOut(y)+rip*Math.sin(a*7+y*4)*(0.4+0.6*Math.abs(a)/A)); } }
-    for(let i=0;i<nr;i++) for(let j=0;j<NC;j++){ const a=i*(NC+1)+j, b=a+1, c=a+NC+1, d=c+1; idx.push(a,b,c,b,d,c); }
+      for(let j=0;j<=NC;j++){ const a=A0+(A-A0)*j/NC, hk=last?cosHem(cut,j/NC*2-1):1;   // the last panel's rows are stretched or shortened per column: the hem's shape
+        pos.push(Math.sin(a)*R,-(y-ya)*hk,(Math.cos(a)-1)*R*capeWrap(y)+capeOut(y)+rip*Math.sin(a*7+y*4)*(0.4+0.6*Math.abs(a)/A)); } }
+    for(let i=0;i<nr;i++) for(let j=0;j<NC;j++){
+      if(low&&cut.split&&!cut.half&&(j===NC/2-1||j===NC/2)) continue;   // a vent up the middle of the lower panels
+      if(low&&cut.hem==='fringe'&&j%2) continue;   // strips
+      const a=i*(NC+1)+j, b=a+1, c=a+NC+1, d=c+1; idx.push(a,b,c,b,d,c); }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); smoothN(g);
     return pc(g,(x,y,z,c)=>{ const yy=ya-y; cosPattern(def,c,x/(w(yy)/2),yy/H); });
   };
   const hinge=new THREE.Group(); hinge.position.set(0,top,z0); rig.spine.add(hinge);
   const segs=[]; let parent=hinge;
   for(let s=0;s<NS;s++){
-    const grp=new THREE.Group(), m=new THREE.Mesh(panel(cut[s],cut[s+1]+(s<NS-1?0.016:0)),cosCapeMat); m.castShadow=false; grp.add(m);
-    if(s>0) grp.position.y=-(cut[s]-cut[s-1]);
+    const grp=new THREE.Group(), m=new THREE.Mesh(panel(cuts[s],cuts[s+1]+(s<NS-1?0.016:0),s===NS-1,s>=(cut.hem==='fringe'?2:1)),cosCapeMat); m.castShadow=false; grp.add(m);
+    if(s>0) grp.position.y=-(cuts[s]-cuts[s-1]);
     parent.add(grp); segs.push(grp); parent=grp;
   }
   // fixed to the body: a rolled collar (fur, for the furred capes), the clasp with its chain, and the shoulder cape
@@ -123,6 +154,10 @@ function cosBuildCape(rig,X,def){
   for(const sd of [-1,1]) fixed.push(solid(csph(0.0115,sg(8),sg(6)).translate(sd*nr*1.5,cyy+0.004,cz),def.trim));
   fixed.push(solid(sweepTube([[-nr*1.5,cyy,cz],[-nr*0.6,cyy-0.026,cz-0.004],[nr*0.6,cyy-0.026,cz-0.004],[nr*1.5,cyy,cz]],[0.0024,0.0024,0.0024,0.0024],4,{cap:'round',rings:8}),def.trim),
     solid(csph(0.012,sg(8),sg(6)).scale(1,1.2,0.7).translate(0,cyy-0.036,cz-0.006),def.trim));   // a pendant on the chain
+  if(cut.collar==='high') fixed.push(pc(ofLoft([{y:cy-0.012,rx:rollR*1.02,rz:rollR*1.02},{y:cy+0.03,rx:rollR*1.22,rz:rollR*1.2},{y:cy+0.066,rx:rollR*1.5,rz:rollR*1.42}],sg(20),-2.25,2.25),(x,y,z,c)=>{ c.set(y>cy+0.056?def.trim:def.col).multiplyScalar(0.86+0.14*clamp((y-cy)/0.06)); }));   // a standing collar, open at the throat
+  if(cut.collar==='hood'){ const hz=z0+0.012, hy=top+0.012;   // a hood lying on the back: a soft bag hanging from the collar, its dark opening turned up
+    fixed.push(pc(csph(0.1,sg(14),sg(10)).scale(1.12,0.86,0.52).translate(0,hy-0.035,hz+0.03),(x,y,z,c)=>{ c.set(def.col).multiplyScalar(y>hy+0.02?0.5:0.82+0.18*clamp((hy-y)/0.1)); }),
+      solid(gmRingAt([0,hy+0.022,hz+0.022],[0,1,0.5],0.07,0.011,sg(8)),def.trim)); }
   if(def.mantle){
     const rows=[[0.53,0.014],[0.47,0.016]].map(([yd,m])=>{ const t=ts(yd), r=Math.max(t.rz,t.rzBack)+m; return {y:yd*TK,rx:t.rx+m,rz:r}; }), t4=ts(0.4), rz4=Math.max(t4.rz,t4.rzBack,0.1*D.B);
     rows.push({y:D.shY-0.02,rx:D.shX+0.07,rz:rz4+0.03},{y:D.shY-0.12,rx:D.shX+0.082,rz:rz4+0.034});

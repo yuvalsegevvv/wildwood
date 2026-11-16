@@ -86,7 +86,7 @@ function gmxTop(X,D){
     X.aclBare=true;
     const pw=0.05*D.aw, rows=[[0.575,nr*1.75,nr*1.75],[0.55,D.shX*0.5,0.085*D.B],[0.51,D.shX*0.86,0.105*D.B],[0.455,D.shX+pw*0.75,0.12*D.B+0.012],[0.38,D.shX+pw+0.022,0.13*D.B+0.03],[0.27,D.shX+pw+0.04,0.14*D.B+0.05],[0.12,D.shX+pw+0.056,0.14*D.B+0.066],[0.0,D.shX+pw+0.066,0.14*D.B+0.075]].map(([yd,rx,rz])=>({y:yd*TK,rx,rz}));
     for(const r of rows){ const ts=torsoSize(X,D,r.y/TK), shl=0; r.rx=Math.max(r.rx,ts.rx+0.02,shl); r.rz=Math.max(r.rz,Math.max(ts.rz,ts.rzBack)+0.02); }   // never narrower than the body under it: the shoulders, the arms' tops and the bust
-    out.push(pc(ofLoft(rows,sg(40),0,TAU),(x,y,z,c)=>{ c.set(tc); const t=y/TK, k=(((t*22)%1)+1)%1; if(k<0.16) c.multiplyScalar(0.7); else if(k>0.5&&k<0.62) c.lerp(new THREE.Color(PL[1]),0.55); if(t<0.03) c.multiplyScalar(0.8); c.multiplyScalar(0.94+0.06*Math.sin(Math.atan2(x,z)*14)); }));
+    out.push(pc(ofLoft(rows,sg(40),0,TAU),(x,y,z,c)=>{ c.set(tc); const t=y/TK, k=(((t*22)%1)+1)%1; if(k<0.16) c.multiplyScalar(0.7); if(Math.abs(t-0.12)<0.012||Math.abs(t-0.38)<0.012) c.lerp(new THREE.Color(PL[1]),0.7); if(t<0.03) c.multiplyScalar(0.8); c.multiplyScalar(0.94+0.06*Math.sin(Math.atan2(x,z)*14)); }));
     for(let i=0;i<sg(30);i++){ const a=i/sg(30)*TAU, r=rows[rows.length-1]; out.push(solid(sweepTube([[Math.sin(a)*r.rx,0,Math.cos(a)*r.rz],[Math.sin(a)*(r.rx+0.004),-0.025,Math.cos(a)*(r.rz+0.004)],[Math.sin(a)*(r.rx+0.006),-0.05,Math.cos(a)*(r.rz+0.006)]],[0.0032,0.0028,0.0014],4,{cap:'round',rings:4}),0xe8d9b0)); }   // the fringe
     out.push(solid(gmRingAt([0,0.575*TK,0],[0,1,0],nr*1.9,0.007,sg(8)),PL[2]));   // the neck slit's stitched rim
   } else if(top==='jerkin'){
