@@ -97,7 +97,7 @@ const ACL_STAND={lean:0,tw:0,t:0,k:0};
 function aclBuild(X,D,parts){
   const {torso,hips,elL,elR,twL,twR,hipL,hipR,kneeL,kneeR}=parts;
   const A={shX:D.shX,shY:D.shY,up:D.upper,hx:D.hx,thighL:D.thigh,lean:armLean(D),carry:D.fem?ACL_CARRY_F:ACL_CARRY_M,cut:twR?twR.userData.cut:-9,
-    torso:aclEnv([torso.geometry],-0.4,D.shY-0.07),   // below the armpit: above it the arm's own top sits in the shoulder
+    torso:aclEnv([X.aclBare&&X.trsGeo?X.trsGeo:torso.geometry],-0.4,D.shY-0.07),   // (X.aclBare: a top that hangs over the arms, the poncho: the arms clear the body under it)   // below the armpit: above it the arm's own top sits in the shoulder
     hips:hips.children.filter(c=>c.isMesh&&c!==torso).map(m=>aclEnv([m.geometry],-1.2,0.5)).filter(Boolean),
     thigh:[aclEnv(aclGeos(hipL),-2,2),aclEnv(aclGeos(hipR),-2,2)], shin:[aclEnv(aclGeos(kneeL),-2,2),aclEnv(aclGeos(kneeR),-2,2)],
     pts:[aclPoints(aclGeos(elL).concat(twL?aclGeos(twL):[]),-1),aclPoints(aclGeos(elR).concat(twR?aclGeos(twR):[]),1)], T:[], TE:[], rest:[], sit:{}};
