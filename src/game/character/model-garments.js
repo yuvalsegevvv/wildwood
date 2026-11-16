@@ -93,19 +93,22 @@ function gmCuff(X,D,sd){
 }
 // ---- the skirt family (its top radius fits the body at the hips: the torso's width and depth, or the thighs, whichever is larger, so a slim body gets a snug waistband and a heavy one is never cut through): a lathe from the waist, a number of sharp pleats or a smooth flare; hem and waistband are painted ----
 function gmSkirt(X,D,kind){
-  const {L,S,sg}=X, prof=[], rows=sg(16), legs=S.legs, ts=torsoSize(X,D,0.045), top=Math.max(ts.rx+0.008,(Math.max(ts.rz,ts.rzBack)+0.012)/0.8,D.hx+0.092*D.tw+0.004), zk=Math.min(0.9,Math.max(0.5,Math.max(Math.max(ts.rz,ts.rzBack)+0.012,0.1*D.tw+0.008)/top)), kilt=kind==='kilt', hk=kind==='hakama', wr=kind==='wrapskirt', pl=kind==='pleated'||hk, len=(kilt?0.46:hk?0.8:pl?0.3:wr?0.25:0.4)*S.skirtLen, hem=top*(1+((kilt?1.22:hk?1.4:pl?1.55:wr?1.25:1.4)-1)*S.skirtFlare);   // (the skirt length and flare sliders scale the cut)
+  const {L,S,sg}=X, prof=[], rows=sg(kind==='kilt'?24:16), kn=sg(32)*2, legs=S.legs, ts=torsoSize(X,D,0.045), top=Math.max(ts.rx+0.008,(Math.max(ts.rz,ts.rzBack)+0.012)/0.8,D.hx+0.092*D.tw+0.004), zk=Math.min(0.9,Math.max(0.5,Math.max(Math.max(ts.rz,ts.rzBack)+0.012,0.1*D.tw+0.008)/top)), kilt=kind==='kilt', hk=kind==='hakama', wr=kind==='wrapskirt', pl=kind==='pleated'||hk, len=(kilt?0.46:hk?0.8:pl?0.3:wr?0.25:0.4)*S.skirtLen, hem=top*(1+((kilt?1.22:hk?1.4:pl?1.55:wr?1.25:1.4)-1)*S.skirtFlare);   // (the skirt length and flare sliders scale the cut)
   for(let i=0;i<=rows;i++){ const t=i/rows; prof.push(new THREE.Vector2(top+(hem-top)*Math.pow(t,kilt?1.1:1.35)+top*0.05*Math.sin(Math.PI*Math.min(1,t/0.4)),(0.04-len*t)*legs)); }   // (a hip swell first, then the flare: a curve, not a cone)
-  const g=(wr?new THREE.LatheGeometry(prof,sg(40),Math.PI*1.5+0.65,TAU-1.3):new THREE.LatheGeometry(prof,sg(pl?48:40))).scale(1,1,zk), p=g.attributes.position;   // (the front-to-back depth follows the body too: a fixed 0.8 left a gap in front of a slim body)
+  const g=(wr?new THREE.LatheGeometry(prof,sg(40),Math.PI*1.5+0.65,TAU-1.3):new THREE.LatheGeometry(prof,kilt?kn:sg(pl?48:40))).scale(1,1,zk), p=g.attributes.position;   // (the front-to-back depth follows the body too: a fixed 0.8 left a gap in front of a slim body)
   // the skirt lies round the body: its depth in front is the belly's (then the thighs'), behind it the seat's, each with a centimetre of ease (the width clears the hip joints' balls, which reach up to the waist at the sides, and is a centimetre less at the waist ring itself);
   // one depth for both (the larger) made it a hoop standing 3 cm off the belly
   { const t0=torsoSize(X,D,0), ek=Math.sqrt(Math.max(0.3,1-Math.pow(D.hx/top,2))), dF0=Math.max(ts.rz+0.01,(0.09*D.tw+0.009)/ek), dF1=Math.max(dF0,(0.097*D.tw+0.01)/ek),   /* (clears the thighs' fronts, which lie off the middle, where an ellipse is shallower) */ dB0=ts.rzBack+0.012, dB1=Math.max(dB0,t0.rzBack+0.012,0.1*D.tw+0.008), d0=top*zk, wx=Math.min(1,Math.max(ts.rx+0.008,D.hx+0.082*D.tw+0.004)/top);
     for(let i=0;i<p.count;i++){ const z=p.getZ(i), u=clamp((0.04*legs-p.getY(i))/0.045), k=u*u*(3-2*u); p.setX(i,p.getX(i)*lerp(wx,1,k)); p.setZ(i,z*(z<0?lerp(dF0,dF1,k):lerp(dB0,dB1,k))/d0); } }
   if(pl) for(let i=0;i<p.count;i++){ const x=p.getX(i), z=p.getZ(i), a=Math.atan2(x,z), k=(Math.floor(((a/TAU)*36+36)%1*0)+0)+0.045*Math.sin(a*18)*(1-(p.getY(i)>-0.01?1:0)*0.9); const r=Math.hypot(x,z); p.setX(i,x*(1+k*0.5)); p.setZ(i,z*(1+k*0.5)); }
   if(!pl) for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), t=Math.min(1,Math.max(0,(0.04*legs-y)/(len*legs))), a=Math.atan2(x,z), f=(kilt?0.02:0.045)*Math.pow(t,1.25)*(Math.sin(a*9)*0.7+Math.sin(a*20.7+1.3)*0.3);   // soft folds that deepen to the hem, and a hem that rises and falls
-    p.setX(i,x*(1+f)); p.setZ(i,z*(1+f)); p.setY(i,y+(kilt?0.004:0.012)*Math.pow(t,2.5)*Math.sin(a*3+1)); }
+    const kp=kilt&&Math.abs(a)<2.25?0.03*Math.pow(t,0.7)*((Math.round((a/TAU+0.5)*kn)&1)?1:-0.4):0;   // the kilt's knife pleats round the sides and back (every other column stands out); the front apron stays flat
+    p.setX(i,x*(1+f+kp)); p.setZ(i,z*(1+f+kp)); p.setY(i,y+(kilt?0.004:0.012)*Math.pow(t,2.5)*Math.sin(a*3+1)); }
   smoothN(g);
   return pc(g,(x,y,z,c)=>{ const t=Math.min(1,Math.max(0,(0.04*legs-y)/(len*legs)));
-    if(kilt) plaid(c,L.bottomColor,x*6,y*6); else c.set(L.bottomColor);
+    c.set(L.bottomColor);
+    if(kilt){ const a=Math.atan2(x,z), u=((a/TAU+0.5)*8)%1, v=(t*4.2)%1, bu=u<0.3, bv=v<0.3, lu=Math.abs(u-0.65)<0.07, lv=Math.abs(v-0.65)<0.07;   // a tartan sized to the mesh: 8 setts round, 4 down; broad dark bands and a thin pale line
+      c.multiplyScalar(bu&&bv?0.5:bu||bv?0.72:1); if(lu||lv) c.lerp(new THREE.Color(0xe8dcc0),0.55); if(Math.abs(a)<2.25&&!(Math.round((a/TAU+0.5)*kn)&1)) c.multiplyScalar(0.8); }
     if(pl){ const a=Math.atan2(x,z); c.multiplyScalar(0.9+0.14*Math.sin(a*18)); }
     else if(!kilt&&t>0.9) c.multiplyScalar(0.8); if(t<0.1) c.multiplyScalar(0.78); if(t>0.96) c.multiplyScalar(0.82); });
 }

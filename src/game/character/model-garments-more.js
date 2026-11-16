@@ -129,9 +129,15 @@ function gmxHips(X,D){
     { const dm=-gfitFz(X,D,0.09,0.05); for(const sd of [0,1]) out.push(solid(ofRibbon([[0.09,0.05*TK,-dm-0.014],[0.11+sd*0.015,-0.02,-Math.max(dm,rz)-0.02],[0.12+sd*0.03,-0.13-sd*0.04,-Math.max(dm,rz)-0.016]],0.024,{up:[0,0,-1],seg:sg(8),th:0.004}),PL[2])); }
   } else if(b==='loincloth'){
     belt(PL[1],0.034,0.06); out.push(solid(gfitSeat(X,D,new THREE.BoxGeometry(0.036,0.03,0.008,3,3,1),0,0.044,0.014),PL[2]));
-    for(const [a0,a1,len] of [[Math.PI-0.55,Math.PI+0.55,0.42],[-0.5,0.5,0.34]]){   // a long front flap and a shorter back one
-      const fr=a0>0, hm=len*leg, d0=-gfitFz(X,D,0,0.03)+0.012, rows=[0.03,-0.08,-0.2,-hm+0.05,-hm+0.045,-hm+0.032,-hm+0.028,-hm].map((y,i)=>{ const k=Math.min(3,i), tf=d0+k*0.014, rzb=fr?(tf+s0.rzBack)/2:rm+0.006+k*0.014; return {y,rx:s0.rx+0.016+k*0.004,rz:rzb,zc:fr?(s0.rzBack-tf)/2:zc}; });   // (the front flap hangs from the belly's TRUE depth, not the ellipse's)
-      out.push(pc(ofLoft(rows,sg(14),a0,a1),(x,y,z,c)=>{ c.set(tc); if(y<-hm+0.03) c.set(PL[3]).multiplyScalar(0.9); else if(y<-hm+0.047) c.multiplyScalar(0.7); const t=-y/hm; if(Math.abs(x)<0.006&&t>0.3) c.multiplyScalar(0.8); })); }
+    for(const [a0,a1,len,un] of [[Math.PI-0.95,Math.PI+0.95,0.2,1],[-0.9,0.9,0.18,1],[Math.PI-0.55,Math.PI+0.55,0.42,0],[-0.5,0.5,0.34,0]]){   // a long front flap and a shorter back one, each over a short, wider under-flap of darker hide
+      const fr=a0>0, hm=len*leg, d0=-gfitFz(X,D,0,0.03)+0.012, rows=[0.03].concat([0,1,2,3,4,5,6,7,8].map(i=>lerp(-0.05,-hm+0.05,i/8)),[-hm+0.045,-hm+0.032,-hm+0.028,-hm]).map((y,i)=>{ const k=Math.min(3,i*0.6), tf=d0+k*0.014, rzb=(fr?(tf+s0.rzBack)/2:rm+0.006+k*0.014)-un*0.005; return {y,rx:s0.rx+0.016+k*0.004,rz:rzb,zc:fr?(s0.rzBack-tf)/2:zc}; });   // (the front flap hangs from the belly's TRUE depth, not the ellipse's)
+      const fg=ofLoft(rows,sg(14),a0,a1), fq=fg.attributes.position;
+      for(let i=0;i<fq.count;i++){ const x=fq.getX(i), y=fq.getY(i), t=clamp(-y/hm); fq.setX(i,x*(1-0.16*t*t)); if(t>0.45) fq.setY(i,y-(un?0.025*Math.abs(Math.sin(x*60)):0.06*(1-Math.min(1,Math.abs(x)/0.075)))*faceSm(0.45,0.9,t)); }   // the flap narrows and ends in a point; the under-flap's edge is ragged
+      fg.computeVertexNormals();
+      out.push(pc(fg,(x,y,z,c)=>{ const t=-y/hm; c.set(tc); if(un){ c.multiplyScalar(0.62); return; }
+        if(t>0.93-0.0) c.set(PL[3]).multiplyScalar(0.9); else if(t>0.86) c.multiplyScalar(0.7);
+        if(Math.abs(t-0.3)<0.03||Math.abs(t-0.42)<0.015) c.set(PL[2]);   // two woven bands
+        if(Math.abs(x)/0.05+Math.abs(t-0.64)/0.11<1) c.set(Math.abs(x)/0.05+Math.abs(t-0.64)/0.11<0.5?PL[2]:PL[3]); })); }
     out.push(solid(csph(0.012,sg(6),sg(5)).translate(0.1,0.0,-rz*0.5),PL[2]));
   }
   return out;

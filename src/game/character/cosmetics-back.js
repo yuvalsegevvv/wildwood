@@ -57,7 +57,7 @@ function cosBuildBack(rig,X,def){
     } else if(kind==='blades'){
       const P=[]; for(const sd of [-1,1]){ const B=[S(vbox(0.034,0.5,0.008,0,-0.16,0),tr),S(new THREE.ConeGeometry(0.017,0.06,4).rotateX(Math.PI).translate(0,-0.44,0).scale(1,1,0.3),tr),S(vbox(0.13,0.022,0.026,0,0.1,0),col),S(cyl(0.013,0.013,0.13,6).translate(0,0.175,0),dk),S(csph(0.02,sg(8),sg(6)).translate(0,0.25,0),col)];
         for(const g of B) P.push(tilt(g,sd*0.62,0,0).translate(0,0,sd*0.012)); }
-      mk(P,[0,ym+0.04,zb+0.03]);
+      mk(P,[0,ym+0.04,zb+0.012]);
       mk([pc(gfitRibbon(X,D,[[-0.12,0.5],[0,0.36],[0.12,0.5]],0.02,{lift:0.006,th:0.004}),(x,y,z,c)=>c.set(dk))],[0,0,0]);   // the harness' chest strap
     } else if(kind==='banner'){
       const top=D.shY+0.62, fw=0.24, fh=0.36;
