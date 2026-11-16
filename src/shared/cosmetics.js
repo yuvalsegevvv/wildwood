@@ -61,6 +61,12 @@ const COS_CAPES=[
   ['rime','Rimehold Mantle',6,0xdfeaf2,0x7aa6c8,1.2,'White wool with a fur collar and a fur-edged shoulder cape.','fur',1],
   ['gloam','Duskweave Cape',6,0x3a2a5a,0xc8a0ff,1.2,'Dusk violet with glimmering threads and a moon clasp.','gloam',0],
   ['regal','Highmark Regalia',6,0x2a3a8a,0xe8c860,1.3,'A deep blue train with ermine trim, gold crests and a shoulder cape.','ermine',1],
+  // made back pieces that are not cloth (pat 'back:<kind>': game/character/cosmetics-back.js)
+  ['lute','Traveller\'s Lute',2,0x9a6a3a,0xe8d9b0,1,'A round-bellied lute slung across the back. For looks only: it does not play.','back:lute',0],
+  ['blades','Crossed Blades',3,0x6a5030,0xc8ccd0,1,'Two spare swords crossed on the back, for show.','back:blades',0],
+  ['warbanner','War Banner',3,0xb83a2a,0xe8c860,1,'A back banner on a pole with a roundel, snapping in the wind.','back:banner',0],
+  ['tortoise','Tortoise Shell',2,0x5a7a3a,0xd8c890,1,'A domed, plated shell worn on the back.','back:shell',0],
+  ['wayfinder','Wayfinder\'s Lantern',4,0x4a3a2a,0xffd070,1,'A lit lantern swinging from a pole over the shoulder.','back:lantern',0],
   // side quests' rewards (CP_QUEST in cospieces.js: earned, never made)
   // the Sigil track's big rewards (levels 5, 15, 25, 35: shared/puzzle-track.js; earned, never made)
   ['angelwings','Angel Wings',6,0xf6f2ea,0xffe08a,1,'A pair of large white feathered wings with golden tips. Earned on the Sigil track.','back:angel',0],
