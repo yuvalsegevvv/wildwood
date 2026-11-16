@@ -69,6 +69,9 @@ function gmdHips(X,D){
   const g=ofLoft(R,seg,0,TAU), p=g.attributes.position, n=p.count, TW=(t,a)=>G.wave*Math.pow(t,2.5)*Math.sin(a*3+1);
   for(let i=0;i<n;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), t=Math.min(1,Math.max(0,(0.03-y)/len)), a=Math.atan2(x,z), f=G.folds.amp*Math.pow(t,1.25)*(Math.sin(G.folds.n*a)*0.7+Math.sin(G.folds.n*a*2.3+1.3)*0.3), w=TW(t,a);
     p.setX(i,x*(1+f)); p.setZ(i,z*(1+f)); p.setY(i,y+w+(id==='wrapdress'?0.05*t*t*Math.max(0,Math.sin(a-2.2)):0)); }
+  // the waist lies on the body: in front the belly's depth, behind the seat's (one depth for both stood the rim off the belly like a hoop), easing out to the skirt's own shape 8 cm down
+  const fitF=Math.min(1,(s0.rz+0.011)/(rz0*0.92)), fitB=Math.max(1,(Math.max(torsoSize(X,D,0).rzBack,0.1*D.tw)+0.03)/(rz0*0.92)),   /* (the back is let OUT: the seat swells right under the waist and used to poke through every dress) */ gmdFit=q=>{ for(let i=0;i<q.count;i++){ const z=q.getZ(i), u=clamp((0.03-q.getY(i))/0.08), k=u*u*(3-2*u); const ub=clamp((0.03-q.getY(i))/0.04), ud=clamp((0.03-q.getY(i)-0.16)/0.14); q.setZ(i,z*(z<0?lerp(fitF,1,k):lerp(1,fitB,ub*ub*(3-2*ub)*(1-ud)))); } };
+  gmdFit(p);
   smoothN(g);
   geo.push(pc(g,(x,y,z,c)=>{ const t0=Math.min(1,Math.max(0,(0.03-y)/len)), t=Math.min(1,Math.max(0,(0.03-y+TW(t0,Math.atan2(x,z)))/len)); c.set(tc);   // t: the share of the length before the hem's wave moved the vertex
     if(id==='tiered'){ const u=(((t+0.0008)*G.tiers)%1+1)%1; c.set(u<0.12&&t<0.999?PL[1]:tc).multiplyScalar(0.88+0.12*u); }
@@ -79,6 +82,6 @@ function gmdHips(X,D){
     else if(id==='wrapdress'){ if(t>0.949) c.set(PL[1]); }
     if(t<0.1) c.multiplyScalar(0.84+t*1.5); }));
   if(id==='peasant') geo.push(pc(ofLoft(R.map(r=>({y:r.y,rx:r.rx*0.97,rz:r.rz*1.04})),sg(14),Math.PI-0.55,Math.PI+0.55),(x,y,z,c)=>{ c.set(PL[1]); const t=(0.03-y)/len; if(t>0.92) c.set(PL[2]); }));   // the apron panel, a little proud of the skirt
-  geo.push(pc(ofLoft([{y:0.04,rx:rx0*1.01,rz:rz0*1.01},{y:0.03,rx:rx0*1.035,rz:rz0*1.035},{y:-0.012,rx:rx0*1.035,rz:rz0*1.035},{y:-0.022,rx:rx0*1.012,rz:rz0*1.012}],sg(40),0,TAU),c=>c.set(PL[1])));   // the waistband (the skirt's rim)
+  { const sT=torsoSize(X,D,0.06), wb=ofLoft([{y:0.06*D.TK,rx:sT.rx+0.011,rz:(Math.max(sT.rz,sT.rzBack)+0.011)/0.92*0.92},{y:0.03,rx:rx0*1.02,rz:rz0*1.035},{y:-0.012,rx:rx0*1.03,rz:rz0*1.035},{y:-0.022,rx:rx0*1.012,rz:rz0*1.012}],sg(40),0,TAU); gmdFit(wb.attributes.position); wb.computeVertexNormals(); geo.push(pc(wb,c=>c.set(PL[1]))); }   // the waistband (the skirt's rim)
   return geo;
 }
