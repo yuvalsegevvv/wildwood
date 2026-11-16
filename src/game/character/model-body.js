@@ -145,6 +145,20 @@ function trsDelt(D,u,y,ux,uz){
   const rr=u.rd*u.rd*f;
   const k=rr-a*a*uz*uz; return a*Math.abs(ux)+Math.sign(k)*Math.sqrt(Math.abs(k));   // a ray that misses the ball still gets a value (falling off past the grazing one), so the smooth max has no jump where rays stop hitting it: that jump was a hard rim round the shoulder in the side view
 }
+// the bare torso's anatomy as light and shade (x in body widths, yd the share of the torso's height, z<0 the front): collarbones, the breastbone, the chest's lower edge (a man's), the midline and navel in front; the spine's groove, the shoulder blades and the two dimples behind. Anime-subtle: a hint, never a drawn line
+function trsSkinShade(c,x,yd,z,fem,muscle){ const G=faceG, ax=Math.abs(x), m=1+0.35*clamp(muscle||0,-1,1.5); let k=0;
+  if(z<0){ const cy=0.498+0.16*ax;   // the collarbone rises towards the shoulder
+    k+=0.09*G(yd,cy+0.012,0.007)*faceSm(0.012,0.03,ax)*faceSm(0.16,0.12,ax)-0.11*G(yd,cy-0.008,0.009)*faceSm(0.012,0.03,ax)*faceSm(0.16,0.12,ax);   // lit on top, shaded below
+    k-=0.06*G(yd,0.5,0.012)*G(x,0,0.012);                                           // the notch between them
+    k-=0.075*m*G(x,0,0.008)*faceSm(0.3,0.36,yd)*faceSm(0.47,0.42,yd);                // the breastbone
+    if(!fem) k-=0.13*m*G(yd,0.335-0.03*Math.pow(clamp(ax/0.12),2)+0.05*clamp((ax-0.1)/0.05),0.011)*faceSm(0.012,0.035,ax)*faceSm(0.15,0.11,ax);   // under the chest: a shallow curve up to the armpit
+    k-=0.065*m*G(x,0,0.007)*faceSm(0.1,0.14,yd)*faceSm(0.3,0.25,yd);                 // the midline of the belly
+    k-=0.34*G(x,0,0.008)*G(yd,0.088,0.009); k+=0.05*G(x,0,0.012)*G(yd,0.07,0.008); // the navel, a little light under it
+    k-=0.035*(fem?1:m)*G(ax,0.105,0.02)*faceSm(0.05,0.12,yd)*faceSm(0.3,0.2,yd);   // the flanks fall away
+  } else { k-=0.075*G(x,0,0.008)*faceSm(0.06,0.12,yd)*faceSm(0.5,0.42,yd);         // the spine's groove
+    k-=0.05*m*G(ax,0.075+0.02*clamp((0.42-yd)/0.1),0.012)*faceSm(0.3,0.34,yd)*faceSm(0.46,0.42,yd);   // the shoulder blades' inner edges
+    k-=0.07*G(ax,0.032,0.008)*G(yd,0.045,0.01); }                                   // the two dimples over the seat
+  c.multiplyScalar(1+k); }
 function buildTorso(X,D){
   const CB=chestBand(X.S);   // the bust's frame (centre, band) for the cut rings and the lobes
   const {L,S,fem,sg,skin,skinPaint,topPaint,botPaint}=X, {B,lr,TK,neckR}=D, ch=S.chest, G=faceG, sm=faceSm, kT=X.kit&&X.kit.sl.top, kB=X.kit&&X.kit.sl.bottom;   // kT / kB: the signature outfits' top and bottoms, when worn
@@ -203,9 +217,10 @@ function buildTorso(X,D){
   const u45=U(D.shY/TK), onDelt=(x,y,z)=>{ const dx=Math.abs(x)-D.shX, dy=y-D.shY; const e=dy*dy/Math.pow(u45.rd*(dy>0?0.9:TRS_DROP),2), f=1-(dy>0?e:e*e); return f>0&&dx>-0.45*u45.rd&&dx*dx+z*z<u45.rd*u45.rd*f*1.3; };   // (the same egg as trsDelt)   // a point of the deltoid's cap over the arm
   const bareLeg=!kB&&(L.bottom==='none'||gmxBareBottom(L.bottom));
   const slv=gmxSleeveless(L.top)&&!kT, dW=(x,y,z)=>{ const dx=Math.abs(x)-D.shX, dy=y-D.shY, rd=u45.rd, e=dy*dy/Math.pow(rd*(dy>0?0.9:TRS_DROP),2), f=1-(dy>0?e:e*e); if(f<=0||dx<=-0.45*rd) return 0; return clamp((f*1.3*rd*rd-(dx*dx+z*z))/(0.35*rd*rd)); };   // a sleeveless top leaves the deltoid's cap bare: its edge is a soft blend over the egg (a hard cut was a ragged line across the triangles)
+  const skinHex0=new THREE.Color(L.skin).getHex();
   const tp0=(x,y,z,c)=>{ const yd=onDelt(x,y,z)?Math.max(y/TK,0.47):y/TK;   // the deltoid is painted as the shoulder above it (y 0.47): a band top or a bikini leaves it bare, a shirt covers it   // one paint for every piece of the torso: neck skin, top, belt line, bottoms (each of the top and the bottoms is a base garment or an outfit's item)
     if(yd>skinY+0.02*sm(-0.04,0.04,z)) skinPaint(c);   // the neckline: lower in front, higher behind, blended
-    else if(yd>hem){ if(kT) ofPaint(X,'top','torso',c,x,yd,z,0); else topPaint(c,x,yd); }
+    else if(yd>hem){ if(kT) ofPaint(X,'top','torso',c,x,yd,z,0); else { topPaint(c,x,yd); if(c.getHex()===skinHex0) trsSkinShade(c,x/B,yd,z,fem,S.muscle); } }   // (bare skin of the torso gets its anatomy's light and shade)
     else if(kB) ofPaint(X,'bottom','torso',c,x,yd,z,0);
     else if(yd>hem-0.035 && L.bottom!=='skirt' && L.bottom!=='kilt' && L.bottom!=='pleated' && L.bottom!=='none' && !gmxSkirtKind(L.bottom) && !gmxBareBottom(L.bottom) && hem>0) c.set(0x3a2a1c);
     else if(bareLeg&&yd<0.02){ const s=Math.pow(clamp(Math.abs(x)/(0.165*B)),1.3), w=sm(-0.03,0.03,z), bk=L.bottom==='bikinibottom', us=bk?'':L.underStyle, yl=us==='trunks'||us==='boxers'?-9:us==='highcut'?lerp(-0.15+0.2*s,-0.15+0.13*s,w):lerp(-0.15+(bk?0.21:fem?0.13:0.1)*s,(bk?-0.13+0.2*s:-0.16+0.05*s),w); skinPaint(c); const sk=c.clone(); botPaint(c,x,yd); c.lerp(sk,1-sm(yl-0.014,yl+0.014,yd)); }   // briefs and a bikini (cut higher: only its strings cross the hip): blended over 2.8 cm (a diagonal line across the lathe's rings snapped to them in steps); the leg opening runs from the crotch up to the hip's side in front, lower and fuller behind
