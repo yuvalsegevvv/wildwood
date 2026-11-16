@@ -229,6 +229,6 @@ function buildFace(X){
   }
   // the face item of an outfit (a decal laid on the skull) and its facial hair / glasses: kF.mark(F) / kF.facial(F) return painted geometries in head-local coordinates; F carries the helpers
   const F={parts,sculpt,fs,zAt,earX,place,col,el,skull,hairCol,skin,eye:{ex,ey,SW,SH}};   // (eye: where the eyes are and their half size, for what is worn on the face: model-decos.js)
-  if(kF){ if(kF.mark) parts.push(...kF.mark(F)); if(kF.facial) parts.push(...kF.facial(F)); }
+  if(kF){ const n0=parts.length; if(kF.mark) parts.push(...kF.mark(F)); if(kF.facial) parts.push(...kF.facial(F)); const T=L.tintFace2; if(typeof T==='number'&&T>=0&&T<=0xffffff) ofTintFace(parts,n0,Math.floor(T),skin); }   // (tintFace2: the face item's own colour)
   return F;
 }

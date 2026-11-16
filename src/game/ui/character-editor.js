@@ -56,6 +56,7 @@ const EDIT=[
       {k:'facial',type:'grid',kind:'facial',ids:()=>[['none'],['stubble'],['mustache'],['beard']],base:'face'},
       // an outfit's face item: its marks, eye style and eye colour, and its facial hair or glasses (src/game/outfits)
       {k:'faceItem',type:'grid',kind:'faceItem',ids:()=>[['']].concat(ofItems('face'))},
+      {type:'dcolor',k:'tintFace2',num:1,hint:'Face item',need:'faceItem',opts:TINTC},   // the face item's own colour (its marks, glasses or paint); -1 = as designed
       {k:'kinMuzzle',label:'Muzzle',type:'grid',kind:'kinMuzzle',slot:'m',ids:()=>[['']].concat(kinList('m').concat(kinSetList('m')).map(p=>[p.id,p.name,p.text]))}]}
   ]},
   {tab:'Clothes', subs:[
@@ -180,7 +181,7 @@ function armorRow(wrap,slot){
   wrap.append(box);
 }
 // ---- the ten outfit slots ----
-const OUTFIT_KEYS=['tintTop2','tintTop3','tintTop4','tintBottom2','tintBottom3','tintBottom4','tintShoes2','tintShoes3','tintShoes4','tintHat2','tintHat3','tintHat4','tintHair2','tintHair3','tintHair4','tintGloves2','tintGloves3','tintGloves4','hairGrad','hairColor2','hairThird','hairColor3','gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','capeColor','capeTrim','auraColor','auraColor2','auraGlow','pupil','eyes2','armor','armorHat','armorTop','armorBottom','armorShoes','kinEars','kinTail','kinMuzzle','furColor','furColor2','furMark'];
+const OUTFIT_KEYS=['tintTop2','tintTop3','tintTop4','tintBottom2','tintBottom3','tintBottom4','tintShoes2','tintShoes3','tintShoes4','tintHat2','tintHat3','tintHat4','tintHair2','tintHair3','tintHair4','tintGloves2','tintGloves3','tintGloves4','hairGrad','hairColor2','hairThird','hairColor3','gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintFace2','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','capeColor','capeTrim','auraColor','auraColor2','auraGlow','pupil','eyes2','armor','armorHat','armorTop','armorBottom','armorShoes','kinEars','kinTail','kinMuzzle','furColor','furColor2','furMark'];
 function outfitSlots(){ try{ const a=JSON.parse(localStorage.getItem('wildwood-outfits-v1')||'[]'); const out=[]; for(let i=0;i<PR_OUTFITS;i++) out.push(a&&typeof a[i]==='object'?a[i]:null); return out; }catch(_){ return Array(PR_OUTFITS).fill(null); } }
 function putOutfitSlots(a){ if(NET&&NET.test) return; try{ localStorage.setItem('wildwood-outfits-v1',JSON.stringify(a)); }catch(_){} }
 function saveOutfitSlot(i){ const a=outfitSlots(), o={}; for(const k of OUTFIT_KEYS) if(LOOK[k]!==undefined) o[k]=LOOK[k]; a[i]=o; putOutfitSlots(a); renderEditor(); }

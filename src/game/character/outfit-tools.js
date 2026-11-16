@@ -115,6 +115,12 @@ const ofHsd=(a,b)=>{ let dh=Math.abs(a.h-b.h); dh=Math.min(dh,1-dh); return dh*2
 // every vertex colour of one painted geometry through a transform
 function ofTintGeo(g,f){ const a=g.attributes.color; if(!a) return g; if(f.prep) f.prep(g); const c=new THREE.Color(); for(let i=0;i<a.count;i++){ c.setRGB(a.getX(i),a.getY(i),a.getZ(i)); f(c); a.setXYZ(i,c.r,c.g,c.b); } a.needsUpdate=true; return g; }
 function ofTintGeos(X,slot,geos){ const f=X.kit.tr[slot]; if(f) for(const g of geos) ofTintGeo(g,f); return geos; }
+// a face item's own colour (look.tintFace2; tintFace is its eye colour): its marks, glasses and facial pieces are recoloured from their average colour to T, shades kept; what is painted as skin stays skin
+function ofTintFace(list,from,T,skin){ const c=new THREE.Color(), isSkin=q=>Math.abs(q.r-skin.r)+Math.abs(q.g-skin.g)+Math.abs(q.b-skin.b)<0.02;
+  for(let i=from;i<list.length;i++){ const a=list[i].attributes.color; if(!a) continue; let r=0, g=0, b=0, n=0;   // (each piece from its OWN average: a blush and its freckles both end up in the chosen colour)
+    for(let k=0;k<a.count;k++){ c.setRGB(a.getX(k),a.getY(k),a.getZ(k)); if(isSkin(c)) continue; r+=c.r; g+=c.g; b+=c.b; n++; }
+    if(!n) continue; const f=ofTinter(new THREE.Color(r/n,g/n,b/n).getHex(),T);
+    for(let k=0;k<a.count;k++){ c.setRGB(a.getX(k),a.getY(k),a.getZ(k)); if(isSkin(c)) continue; f(c); a.setXYZ(k,c.r,c.g,c.b); } a.needsUpdate=true; } }
 // the same for the geometries a hook pushed onto a list (the hair and hat items add to the head's own list)
 function ofTintFrom(X,slot,list,from){ const f=X.kit.tr[slot]; if(f) for(let i=from;i<list.length;i++) ofTintGeo(list[i],f); }
 // a kit's body paint for a slot, tinted
