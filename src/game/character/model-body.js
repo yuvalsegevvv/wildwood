@@ -269,13 +269,15 @@ function buildFingers(X,D,sd){
   const {S,sg,skinPaint}=X, hh=S.hands, out=[], f=[[-0.019,0.93,0.003],[-0.0065,1,0],[0.0065,0.93,0.002],[0.0185,0.76,0.007]], gp=X.glove, fat=gp&&gp.fingers!=='bare'?1.17:1;   // (a glove: fatter fingers, painted by the plan; a mitten: one fat blob and a thumb)
   const fp=gp?(x,y,z,c)=>gp.finger(c,x,y,z,sd):skinPaint, mitt=gp&&gp.fingers==='mitt';
   // a bare finger's nail: the back of its last joint (the side away from the palm) a shade paler and pinker
-  const nailC=new THREE.Color(0xffe6de), nailed=(tx,ty,tz,thumb)=>(x,y,z,c)=>{ skinPaint(c); if(Math.hypot(x-tx,y-ty,z-tz)<0.0125*hh&&(thumb?z<tz-0.0015*hh:sd*(x-tx)>0.0012*hh)&&y>ty-0.002) c.lerp(nailC,0.55); };
+  const nailC=new THREE.Color(0xffe6de), nailed=(tx,ty,tz,thumb)=>(x,y,z,c)=>{ skinPaint(c); if(Math.hypot(x-tx,y-ty,z-tz)<0.0088*hh&&(thumb?z<tz-0.003*hh:sd*(x-tx)>0.002*hh)&&y>ty-0.002) c.lerp(nailC,0.4); };
   if(mitt) out.push(pc(csph(1,sg(10),sg(8)).scale(0.0145*hh,0.05*hh,0.0275*hh).translate(-sd*0.006*hh,-0.33,-0.001),fp,-0.28));
+  // (each finger roots 8 mm inside the palm, swells at its knuckle, fans out a little and curls more with every joint: four parallel sticks under a flat edge read as a comb)
   // the fingers start at the knuckle line (the palm's far end, in a shallow arc: the middle knuckle lowest) and are as long as the palm, so the hand reads as a hand and not a ball with claws
   else for(const [z0,k,ky] of f){ const L=0.072*hh*k, y0=-0.301+ky, cu=z0>0.01?1:z0>0?0.5:0;   // (cu: the relaxed hand curls a little more toward the little finger)
-    out.push(pc(sweepTube([[-sd*0.001*hh,y0,z0*hh],[-sd*0.005*hh,y0-L*0.4,z0*1.02*hh],[-sd*(0.011+0.002*cu)*hh,y0-L*0.75,z0*1.03*hh],[-sd*(0.018+0.004*cu)*hh,y0-L*0.97,z0*1.02*hh]],[0.0079*hh*fat,0.0073*hh*fat,0.0065*hh*fat,0.0054*hh*fat],sg(7),{cap:'round',rings:sg(10)}),gp?fp:nailed(-sd*(0.018+0.004*cu)*hh,y0-L*0.97,z0*1.02*hh,0),-0.28)); }
+    out.push(pc(sweepTube([[-sd*0.0003*hh,y0+0.014,z0*0.96*hh],[-sd*0.0015*hh,y0-L*0.06,z0*hh],[-sd*(0.006+0.001*cu)*hh,y0-L*0.42,z0*1.05*hh],[-sd*(0.0115+0.002*cu)*hh,y0-L*0.74,z0*1.09*hh],[-sd*(0.0185+0.004*cu)*hh,y0-L*0.95,z0*1.11*hh]],[0.0088*hh*fat,0.0091*hh*fat,0.0076*hh*fat,0.0067*hh*fat,0.0055*hh*fat],sg(7),{cap:'round',rings:sg(10)}),gp?fp:nailed(-sd*(0.0185+0.004*cu)*hh,y0-L*0.95,z0*1.11*hh,0),-0.28)); }
   // the thumb leaves the palm's front edge near the wrist, out of the ball of the thumb (handShape), and lies ahead of the index finger
-  out.push(pc(sweepTube([[-sd*0.002*hh,-0.236,-0.002*hh],[-sd*0.006*hh,-0.258,-0.01*hh],[-sd*0.012*hh,-0.279,-0.026*hh],[-sd*0.017*hh,-0.299,-0.036*hh],[-sd*0.022*hh,-0.317,-0.036*hh]],[0.008*hh*fat,0.0108*hh*fat,0.0096*hh*fat,0.008*hh*fat,0.0064*hh*fat],sg(7),{cap:'round',rings:sg(10)}),gp?fp:nailed(-sd*0.022*hh,-0.317,-0.036*hh,1),-0.28));
+  out.push(pc(sweepTube([[-sd*0.001*hh,-0.24,-0.006*hh],[-sd*0.004*hh,-0.262,-0.022*hh],[-sd*0.01*hh,-0.283,-0.033*hh],[-sd*0.016*hh,-0.302,-0.038*hh],[-sd*0.022*hh,-0.318,-0.038*hh]],[0.0118*hh*fat,0.0112*hh*fat,0.0097*hh*fat,0.0083*hh*fat,0.0066*hh*fat],sg(7),{cap:'round',rings:sg(10)}),gp?fp:nailed(-sd*0.022*hh,-0.318,-0.038*hh,1),-0.28));   // (it leaves the palm's front edge at an angle: running along the edge it cut a long ragged line into it)
+  out.push(pc(csph(1,sg(6),sg(5)).scale(0.008*hh*fat,0.015*hh,0.012*hh*fat).rotateX(0.55).translate(-sd*0.003*hh,-0.262,-0.019*hh),fp,-0.28));   // the web between the thumb and the palm: the thumb grows out of the hand, it is not stuck on
   return out;
 }
 // the deltoid's own bulge on the arm (it rotates with it): the outer half of the upper arm swells by ARM_DELT x the arm's size just below the joint and fades out a third
@@ -302,7 +304,7 @@ function buildArm(X,D,sd){
   // forearm and hand in one surface: thick below the elbow, slim at the wrist (t = 0.82), then the palm flattens out of it
   const wr=D.wrist/fore, ww=0.02*aw, pw=0.027*hh;
   const gp=X.glove, gcut=gp?[gp.start/fore]:[];   // gp: the gloves' plan (model-gloves.js): the forearm below gp.start is painted as glove
-  const wk=1/mk.a**(mk.p>0?1:0), nr=sg(26), faG=limb([[0,ER,ER*1.04],[0.1,0.037*aw*(1-0.03*mk.p),0.038*aw*(1-0.03*mk.p)],[0.34,0.0305*aw*(1-0.08*mk.p),0.03*aw*(1-0.08*mk.p)],[wr-0.12,0.0235*aw*wk,0.0235*aw*wk],[wr,ww*0.9*wk,ww*1.06*wk],[wr+0.07,0.0128*hh,pw*0.9],[0.94,0.0124*hh,pw],[1,0.0104*hh,pw*0.95]],fore,sg(20),nr,{cuts:(!kit&&longSleeve?[0.2/fore,0.225/fore]:[]).concat((kit&&kit.cuts&&kit.cuts.foreArm)||[],gcut)});
+  const wk=1/mk.a**(mk.p>0?1:0), nr=sg(26), faG=limb([[0,ER,ER*1.04],[0.1,0.037*aw*(1-0.03*mk.p),0.038*aw*(1-0.03*mk.p)],[0.34,0.0305*aw*(1-0.08*mk.p),0.03*aw*(1-0.08*mk.p)],[wr-0.12,0.0235*aw*wk,0.0235*aw*wk],[wr,ww*0.9*wk,ww*1.06*wk],[wr+0.07,0.0128*hh,pw*0.9],[0.9,0.0122*hh,pw],[0.96,0.0098*hh,pw*0.98],[1,0.0062*hh,pw*0.9]],fore,sg(20),nr,{cuts:(!kit&&longSleeve?[0.2/fore,0.225/fore]:[]).concat((kit&&kit.cuts&&kit.cuts.foreArm)||[],gcut)});
   if(q>=0.5) handShape(faG,sd,D,hh,pw);   // the palm's arch, its hollow and the ball of the thumb (the phones' plain paddle keeps its cost)
   const fa=pc(faG,gloveWrap(gp,sd,kit?(x,y,z,c)=>ofPaint(X,'top','foreArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve && y>-0.225){ topPaint(c,x+sd*0.3,y-upper); if(y<-0.2) c.multiplyScalar(0.8); } else { skinPaint(c); limbSkinShade(c,3,x,(-y-upper)/fore,z); } }),-upper);
   // the forearm's twist (pronation, poseRig's twL / twR rotation.y): the forearm is cut on the ring nearest its round station (wr - 0.12), and the lower part with the wrist, the hand
