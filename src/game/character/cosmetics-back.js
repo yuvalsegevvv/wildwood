@@ -42,6 +42,34 @@ function cosBuildBack(rig,X,def){
       if(!fox){ const e=P[4]; parts.push(S(new THREE.ConeGeometry(0.03,0.06,3).rotateZ(Math.PI).scale(1.4,1,0.3).translate(e[0],e[1]-0.05,e[2]),tr),S(new THREE.ConeGeometry(0.03,0.05,3).scale(1.4,1,0.3).translate(e[0],e[1]-0.01,e[2]),tr)); }
       const h=mk(parts,[tl[0],fox?0.02:0.01,z0-0.02]); h.userData.k=sp; hinges.push(h); }
     rig.anims.push((t,dt,mv)=>{ for(const h of hinges){ const k=h.userData.k||0; h.rotation.z=Math.sin(t*1.3+k)*(0.08+mv*0.1)+k*0.15; h.rotation.x=0.15+Math.sin(t*1.7+k)*0.05+mv*0.2; } });
+  } else if(kind==='broom'||kind==='roundshield'||kind==='scrolls'||kind==='leafwings'){
+    // more made back pieces (same frame as the block below: zb the back's surface at mid-back, ym that height)
+    const zb=Math.max(torsoSize(X,D,0.34).rzBack,torsoSize(X,D,0.44).rzBack)+0.012, ym=0.34*D.TK, dk=new THREE.Color(col).multiplyScalar(0.6).getHex();
+    const tilt=(g,a)=>g.rotateZ(a), straps=()=>{ for(const sd of [-1,1]) mk([pc(gfitRibbon(X,D,[[sd*0.09,0.53],[sd*0.1,0.4],[sd*0.11,0.26]],0.02,{lift:0.006,th:0.004}),(x,y,z,c)=>c.set(dk))],[0,0,0]); },
+      sash=()=>mk([pc(gfitRibbon(X,D,[[-0.12,0.5],[-0.02,0.36],[0.1,0.2]],0.022,{lift:0.006,th:0.004}),(x,y,z,c)=>c.set(dk))],[0,0,0]);
+    if(kind==='broom'){
+      const P=[S(cyl(0.011,0.012,0.74,6).translate(0,0.1,0),col),pc(cyl(0.022,0.07,0.24,sg(12)).translate(0,-0.38,0),(x,y,z,c)=>{ c.set(tr).multiplyScalar(0.75+0.3*Math.abs(Math.sin(Math.atan2(x,z)*7))); }),   // the stick and the bristles
+        S(gmRingAt([0,-0.275,0],[0,1,0],0.026,0.007,sg(8)),dk),S(gmRingAt([0,-0.3,0],[0,1,0],0.032,0.006,sg(8)),dk),S(csph(0.016,sg(6),sg(5)).translate(0,0.47,0),dk)];   // two bindings and a knob
+      mk(P.map(g=>tilt(g,-0.55)),[0,ym+0.03,zb+0.03]); sash();
+    } else if(kind==='roundshield'){
+      mk([S(new THREE.CylinderGeometry(0.19,0.19,0.022,sg(24)).rotateX(Math.PI/2),dk),
+        pc(new THREE.RingGeometry(0.001,0.19,sg(24),5).translate(0,0,0.0125),(x,y,z,c)=>{ const r=Math.hypot(x,y); c.set(r>0.16?0x8a8f96:(x*y>0.0001?col:tr)); if(r>0.16&&Math.abs(((Math.atan2(y,x)/TAU*12)%1+1)%1-0.5)<0.1) c.set(0x5a5e66); }),   // quartered face, an iron rim with rivets
+        S(csph(0.045,sg(12),sg(8)).scale(1,1,0.6).translate(0,0,0.014),0xb8bcc4)],[0,ym+0.02,zb-0.012]); straps();
+    } else if(kind==='scrolls'){
+      const P=[]; for(let i=0;i<3;i++){ const x=(i-1)*0.062, y=(i===1?0.03:0)-0.0, h=0.34-(i===2?0.06:0);
+        P.push(S(cyl(0.028,0.028,h,sg(9)).translate(x,y,0),col),S(cyl(0.031,0.031,0.03,sg(9)).translate(x,y+h/2,0),tr),S(cyl(0.031,0.031,0.03,sg(9)).translate(x,y-h/2,0),tr)); }
+      P.push(S(cyl(0.017,0.017,0.09,sg(8)).translate(0.062,0.17,0),0xe8dcc0),S(cyl(0.019,0.019,0.012,sg(8)).translate(0.062,0.2,0),0x9a2f2a));   // an open case with a scroll and its ribbon
+      P.push(S(vbox(0.2,0.02,0.012,0,0.08,0.03),dk),S(vbox(0.2,0.02,0.012,0,-0.08,0.03),dk));   // the two bands that bind them
+      mk(P.map(g=>tilt(g,-0.4)),[0,ym+0.03,zb+0.03]); sash();
+    } else {
+      // four leaves on hinges, beating slowly like wings
+      const leaf=(len,w,a)=>{ const g=new THREE.CircleGeometry(1,cheap?8:12).scale(w,len/2,1).translate(0,len/2,0), q=g.attributes.position;
+        for(let i=0;i<q.count;i++){ const y=q.getY(i)/len; q.setX(i,q.getX(i)*(0.55+0.9*Math.sin(Math.PI*Math.min(1,y*0.9+0.05)))); q.setZ(i,0.03*Math.sin(Math.PI*y)-Math.abs(q.getX(i))*0.25); }   // pointed, cupped, a crease down the midrib
+        g.computeVertexNormals(); return pc(g,(x,y,z,c)=>{ c.set(col); const t=y/len; if(Math.abs(x)<0.006) c.set(tr); else if(((t*9+Math.abs(x)*30)%1)<0.16) c.lerp(_cA.set(tr),0.5); c.multiplyScalar(0.8+0.3*t); }).rotateZ(a); };
+      for(const sd of [-1,1]){ const h=mk([leaf(0.46,0.1,-sd*0.95),leaf(0.3,0.075,-sd*2.05)],[sd*0.03,D.shY-0.1,zb+0.01]); h.userData.k=sd; hinges.push(h); }
+      mk([S(csph(0.03,sg(8),sg(6)).scale(1.2,1.6,0.5),tr)],[0,D.shY-0.1,zb+0.005]);
+      rig.anims.push((t,dt,mv)=>{ for(const h of hinges){ const k=h.userData.k; h.rotation.y=k*(0.35+Math.sin(t*(1.6+mv*3))*(0.22+mv*0.15)); } });
+    }
   } else if(kind==='lute'||kind==='blades'||kind==='banner'||kind==='shell'||kind==='lantern'){
     // made back pieces: things carried on the back. zb is the back's surface at mid-back (the shoulder blades and the seat are the body's own: torsoSize), ym that height
     const zb=Math.max(torsoSize(X,D,0.34).rzBack,torsoSize(X,D,0.44).rzBack)+0.012, ym=0.34*D.TK, dk=new THREE.Color(col).multiplyScalar(0.6).getHex();

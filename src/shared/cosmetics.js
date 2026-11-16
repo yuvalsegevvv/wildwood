@@ -67,6 +67,10 @@ const COS_CAPES=[
   ['warbanner','War Banner',3,0xb83a2a,0xe8c860,1,'A back banner on a pole with a roundel, snapping in the wind.','back:banner',0],
   ['tortoise','Tortoise Shell',2,0x5a7a3a,0xd8c890,1,'A domed, plated shell worn on the back.','back:shell',0],
   ['wayfinder','Wayfinder\'s Lantern',4,0x4a3a2a,0xffd070,1,'A lit lantern swinging from a pole over the shoulder.','back:lantern',0],
+  ['broom','Witch\'s Broom',2,0x6a4424,0xc8a050,1,'A birch broom slung across the back. It does not fly.','back:broom',0],
+  ['roundshield','Slung Shield',3,0x2a4a8a,0xe8dcc0,1,'A quartered round shield carried on the back, for show.','back:roundshield',0],
+  ['scrollcase','Scholar\'s Scroll Cases',3,0x3a5a4a,0xc9a13a,1,'Three capped scroll cases bound together, one of them open.','back:scrolls',0],
+  ['leafwings','Leaf Wings',5,0x5a9a3a,0xd8e8a0,1,'Four broad leaves that beat slowly like wings.','back:leafwings',0],
   // side quests' rewards (CP_QUEST in cospieces.js: earned, never made)
   // the Sigil track's big rewards (levels 5, 15, 25, 35: shared/puzzle-track.js; earned, never made)
   ['angelwings','Angel Wings',6,0xf6f2ea,0xffe08a,1,'A pair of large white feathered wings with golden tips. Earned on the Sigil track.','back:angel',0],
