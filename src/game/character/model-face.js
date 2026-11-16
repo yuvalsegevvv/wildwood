@@ -136,7 +136,7 @@ function buildFace(X){
   const eyeEdge=(F,u,dir)=>{ const seen=v=>{ const w=wf(u,v); return w<0&&w<skinW(F,u,v); }; if(!seen(0)) return 0; let a=0, b=1.3*SH; for(let k=0;k<9;k++){ const m=(a+b)/2; if(seen(dir*m)) a=m; else b=m; } return dir*(a+b)/2; };
   const lid=(F,ts,fn)=>ts.map((t,i)=>{ const q=fn(t,i); return [q[0],q[1],skinW(F,q[0],q[1])-q[2]]; });
   for(const sd of [-1,1]){
-    const F=eyeFrame(sd*ex,ey,sd*(0.06+0.3*(S.eyeTilt+(ES.tilt||0)))), e=[], ic=sd>0?eyeC2:eyeC;   // outer corners up for positive tilt, whichever side
+    const F=eyeFrame(sd*ex,ey,sd*(0.06+0.3*(S.eyeTilt+(ES.tilt||0)))), e=[], ic=sd>0?eyeC2:eyeC, irisIn=new THREE.Color().copy(ic).offsetHSL(0.035,0.05,0.2);   // outer corners up for positive tilt, whichever side
     e.push(pc(new THREE.SphereGeometry(1,sg(18),sg(12),Math.PI,Math.PI).scale(SWx,SH,Wz),(x,y,z,c)=>{ const vy=y/SH, ux=x/SWx;
       c.copy(white).lerp(lidSh,0.6*faceSm(-0.2,0.95,vy)); c.multiplyScalar(1-0.1*faceSm(0.6,1,Math.abs(ux))); c.lerp(pinkC,0.35*faceSm(0.7,1,-sd*ux)); }));   // shaded under the lid, pink at the inner corner
     const IR=0.0185*E*eI, IRy=0.0242*E*eI*Math.min(1,eHt*1.05), icy=-0.0008*E, dome=0.0011*E, nr=Math.max(3,sg(7)), na=Math.max(12,sg(28)), iz=(u,v,r)=>wf(u,v)-0.0003-dome*(1-r*r);
@@ -148,9 +148,10 @@ function buildFace(X){
       e.push(pc(g,(x,y,z,c)=>{ const u=x/IR, vv=(y-icy)/IRy, r=Math.min(1,Math.hypot(u,vv)), a=Math.atan2(vv,u);
         let m=1-0.42*faceSm(-0.15,0.95,vv);                                                // the upper lid's shadow
         m*=1+0.3*faceSm(0,-0.9,vv)*faceSm(0.2,0.7,r);                                      // the light crescent below
-        m*=1+0.1*G(r,0.4,0.1)+0.07*Math.cos(a*7)*faceSm(0.3,0.55,r)*faceSm(0.95,0.7,r);  // a lighter ring round the pupil, faint streaks
-        m*=1-0.6*faceSm(0.74,0.98,r);                                                      // the darker rim
-        c.copy(ic).multiplyScalar(m); if(vv<0) c.lerp(white,0.14*(-vv)*faceSm(0.25,0.75,r)); })); }
+        m*=1+0.1*G(r,0.4,0.1)+(0.1*Math.cos(a*9)+0.06*Math.cos(a*23+1.3))*faceSm(0.3,0.5,r)*faceSm(0.95,0.7,r);  // a lighter ring round the pupil, streaks of two widths running out from it
+        m*=1-0.7*faceSm(0.76,0.98,r);                                                      // the dark rim (the limbal ring)
+        c.copy(ic).lerp(irisIn,0.45*G(r,0.42,0.16)*(0.6+0.4*faceSm(0.3,-0.6,vv))).multiplyScalar(m);   // a second, lighter and warmer tone round the pupil, strongest in the lower half: the iris has depth, not one flat colour
+        if(vv<0) c.lerp(white,0.2*(-vv)*faceSm(0.25,0.75,r)); })); }
     e.push(solid(facePupil(L.pupil,E*eI,sg).translate(0,0,iz(0,icy,0)+0.0104),new THREE.Color(0x14101a).lerp(ic,0.12).getHex()));   // (look.pupil: model-face.js FACE_PUPILS)
     const hl=(rx,ry,x,y,hex)=>{ const r=Math.min(1,Math.hypot(x/IR,(y-icy)/IRy)); e.push(solid(csph(1,sg(10),sg(7)).scale(rx,ry,0.0008).translate(x,y,iz(x,y,r)-0.0017),hex)); };
     if(hlN>=1) hl(0.0068*E,0.0074*E,-0.0062*E,0.0092*E,0xffffff);    // the catchlights: the same side on both eyes (the light is one light)
@@ -160,6 +161,10 @@ function buildFace(X){
     const up=lid(F,[0,0.15,0.32,0.5,0.68,0.85,1],(t,i)=>{ const u=sd*(2*t-1)*SWx*0.985; return [u,eyeEdge(F,u,1)+0.4*LR[i]+0.0025*E*t*t,0.0004]; });
     up.push(lid(F,[1],()=>[sd*SWx*1.2,0.5*SH+0.003*E,0.0003])[0]);   // the flick past the outer corner
     e.push(col(sweepTube(up,LR,sg(7),{cap:'point',rings:sg(16)}),lashC.getHex()));
+    if(sg(10)>=7){ const nf=fem?3:1, fl=(fem?0.0052:0.003)*E*eLs;   // lashes: fine flicks fanning from the outer half of the upper lid (three on a female face, one short one on a male), two small ones under the outer corner of a female eye
+      for(let i=0;i<nf;i++){ const t=1-0.11*i-(fem?0.02:0.06), u=sd*(2*t-1)*SWx*0.985, v=eyeEdge(F,u,1)+0.0015*E+0.0025*E*t*t, dx=sd*fl*(0.75-0.22*i), dy=fl*(0.55+0.2*i);
+        e.push(col(sweepTube(lid(F,[0,0.5,1],k=>[u+dx*k,v+dy*k*(0.6+0.4*k),0.0004]),[0.0011*E,0.0007*E,0.0002*E],4,{cap:'point',rings:5}),lashC.getHex())); }
+      if(fem) for(let i=0;i<2;i++){ const t=0.9-0.14*i, u=sd*(2*t-1)*SWx*0.97, v=eyeEdge(F,u,-1)-0.0003*E; e.push(col(sweepTube(lid(F,[0,1],k=>[u+sd*0.0016*E*k,v-0.0026*E*k,0.0003]),[0.0006*E,0.0002*E],4,{cap:'point',rings:3}),lashC.getHex())); } }
     e.push(col(sweepTube(lid(F,[0.12,0.3,0.5,0.7,0.9],t=>{ const u=sd*(2*t-1)*SWx*0.92; return [u,eyeEdge(F,u,1)+0.0062*E+0.0012*E*t,0.00025]; }),[0.0005,0.0009,0.001,0.0009,0.0004].map(r=>r*E),sg(5),{cap:'point',rings:sg(10)}),skin.clone().multiplyScalar(fem?0.78:0.85).getHex()));   // the crease
     if(sg(10)>=7) e.push(col(sweepTube(lid(F,[0.2,0.42,0.64,0.84,0.98],t=>{ const u=sd*(2*t-1)*SWx*0.97; return [u,eyeEdge(F,u,-1)-0.0003*E,0.0003]; }),[0.0003,0.0006,0.0007,0.0008,0.0004].map(r=>r*E*(fem?1.3:1)),sg(5),{cap:'point',rings:sg(10)}),lashC.clone().lerp(skin,fem?0.3:0.5).getHex()));   // the lower lid line (darker on a female face)
     parts.push(merge(e).applyMatrix4(F.m));

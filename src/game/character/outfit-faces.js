@@ -9,13 +9,17 @@ function oxTune(id,v){
 }
 function oxMarks(F,list){
   const out=[], sg=n=>Math.max(5,n>>1), dot=(rx,ry,x,y,col,rot)=>solid(F.place(csph(1,8,6).scale(rx,ry,0.0009).rotateZ(rot||0),x,y,0.0008),col);
+  // a decal that melts into the skin: full colour (mixed `str` into the skin) out to `f0` of its radius, then fading to the skin's own colour at the rim; laid on the head's own surface
+  const _mc=new THREE.Color(), soft=(rx,ry,x,y,col,rot,str,f0)=>{ const g=pc(new THREE.RingGeometry(0.0001,1,16,5).rotateY(Math.PI),(px,py,pz,c)=>{ const r=Math.hypot(px,py); c.copy(F.skin).lerp(_mc.set(col),str*(1-smoothstep(f0,1,r))); }).scale(rx,ry,1).rotateZ(rot||0), q=g.attributes.position;
+    g.translate(x,y,0); for(let i=0;i<q.count;i++){ let z=F.zAt(q.getX(i),q.getY(i)); if(!(z<1)) z=-Math.sqrt(Math.max(0.0004,0.011-q.getX(i)*q.getX(i)-q.getY(i)*q.getY(i))); q.setZ(i,z-0.0007); }   // laid on the skull's own surface: its shading is the skin's, so only the colour shows
+    return smoothN(g); };
   for(const o of list){ const col=o.col, sd=o.side||1;
-    if(o.t==='freckles') for(const [x,y] of [[0.02,-0.028],[0.03,-0.034],[0.04,-0.026],[0.026,-0.04],[0.045,-0.038]]) for(const s of [-1,1]) out.push(dot(0.0032,0.0032,s*x,y,col));
-    if(o.t==='bags') for(const s of [-1,1]) out.push(dot(0.024,0.0055,s*0.046,-0.02,col,s*0.12));
+    if(o.t==='freckles') for(const [x,y,r] of [[0.018,-0.027,0.0019],[0.027,-0.033,0.0026],[0.037,-0.026,0.0022],[0.024,-0.04,0.0017],[0.045,-0.036,0.0024],[0.034,-0.041,0.0016],[0.052,-0.029,0.0018],[0.008,-0.024,0.0016]]) for(const s of [-1,1]) out.push(soft(r,r*0.9,s*x+(s>0?0.0015:0),y+(s>0?-0.001:0.0008),col,0,0.8,0.5));   // eight small ones of mixed sizes over the cheeks and the nose, not quite mirrored
+    if(o.t==='bags') for(const s of [-1,1]) out.push(soft(0.026,0.008,s*0.046,-0.021,col,s*0.12,0.85,0.3));
     if(o.t==='scar'){ out.push(dot(0.003,0.035,sd*0.05,0.0,col,sd*0.5)); for(const d of [-0.012,0.0,0.012]) out.push(dot(0.008,0.0016,sd*(0.05+d*0.5),0.0+d,col,sd*-0.5)); }
-    if(o.t==='stripe') for(const s of [-1,1]) out.push(dot(0.04,0.006,s*0.052,-0.03,col,s*-0.08));
+    if(o.t==='stripe') for(const s of [-1,1]){ out.push(soft(0.04,0.0058,s*0.052,-0.028,col,s*-0.08,0.95,0.8)); out.push(soft(0.028,0.0034,s*0.05,-0.041,col,s*-0.08,0.9,0.8)); }   // two strokes of paint, the lower one shorter
     if(o.t==='crow') for(const s of [-1,1]) for(const a of [-0.35,0,0.35]) out.push(dot(0.014,0.0013,s*0.083,-0.002+a*0.02,col,s*a));
-    if(o.t==='cheek') for(const s of [-1,1]) out.push(dot(0.024,0.016,s*0.052,-0.036,col,0));
+    if(o.t==='cheek') for(const s of [-1,1]) out.push(soft(0.03,0.02,s*0.054,-0.036,col,0,1,0.3));   // a blush: no edge at all
     if(o.t==='mole') out.push(dot(0.0036,0.0036,sd*0.03,-0.062,col,0));
     if(o.t==='tear') out.push(dot(0.0032,0.007,sd*0.046,-0.026,col,0)); }
   return out; }

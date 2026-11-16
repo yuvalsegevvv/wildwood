@@ -145,6 +145,14 @@ function trsDelt(D,u,y,ux,uz){
   const rr=u.rd*u.rd*f;
   const k=rr-a*a*uz*uz; return a*Math.abs(ux)+Math.sign(k)*Math.sqrt(Math.abs(k));   // a ray that misses the ball still gets a value (falling off past the grazing one), so the smooth max has no jump where rays stop hitting it: that jump was a hard rim round the shoulder in the side view
 }
+// a bare limb's anatomy as light and shade (part 0 thigh, 1 shin, 2 upper arm, 3 forearm; t 0..1 down the part, x across it in metres, z<0 the front): the kneecap and the hollows beside it, the crease behind the knee, the shin's edge, the calf's two heads, the hollows beside the heel cord; the elbow's point and the crease inside it. A hint, as on the torso
+function limbSkinShade(c,part,x,t,z){ const G=faceG, ax=Math.abs(x); let k=0;
+  if(part===0){ if(z<0) k+=0.05*G(t,0.97,0.05)*G(x,0,0.018)-0.07*G(t,0.9,0.05)*G(ax,0.032,0.01)-0.04*G(t,0.84,0.03)*G(x,0,0.02); else k-=0.09*G(t,1,0.035)*G(x,0,0.03); }
+  else if(part===1){ if(z<0) k+=0.05*G(t,0.02,0.04)*G(x,0,0.018)-0.075*G(t,0.11,0.025)*G(x,0,0.022)+0.035*G(x,0,0.007)*faceSm(0.15,0.25,t)*faceSm(0.85,0.7,t);
+    else k-=0.09*G(t,0,0.035)*G(x,0,0.03)+0.045*G(x,0,0.006)*faceSm(0.1,0.18,t)*faceSm(0.48,0.36,t)+0.06*G(ax,0.017,0.006)*faceSm(0.8,0.9,t); }
+  else if(part===2){ if(z>0) k-=0.07*G(t,0.97,0.04)*G(ax,0.022,0.008); else k-=0.06*G(t,1,0.03)*G(x,0,0.02); }
+  else { if(z>0) k+=0.04*G(t,0.02,0.03)*G(x,0,0.012); else k-=0.07*G(t,0,0.03)*G(x,0,0.02); }
+  c.multiplyScalar(1+2*k); }   // (x2: at the single strength the knees and elbows did not read at game distance)
 // the bare torso's anatomy as light and shade (x in body widths, yd the share of the torso's height, z<0 the front): collarbones, the breastbone, the chest's lower edge (a man's), the midline and navel in front; the spine's groove, the shoulder blades and the two dimples behind. Anime-subtle: a hint, never a drawn line
 function trsSkinShade(c,x,yd,z,fem,muscle){ const G=faceG, ax=Math.abs(x), m=1+0.35*clamp(muscle||0,-1,1.5); let k=0;
   if(z<0){ const cy=0.498+0.16*ax;   // the collarbone rises towards the shoulder
@@ -260,12 +268,14 @@ function buildTorso(X,D){
 function buildFingers(X,D,sd){
   const {S,sg,skinPaint}=X, hh=S.hands, out=[], f=[[-0.019,0.93,0.003],[-0.0065,1,0],[0.0065,0.93,0.002],[0.0185,0.76,0.007]], gp=X.glove, fat=gp&&gp.fingers!=='bare'?1.17:1;   // (a glove: fatter fingers, painted by the plan; a mitten: one fat blob and a thumb)
   const fp=gp?(x,y,z,c)=>gp.finger(c,x,y,z,sd):skinPaint, mitt=gp&&gp.fingers==='mitt';
+  // a bare finger's nail: the back of its last joint (the side away from the palm) a shade paler and pinker
+  const nailC=new THREE.Color(0xffe6de), nailed=(tx,ty,tz,thumb)=>(x,y,z,c)=>{ skinPaint(c); if(Math.hypot(x-tx,y-ty,z-tz)<0.0125*hh&&(thumb?z<tz-0.0015*hh:sd*(x-tx)>0.0012*hh)&&y>ty-0.002) c.lerp(nailC,0.55); };
   if(mitt) out.push(pc(csph(1,sg(10),sg(8)).scale(0.0145*hh,0.05*hh,0.0275*hh).translate(-sd*0.006*hh,-0.33,-0.001),fp,-0.28));
   // the fingers start at the knuckle line (the palm's far end, in a shallow arc: the middle knuckle lowest) and are as long as the palm, so the hand reads as a hand and not a ball with claws
   else for(const [z0,k,ky] of f){ const L=0.072*hh*k, y0=-0.301+ky, cu=z0>0.01?1:z0>0?0.5:0;   // (cu: the relaxed hand curls a little more toward the little finger)
-    out.push(pc(sweepTube([[-sd*0.001*hh,y0,z0*hh],[-sd*0.005*hh,y0-L*0.4,z0*1.02*hh],[-sd*(0.011+0.002*cu)*hh,y0-L*0.75,z0*1.03*hh],[-sd*(0.018+0.004*cu)*hh,y0-L*0.97,z0*1.02*hh]],[0.0079*hh*fat,0.0073*hh*fat,0.0065*hh*fat,0.0054*hh*fat],sg(7),{cap:'round',rings:sg(10)}),fp,-0.28)); }
+    out.push(pc(sweepTube([[-sd*0.001*hh,y0,z0*hh],[-sd*0.005*hh,y0-L*0.4,z0*1.02*hh],[-sd*(0.011+0.002*cu)*hh,y0-L*0.75,z0*1.03*hh],[-sd*(0.018+0.004*cu)*hh,y0-L*0.97,z0*1.02*hh]],[0.0079*hh*fat,0.0073*hh*fat,0.0065*hh*fat,0.0054*hh*fat],sg(7),{cap:'round',rings:sg(10)}),gp?fp:nailed(-sd*(0.018+0.004*cu)*hh,y0-L*0.97,z0*1.02*hh,0),-0.28)); }
   // the thumb leaves the palm's front edge near the wrist, out of the ball of the thumb (handShape), and lies ahead of the index finger
-  out.push(pc(sweepTube([[-sd*0.002*hh,-0.236,-0.002*hh],[-sd*0.006*hh,-0.258,-0.01*hh],[-sd*0.012*hh,-0.279,-0.026*hh],[-sd*0.017*hh,-0.299,-0.036*hh],[-sd*0.022*hh,-0.317,-0.036*hh]],[0.008*hh*fat,0.0108*hh*fat,0.0096*hh*fat,0.008*hh*fat,0.0064*hh*fat],sg(7),{cap:'round',rings:sg(10)}),fp,-0.28));
+  out.push(pc(sweepTube([[-sd*0.002*hh,-0.236,-0.002*hh],[-sd*0.006*hh,-0.258,-0.01*hh],[-sd*0.012*hh,-0.279,-0.026*hh],[-sd*0.017*hh,-0.299,-0.036*hh],[-sd*0.022*hh,-0.317,-0.036*hh]],[0.008*hh*fat,0.0108*hh*fat,0.0096*hh*fat,0.008*hh*fat,0.0064*hh*fat],sg(7),{cap:'round',rings:sg(10)}),gp?fp:nailed(-sd*0.022*hh,-0.317,-0.036*hh,1),-0.28));
   return out;
 }
 // the deltoid's own bulge on the arm (it rotates with it): the outer half of the upper arm swells by ARM_DELT x the arm's size just below the joint and fades out a third
@@ -284,7 +294,7 @@ function buildArm(X,D,sd){
   const {L,S,fem,sg,skinPaint,topPaint,q}=X, kit=X.kit&&X.kit.sl.top, {aw,ER,upper,fore}=D, longSleeve=L.top!=='tshirt'&&L.top!=='none'&&L.top!=='vest'&&L.top!=='jerkin'&&L.top!=='crop'&&!gmxSleeveless(L.top), hh=S.hands, bareArm=gmxSleeveless(L.top);   // kit: the outfit's top (the sleeves are the top's)
   const sh=new THREE.Group(); sh.name=sd<0?'shL':'shR'; sh.position.set(sd*D.shX,D.shY,0); sh.rotation.z=sd*armLean(D);
   // upper arm: the shoulder ball, the biceps in front, narrowing to the elbow. (Cut rings only where a colour edge is: on bare skin a pair of rings 1 mm apart shaded as a faint line round the limb)
-  const mk=D.mk, ua=pc(limb([[0,0.05*aw,0.052*aw],[0.13,0.0505*aw,0.053*aw],[0.38,0.045*aw*(1-0.03*mk.p),0.048*aw,-0.003-0.002*mk.p],[0.7,0.037*aw*(1-0.05*mk.p),0.039*aw*(1-0.03*mk.p)],[1,ER,ER*1.04]],upper,sg(24),sg(24),{cuts:(!kit&&!bareArm&&!longSleeve&&L.top!=='none'?[0.13/upper]:[]).concat((kit&&kit.cuts&&kit.cuts.upperArm)||[])}),kit?(x,y,z,c)=>ofPaint(X,'top','upperArm',c,x,y,z,sd):(x,y,z,c)=>{ if(!bareArm&&(longSleeve||y>-0.13)) topPaint(c,x+sd*0.3,y); else skinPaint(c); });
+  const mk=D.mk, ua=pc(limb([[0,0.05*aw,0.052*aw],[0.13,0.0505*aw,0.053*aw],[0.38,0.045*aw*(1-0.03*mk.p),0.048*aw,-0.003-0.002*mk.p],[0.7,0.037*aw*(1-0.05*mk.p),0.039*aw*(1-0.03*mk.p)],[1,ER,ER*1.04]],upper,sg(24),sg(24),{cuts:(!kit&&!bareArm&&!longSleeve&&L.top!=='none'?[0.13/upper]:[]).concat((kit&&kit.cuts&&kit.cuts.upperArm)||[])}),kit?(x,y,z,c)=>ofPaint(X,'top','upperArm',c,x,y,z,sd):(x,y,z,c)=>{ if(!bareArm&&(longSleeve||y>-0.13)) topPaint(c,x+sd*0.3,y); else { skinPaint(c); limbSkinShade(c,2,x,-y/upper,z); } });
   armDeltoid(ua,sd,aw,D.mk);
   const m1=new THREE.Mesh(ua,matChar); m1.castShadow=true; sh.add(m1);
   if(X.kit){ const ex=ofRun(X,'shoulder',sd); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; sh.add(m); } }   // puffed sleeves, epaulets, in the shoulder joint's frame
@@ -294,7 +304,7 @@ function buildArm(X,D,sd){
   const gp=X.glove, gcut=gp?[gp.start/fore]:[];   // gp: the gloves' plan (model-gloves.js): the forearm below gp.start is painted as glove
   const wk=1/mk.a**(mk.p>0?1:0), nr=sg(26), faG=limb([[0,ER,ER*1.04],[0.1,0.037*aw*(1-0.03*mk.p),0.038*aw*(1-0.03*mk.p)],[0.34,0.0305*aw*(1-0.08*mk.p),0.03*aw*(1-0.08*mk.p)],[wr-0.12,0.0235*aw*wk,0.0235*aw*wk],[wr,ww*0.9*wk,ww*1.06*wk],[wr+0.07,0.0128*hh,pw*0.9],[0.94,0.0124*hh,pw],[1,0.0104*hh,pw*0.95]],fore,sg(20),nr,{cuts:(!kit&&longSleeve?[0.2/fore,0.225/fore]:[]).concat((kit&&kit.cuts&&kit.cuts.foreArm)||[],gcut)});
   if(q>=0.5) handShape(faG,sd,D,hh,pw);   // the palm's arch, its hollow and the ball of the thumb (the phones' plain paddle keeps its cost)
-  const fa=pc(faG,gloveWrap(gp,sd,kit?(x,y,z,c)=>ofPaint(X,'top','foreArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve && y>-0.225){ topPaint(c,x+sd*0.3,y-upper); if(y<-0.2) c.multiplyScalar(0.8); } else skinPaint(c); }),-upper);
+  const fa=pc(faG,gloveWrap(gp,sd,kit?(x,y,z,c)=>ofPaint(X,'top','foreArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve && y>-0.225){ topPaint(c,x+sd*0.3,y-upper); if(y<-0.2) c.multiplyScalar(0.8); } else { skinPaint(c); limbSkinShade(c,3,x,(-y-upper)/fore,z); } }),-upper);
   // the forearm's twist (pronation, poseRig's twL / twR rotation.y): the forearm is cut on the ring nearest its round station (wr - 0.12), and the lower part with the wrist, the hand
   // and whatever the hand holds turns about the forearm's own axis. A round section turned about its centre is itself, so the cut never opens and nothing is wrung (no candy wrapper)
   const tc=Math.round((wr-0.12)*nr)/nr, [faU,faL]=armSplit(fa,-tc*fore);
@@ -359,9 +369,10 @@ function buildFoot(X,D,sd,boot){
   if(L.shoes==='none'||L.shoes==='sandals'||L.shoes==='geta'){   // barefoot (the editor's None tile)
     if(!toes) return pc(g,skinPaint,-D.thigh-D.shin);
     const parts=[g];
+    const toeNail=new THREE.Color(0xffe6de);
     for(const [tx,t0,t1,tr] of FOOT_TOES){ const r=tr*(0.75+0.25*wf), x=sd*tx*wf, z0=t0*fl, z1=t1*fl, lean=sd*0.004*wf*(tx>0?tx/0.031:0);   // (the small toes turn a little out)
-      parts.push(sweepTube([[x-lean*0.5,-A+r*0.8+0.004*hf,z0+0.018*fl],[x-lean*0.3,-A+r+0.006*hf,z0],[x,-A+r+0.003*hf,lerp(z0,z1,0.5)],[x+lean*0.6,-A+r*0.92,lerp(z0,z1,0.82)],[x+lean,-A+r*0.8,z1]],[r*0.7,r*0.95,r,r*0.97,r*0.85],sg(6),{cap:'round',rings:sg(5)}).rotateY(-sd*0.1)); }
-    return merge(parts.map(q=>pc(q,skinPaint,-D.thigh-D.shin))); }
+      parts.push(pc(sweepTube([[x-lean*0.5,-A+r*0.8+0.004*hf,z0+0.018*fl],[x-lean*0.3,-A+r+0.006*hf,z0],[x,-A+r+0.003*hf,lerp(z0,z1,0.5)],[x+lean*0.6,-A+r*0.92,lerp(z0,z1,0.82)],[x+lean,-A+r*0.8,z1]],[r*0.7,r*0.95,r,r*0.97,r*0.85],sg(6),{cap:'round',rings:sg(5)}),(px,py,pz,c)=>{ skinPaint(c); if(py>-A+r*1.2&&Math.abs(pz-z1)<Math.abs(z1-z0)*0.42) c.lerp(toeNail,0.5); },-D.thigh-D.shin).rotateY(-sd*0.1)); }   // (the toenail: the top of the toe's last joint, a shade paler)
+    return merge(parts.map(q=>q.attributes.color?q:pc(q,skinPaint,-D.thigh-D.shin))); }
   return pc(g,(x,y,z,c)=>{ c.set(L.shoeColor); if(y<-A+0.011) c.set(white?0xf2efe8:0x221a14); else if(white&&z<-0.1) c.multiplyScalar(1.12); },-D.thigh-D.shin);
 }
 function buildLeg(X,D,sd){
@@ -370,7 +381,7 @@ function buildLeg(X,D,sd){
   const hp=new THREE.Group(); hp.name=sd<0?'hipL':'hipR'; hp.position.set(sd*hx,0,0);
   // thigh: a slimmer ball at the hip joint, shallowest front to back (it turns inside the pelvis, buildTorso: a stride swings its front up into the belly and its back into the seat), full from where it leaves the pelvis's rim (t 0.24), full quads in front, tapering to the knee (radius KR, shared with the shin below)
   const mp=D.mk.p, th=pc(limb([[0,0.07*tw*(1-0.07*mp),0.064*tw*(1-0.07*mp)],[0.12,0.084*tw*(1-0.03*mp),0.076*tw*(1-0.03*mp)],[0.24,0.089*tw,0.09*tw],[0.45,0.076*tw*(1-0.02*mp),0.08*tw*(1+0.01*mp),-0.004-0.003*mp],[0.76,Math.max(KR*1.1,0.057*tw*(1-0.05*mp)),Math.max(KR*1.12,0.06*tw*(1-0.03*mp)),-0.002],[1,KR,KR*1.04]],thigh,sg(24),sg(28),{cuts:(!kB&&L.bottom==='shorts'?[0.53,0.53-0.03/thigh]:[]).concat(uLeg>0?[uLeg,uLeg-0.014/thigh]:[]).concat(L.bottom==='shortshorts'?[0.2,0.2-0.025/thigh]:[]).concat((kB&&kB.cuts&&kB.cuts.thigh)||[])}),kB?(x,y,z,c)=>ofPaint(X,'bottom','thigh',c,x,y,z,sd):(x,y,z,c)=>{
-    if(L.bottom==='trousers'||L.bottom==='greaves'||L.bottom==='breeches'||L.bottom==='hakama'||(L.bottom==='shorts'&&y>-thigh*0.53)||(L.bottom==='shortshorts'&&y>-thigh*0.2)) botPaint(c,x,y); else if(uLeg>0&&y>-thigh*uLeg) c.set(y<-thigh*uLeg+0.014?underBand(L):underCol(L)); else skinPaint(c);   // (briefs are the pelvis's: buildTorso paints their leg line, so it stays put when the thigh swings)
+    if(L.bottom==='trousers'||L.bottom==='greaves'||L.bottom==='breeches'||L.bottom==='hakama'||(L.bottom==='shorts'&&y>-thigh*0.53)||(L.bottom==='shortshorts'&&y>-thigh*0.2)) botPaint(c,x,y); else if(uLeg>0&&y>-thigh*uLeg) c.set(y<-thigh*uLeg+0.014?underBand(L):underCol(L)); else { skinPaint(c); limbSkinShade(c,0,x,-y/thigh,z); }   // (briefs are the pelvis's: buildTorso paints their leg line, so it stays put when the thigh swings)
     if(L.bottom==='shorts'&&y>-thigh*0.53&&y<-thigh*0.53+0.03) c.multiplyScalar(0.85); if(L.bottom==='shortshorts'&&y>-thigh*0.2&&y<-thigh*0.2+0.025) c.multiplyScalar(0.8); });
   const m1=new THREE.Mesh(th,matChar); m1.castShadow=true; hp.add(m1);
   if(!kB){ const ex=gmxThigh(X,D,sd); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; hp.add(m); } }   // the plated leggings' thigh plates (model-garments-more.js)
@@ -383,7 +394,7 @@ function buildLeg(X,D,sd){
   const tb=kS?ofBootTop(kS):(L.shoes==='boots'?0.6:L.shoes==='tallboots'?0.08:L.shoes==='furboots'?0.3:L.shoes==='sabatons'?0.6:1.1), same=kB&&kB===kS, kcut=(k,low)=>((k&&k.cuts&&k.cuts.shin)||[]).filter(t=>(t<tb)===low);
   const sv=pc(limb([[0,KR,KR*1.04],[0.14,0.0505*cw,0.054*cw,0.005],[0.3,0.052*cw,0.057*cw,0.011]].concat(bs),shin,sg(24),sg(28),{cuts:(!kS&&(L.shoes==='boots'||L.shoes==='sabatons')?[0.6]:[]).concat(L.bottom==='breeches'?[0.14]:[],same?(kB.cuts&&kB.cuts.shin)||[]:kcut(kB,true).concat(kcut(kS,false)))}),(x,y,z,c)=>{ const t=-y/shin;
     if(same) ofPaint(X,t<tb?'bottom':'shoes','shin',c,x,y,z,sd);
-    else if(t<tb){ if(kB) ofPaint(X,'bottom','shin',c,x,-Math.min(t,ofBootTop(kB)-0.02)*shin,z,sd); else if(L.bottom==='trousers'||L.bottom==='greaves'||L.bottom==='hakama'||(L.bottom==='breeches'&&t<0.14)) botPaint(c,x,y); else skinPaint(c); }
+    else if(t<tb){ if(kB) ofPaint(X,'bottom','shin',c,x,-Math.min(t,ofBootTop(kB)-0.02)*shin,z,sd); else if(L.bottom==='trousers'||L.bottom==='greaves'||L.bottom==='hakama'||(L.bottom==='breeches'&&t<0.14)) botPaint(c,x,y); else { skinPaint(c); limbSkinShade(c,1,x,t,z); } }
     else if(kS) ofPaint(X,'shoes','shin',c,x,y,z,sd);
     else if(L.shoes==='none'||L.shoes==='sandals'||L.shoes==='geta') skinPaint(c);
     else c.set(L.shoeColor); },-thigh);
