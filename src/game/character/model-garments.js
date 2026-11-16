@@ -133,9 +133,13 @@ function gmHips(X,D){
       out.push(solid(new THREE.OctahedronGeometry(0.012,0).translate(-0.095,-0.17,-rz*0.6),0xb9bdc2)); }   // the kilt pin
     if(b==='pleated'){ out.push(pc(ofRibbon([[0.02,0.05*TK,-rz-0.01],[0.06,0.02*TK,-rz-0.03],[0.09,-0.05,-rz-0.03],[0.07,-0.1,-rz-0.02]],0.03,{up:[0,0,-1],seg:sg(8),th:0.003}),c=>c.set(0xc0344a))); }   // a ribbon belt's bow
   }
+  if(!kT&&L.top==='jerkin'){   // the jerkin's skirt: six leather tabs over the hips, each with a darker edge
+    const rows=[{y:0.0,rx:s0.rx+0.016,rz:rm+0.002,zc},{y:-0.03,rx:s0.rx+0.03,rz:rm+0.016,zc},{y:-0.07,rx:s0.rx+0.042,rz:rm+0.026,zc},{y:-0.105,rx:s0.rx+0.048,rz:rm+0.03,zc},{y:-0.118,rx:s0.rx+0.046,rz:rm+0.028,zc}];
+    for(let i=0;i<6;i++){ const a0=(i+0.5)*TAU/6+0.035, a1=(i+1.5)*TAU/6-0.035, am=(a0+a1)/2;
+      out.push(pc(ofLoft(rows,sg(8),a0,a1),(x,y,z,c)=>{ c.set(L.topColor).multiplyScalar(0.86); const e=Math.abs(Math.atan2(x,z-zc)-am), d=Math.min(e,TAU-e); if(y<-0.098||d>TAU/12-0.1) c.multiplyScalar(0.62); })); } }
   if(!kT&&L.top==='tunic'&&b!=='skirt'&&b!=='kilt'&&b!=='pleated'){   // the tunic's flare over the thighs
-    const rows=[{y:0.0,rx:s0.rx+0.014,rz:rm,zc},{y:-0.035,rx:s0.rx+0.03,rz:rm+0.016,zc},{y:-0.08,rx:s0.rx+0.05,rz:rm+0.032,zc},{y:-0.16,rx:s0.rx+0.07,rz:rm+0.048,zc},{y:-0.25,rx:s0.rx+0.086,rz:rm+0.06,zc}];   // five rings: a curve that eases out
-    out.push(pc(ofLoft(rows,sg(36),0,TAU),(x,y,z,c)=>{ c.set(L.topColor); if(y<-0.225) c.set(0xe8d9b0); else if(y<-0.212) c.multiplyScalar(0.7); }));   // (to mid-thigh: a tunic, where the shorter one read as a T-shirt's hem)
+    const rows=[{y:0.0,rx:s0.rx+0.014,rz:rm,zc},{y:-0.035,rx:s0.rx+0.03,rz:rm+0.016,zc},{y:-0.08,rx:s0.rx+0.05,rz:rm+0.032,zc},{y:-0.16,rx:s0.rx+0.07,rz:rm+0.048,zc},{y:-0.21,rx:s0.rx+0.079,rz:rm+0.055,zc},{y:-0.214,rx:s0.rx+0.08,rz:rm+0.0555,zc},{y:-0.226,rx:s0.rx+0.082,rz:rm+0.057,zc},{y:-0.23,rx:s0.rx+0.083,rz:rm+0.0575,zc},{y:-0.25,rx:s0.rx+0.086,rz:rm+0.06,zc}];   // rings: a curve that eases out (the close pairs keep the hem's trim a crisp band): a curve that eases out
+    out.push(pc(ofLoft(rows,sg(36),0,TAU),(x,y,z,c)=>{ c.set(L.topColor); if(y<-0.228) c.set(0xe8d9b0); else if(y<-0.212) c.multiplyScalar(0.7); }));   // (to mid-thigh: a tunic, where the shorter one read as a T-shirt's hem)
   }
   out.push(...gmxHips(X,D));   // the crafted bottoms' belts, flaps and sashes (model-garments-more.js)
   return out;

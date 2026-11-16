@@ -21,7 +21,7 @@ function clothPaints(L){
   const topPaint=(c,u,v)=>{
     if(L.top==='none') uTop(c,u,v);
     else if(L.top==='flannel') plaid(c,L.topColor,u,v);
-    else if(L.top==='vest'||L.top==='jerkin') c.set(0xe8e4dc);   // (the waistcoat and the leather jerkin are geometry over a cream shirt: model-garments.js, model-garments-more.js)
+    else if(L.top==='vest'||L.top==='jerkin') c.set(L.top==='jerkin'?0x5a5046:0xe8e4dc);   // (the waistcoat and the leather jerkin are geometry over a cream shirt: model-garments.js, model-garments-more.js)
     else if(L.top==='crop'){ if(v<b0+0.03) c.set(L.skin); else c.set(L.topColor); }   // the midriff is bare
     else if(L.top==='bikini'){ if(v>b0+0.002&&v<b1+0.015) c.set(L.topColor); else c.set(L.skin); }   // two small cups, everything else bare
     else if(L.top==='halter'){ if(v>b0-0.006&&v<b1+0.035) c.set(L.topColor); else c.set(L.skin); }   // a wrap round the chest, bare shoulders, back and belly
